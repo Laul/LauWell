@@ -1,0 +1,5 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. Compose owns the actual UI theming (see ui/theme/Theme.kt);
+         this is only used for the system splash/launch background before Compose renders. -->
+    <style name="Theme.LauWell" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
