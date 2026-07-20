@@ -12,7 +12,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
  * Ostomy Management — device installation, changes, wear time, issues. Brand-agnostic by design
  * (see CLAUDE.md) — no dependency on specific medical device brands anywhere in this module.
  *
- * Placeholder entry point. Same internal-package convention as feature.vitals applies here:
+ * Placeholder entry point. Same internal-package convention as feature.health applies here:
  * data / domain / ui subpackages once real functionality is added.
  */
 @Composable

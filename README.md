@@ -20,11 +20,10 @@ app/src/main/java/com/laul/lauwell/
 │   └── ui/theme/     custom theme tokens (no Material3 — see PLAN.md)
 └── feature/
     ├── home/         dashboard across enabled modules
-    ├── vitals/
-    ├── activity/
-    ├── sleep/
+    ├── health/       vitals, activity, and sleep
     ├── medication/
     ├── ostomy/
+    ├── glycemia/
     └── settings/      module enable/disable, thresholds, reminders
 ```
 

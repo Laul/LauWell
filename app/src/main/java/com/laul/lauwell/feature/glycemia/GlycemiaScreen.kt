@@ -1,4 +1,4 @@
-package com.laul.lauwell.feature.vitals
+package com.laul.lauwell.feature.glycemia
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,17 +9,16 @@ import androidx.compose.ui.Modifier
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
- * Vitals — blood pressure, heart rate, temperature, weight, etc.
+ * Glycemia Monitoring — blood sugar readings, hypo/hyper alerts with configurable thresholds.
  *
- * Placeholder entry point. As this module grows, keep it self-contained under this package:
- * feature.vitals.data (entities/DAO), feature.vitals.domain (repository), feature.vitals.ui
- * (this screen + ViewModel + state) — mirroring the repository-pattern decision in PLAN.md.
+ * Placeholder entry point. Same internal-package convention as feature.health applies here:
+ * feature.glycemia.data, feature.glycemia.domain, feature.glycemia.ui.
  */
 @Composable
-fun VitalsScreen() {
+fun GlycemiaScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         BasicText(
-            text = "Vitals",
+            text = "Glycemia",
             style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.onBackground),
         )
     }

@@ -5,13 +5,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.laul.lauwell.feature.activity.ActivityScreen
+import com.laul.lauwell.feature.glycemia.GlycemiaScreen
+import com.laul.lauwell.feature.health.HealthScreen
 import com.laul.lauwell.feature.home.HomeScreen
 import com.laul.lauwell.feature.medication.MedicationScreen
 import com.laul.lauwell.feature.ostomy.OstomyScreen
 import com.laul.lauwell.feature.settings.SettingsScreen
-import com.laul.lauwell.feature.sleep.SleepScreen
-import com.laul.lauwell.feature.vitals.VitalsScreen
 
 /**
  * Root navigation graph. Wires every feature module's top-level screen into one NavHost.
@@ -24,11 +23,10 @@ import com.laul.lauwell.feature.vitals.VitalsScreen
 fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = LauWellDestination.Home.route) {
         composable(LauWellDestination.Home.route) { HomeScreen() }
-        composable(LauWellDestination.Vitals.route) { VitalsScreen() }
-        composable(LauWellDestination.Activity.route) { ActivityScreen() }
-        composable(LauWellDestination.Sleep.route) { SleepScreen() }
+        composable(LauWellDestination.Health.route) { HealthScreen() }
         composable(LauWellDestination.Medication.route) { MedicationScreen() }
         composable(LauWellDestination.Ostomy.route) { OstomyScreen() }
+        composable(LauWellDestination.Glycemia.route) { GlycemiaScreen() }
         composable(LauWellDestination.Settings.route) { SettingsScreen() }
     }
 }

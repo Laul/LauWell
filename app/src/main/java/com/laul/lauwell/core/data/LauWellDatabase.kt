@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 /**
  * Single Room database for the app, shared across feature modules.
  *
- * Each feature module owns its own entities/DAOs (see e.g. feature.vitals.data) and registers
+ * Each feature module owns its own entities/DAOs (see e.g. feature.health.data) and registers
  * them here. Kept as one physical database (not one-per-feature) so cross-module queries and a
  * single migration story stay possible, while entities/DAOs themselves remain module-scoped.
  *

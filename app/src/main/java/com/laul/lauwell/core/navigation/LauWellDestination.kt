@@ -7,10 +7,9 @@ package com.laul.lauwell.core.navigation
  */
 enum class LauWellDestination(val route: String, val label: String) {
     Home(route = "home", label = "Home"),
-    Vitals(route = "vitals", label = "Vitals"),
-    Activity(route = "activity", label = "Activity"),
-    Sleep(route = "sleep", label = "Sleep"),
+    Health(route = "health", label = "Health"),
     Medication(route = "medication", label = "Medication"),
     Ostomy(route = "ostomy", label = "Ostomy"),
+    Glycemia(route = "glycemia", label = "Glycemia"),
     Settings(route = "settings", label = "Settings"),
 }

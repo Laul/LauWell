@@ -11,7 +11,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 /**
  * Medication Tracking — take and renewal reminders.
  *
- * Placeholder entry point. Same internal-package convention as feature.vitals applies here:
+ * Placeholder entry point. Same internal-package convention as feature.health applies here:
  * data / domain / ui subpackages once real functionality is added. Will need the shared
  * reminder engine described under Settings and Notifications in PLAN.md.
  */
