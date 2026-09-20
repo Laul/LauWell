@@ -10,9 +10,11 @@
 
 ## Current tasks
 
-- [ ] Create the Android project in `app/`
 - [ ] Fill in the Stack section of CLAUDE.md
-- [ ] Define the data model (see `claude/` for research notes)
+- [ ] Decide how data-type feature modules (health, medication, ostomy, glycemia, ...) are structured for modularity/scalability, then define the data model (see `claude/` for research notes)
 
 ## Done
+
+- [x] Create the Android project in `app/`
+- [x] Fix Gradle build (missing wrapper, gradle.properties, JVM toolchain mismatch) — `./gradlew :app:assembleDebug` succeeds
 

@@ -1,2 +1,9 @@
 # Ignore all .idea files by default
 .idea/
+
+# Gradle / Android build outputs
+.gradle/
+build/
+local.properties
+.cxx/
+captures/
