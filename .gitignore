@@ -7,3 +7,12 @@ build/
 local.properties
 .cxx/
 captures/
+
+# Kotlin compiler caches
+.kotlin/
+
+# macOS
+.DS_Store
+
+# Scratch (see CLAUDE.md)
+tmp/

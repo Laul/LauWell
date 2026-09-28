@@ -7,10 +7,11 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 
 - `CLAUDE.md` — this file: project context and conventions. Read first.
 - `PLAN.md` — milestones and the current task sequence. Update it as tasks complete.
-- `app/` — Android source (Gradle root, standard Android Studio layout: `app/src/main/...`).
-- `claude/` — everything Claude produces that is not app source: notes, research,
-  design docs, generated assets. Write here, not in `docs/`.
+- `app/` — the `:app` Gradle module (standard Android Studio layout: `app/src/main/...`).
+  The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
 - `docs/` — documents written by Lauranne.
+- `docs/claude/` — everything Claude produces that is not app source: notes, research,
+  design docs, generated assets. Write here, not elsewhere in `docs/`.
 - `tmp/` — scratch, gitignored. Never put deliverables here.
 
 ## Conventions
