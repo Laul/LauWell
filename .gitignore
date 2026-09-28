@@ -1,0 +1,20 @@
+# Build output
+build/
+.gradle/
+.kotlin/
+
+# Local machine config: never commit (holds the SDK path)
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Secrets and signing
+*.jks
+*.keystore
+google-services.json
+secrets.properties
+
+# Note: gradlew, gradlew.bat and gradle/wrapper/ ARE committed, so every clone builds the same way.
