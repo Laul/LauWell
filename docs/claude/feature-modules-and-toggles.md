@@ -1,7 +1,7 @@
 # Feature modules and on/off toggles
 
-_Status: proposal, not decided. Input for the PLAN.md task "Decide how data-type feature
-modules are structured"._
+_Status: proposal, to be adopted in M0 (PLAN.md task "Adopt the feature descriptor + registry
+proposal")._
 
 ## The question
 
@@ -26,8 +26,10 @@ LauWell needs the **runtime toggle**. It is already implied by the planned Setti
 Example: vitals on, activity off.
 
 - **Code:** the activity code still ships in the APK but never runs. The size cost is negligible.
-- **Database:** the activity tables still exist in the shared Room database (`LauWellDatabase`)
-  and stay empty. That is harmless, and it keeps a single schema and a single migration history.
+- **Data:** the feature's storage still exists and simply stays unused: its Firestore collection
+  (`users/{uid}/{feature}/…`) for user-logged data, or its tables in the shared Room database
+  (`LauWellDatabase`) for Health Connect data. That is harmless, and it keeps a single schema and
+  a single migration history. (See PLAN.md → Decisions → Data placement.)
 - **Permissions:** this is the real constraint. `AndroidManifest.xml` must declare every
   permission any feature might need (e.g. each Health Connect data type). At runtime, the app
   *requests* only the permissions of enabled features.
