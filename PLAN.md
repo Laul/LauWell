@@ -47,8 +47,12 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [ ] Add a "Superseded" note to the Notion *Tech Stack* page
 
 ### M1 — Authentication and app shell
-- [ ] Provision the Firebase project and the Google OAuth "Web application" client;
+- [x] Provision the Firebase project and the Google OAuth "Web application" client;
       add `google-services.json` and `GOOGLE_WEB_CLIENT_ID` (not committed)
+- [x] Gradle: google-services plugin, Firebase BOM (auth, firestore), Credential Manager, googleid;
+      `GOOGLE_WEB_CLIENT_ID` → `BuildConfig`. Required a toolchain bump: Kotlin 2.1.0 → 2.4.20,
+      KSP → 2.3.12 (KSP2), AGP 8.9.1 → 8.13.2, Gradle 8.11.1 → 8.14.4 (Firebase/googleid ship Kotlin 2.3/2.4 metadata)
+- [ ] `AppContainer` in `LauWellApplication` + a ViewModel factory helper (manual DI, see Decisions)
 - [ ] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
       nonce wired)
 - [ ] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out

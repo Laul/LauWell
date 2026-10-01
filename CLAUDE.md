@@ -24,7 +24,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 
 Decisions and rationale: `PLAN.md` → Decisions, and the Notion pages it links to.
 
-- Kotlin 2.1, Jetpack Compose (BOM), JDK 17. Native Android only.
+- Kotlin 2.4, Jetpack Compose (BOM), JDK 17. Native Android only.
 - minSdk 26, compileSdk / targetSdk 36. Single `:app` module, one package per feature.
 - UI: own theme tokens (`core.ui.theme`), no Material3 dependency.
 - Backend: Firebase — Auth (Google sign-in via Credential Manager), Cloud Firestore, Cloud Storage.
