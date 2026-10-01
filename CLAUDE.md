@@ -32,5 +32,5 @@ Decisions and rationale: `PLAN.md` → Decisions, and the Notion pages it links 
 - Charts: Vico 3.x (`com.patrykandpatrick.vico:compose`), only behind the `ChartSpec` mapper.
   Never import Vico outside that file.
 - Background work: WorkManager. Settings: DataStore.
-- Dependency injection: to be decided (M0).
+- Dependency injection: manual wiring — `AppContainer` built in `LauWellApplication`, no Hilt.
 - Privacy: no health data or tokens in logs.

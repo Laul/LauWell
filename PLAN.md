@@ -23,6 +23,13 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - **Charts:** Vico 3.x (`compose` module, no Material), behind our own `ChartSpec` layer; only one
   mapper file imports Vico. Koala Plot is the fallback; MPAndroidChart v4 to revisit once mature.
   → Notion: *Charting library*.
+- **Dependency injection:** manual wiring — one `AppContainer` (plain Kotlin class) built in
+  `LauWellApplication.onCreate()`, holding the app's singletons (auth, Firestore, Room, repositories);
+  classes receive their dependencies through their constructor, ViewModels via small factories.
+  Why not Hilt: one user, one module, a handful of singletons — Hilt's plugin, annotation processing,
+  build time and concepts don't pay for themselves yet. Constructor injection is used either way, so
+  migrating to Hilt later is mechanical (add annotations, delete the container). Revisit if the
+  container grows past a few dozen entries or factories become a burden.
 - **Lessons from TrackAid** (`docs/claude/LauWell • Trackaid review.md`): layered design (source →
   repository → ViewModel → UI), typed metric definitions, charts behind our own layer, `Instant` for time,
   `null` for missing data (never 0), unit-tested stats, no health data in logs.
@@ -31,7 +38,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 
 ### M0 — Lock the foundations
 - [x] Fill in the Stack section of CLAUDE.md (DI still open, see next task)
-- [ ] Choose dependency injection: Hilt or manual wiring in `LauWellApplication`
+- [x] Choose dependency injection → manual wiring via `AppContainer` (see Decisions)
 - [ ] Adopt the feature descriptor + registry proposal and settle its open points (feature granularity,
       cross-feature data ownership, where the enabled set is stored, default state on first launch)
 - [ ] Decide how the TrackAid skeleton branch (`claude/eloquent-dijkstra-ae7o7r`, multi-module
