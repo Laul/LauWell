@@ -1,5 +1,6 @@
 # Ignore all .idea files by default
 .idea/
+*.iml
 
 # Gradle / Android build outputs
 .gradle/
@@ -7,6 +8,12 @@ build/
 local.properties
 .cxx/
 captures/
+.externalNativeBuild/
+
+# Secrets and signing (never commit — see PLAN.md M1)
+google-services.json
+*.jks
+*.keystore
 
 # Kotlin compiler caches
 .kotlin/
