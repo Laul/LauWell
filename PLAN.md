@@ -20,6 +20,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     summaries go to Firestore.
   - User-logged data (manual vitals, medication, ostomy, glucose) goes to **Firestore**, relying on its
     built-in offline cache. No Room for this data unless a need shows up.
+- **Charts:** Vico 3.x (`compose` module, no Material), behind our own `ChartSpec` layer; only one
+  mapper file imports Vico. Koala Plot is the fallback; MPAndroidChart v4 to revisit once mature.
+  → Notion: *Charting library*.
 - **Lessons from TrackAid** (`docs/claude/LauWell • Trackaid review.md`): layered design (source →
   repository → ViewModel → UI), typed metric definitions, charts behind our own layer, `Instant` for time,
   `null` for missing data (never 0), unit-tested stats, no health data in logs.
@@ -27,7 +30,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 ## Milestones
 
 ### M0 — Lock the foundations
-- [ ] Fill in the Stack section of CLAUDE.md
+- [x] Fill in the Stack section of CLAUDE.md (DI still open, see next task)
 - [ ] Choose dependency injection: Hilt or manual wiring in `LauWellApplication`
 - [ ] Adopt the feature descriptor + registry proposal and settle its open points (feature granularity,
       cross-feature data ownership, where the enabled set is stored, default state on first launch)
@@ -59,8 +62,13 @@ Builds the reusable pieces with the simplest data type (read-only, one number pe
 - [ ] Health Connect data source behind a `HealthDataSource` interface (paginated with `pageToken`)
 - [ ] Room database as the local store for Health Connect data; incremental sync
 - [ ] Daily aggregation + stats, unit-tested (TrackAid's min/avg and off-by-one bugs)
-- [ ] Reusable chart component: our own `ChartSpec`, one mapper to the chart library (Vico),
-      range selector (week / month / 3 months), gaps drawn for missing days
+- [ ] Chart validation test (~1 day): build the hardest chart first — heart-rate weekly range bar
+      (Vico candlestick layer) + average dot + target band (`HorizontalBox`) + tooltip — fed by a
+      `StateFlow` that changes while the screen is open. Pass → Vico for every chart; fail → try
+      Koala Plot behind the same `ChartSpec`. (Notion: *Charting library*.)
+- [ ] Reusable chart component: our own `ChartSpec`, one mapper file to Vico (the only file that
+      imports Vico), range selector (week / month / 3 months), gaps drawn for missing days
+- [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
 - [ ] Steps: Home card + detail screen with the chart
 - [ ] Onboarding when Health Connect is missing; per-metric "grant access"
 - [ ] Then: heart rate (range bar + average), sleep

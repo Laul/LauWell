@@ -22,4 +22,15 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 
 ## Stack
 
-_To be filled in once the Android project is created (Kotlin, Compose, min SDK, etc.)._
+Decisions and rationale: `PLAN.md` → Decisions, and the Notion pages it links to.
+
+- Kotlin 2.1, Jetpack Compose (BOM), JDK 17. Native Android only.
+- minSdk 26, compileSdk / targetSdk 36. Single `:app` module, one package per feature.
+- UI: own theme tokens (`core.ui.theme`), no Material3 dependency.
+- Backend: Firebase — Auth (Google sign-in via Credential Manager), Cloud Firestore, Cloud Storage.
+- Data: Health Connect for sensor data, cached in Room; user-logged data in Firestore only.
+- Charts: Vico 3.x (`com.patrykandpatrick.vico:compose`), only behind the `ChartSpec` mapper.
+  Never import Vico outside that file.
+- Background work: WorkManager. Settings: DataStore.
+- Dependency injection: to be decided (M0).
+- Privacy: no health data or tokens in logs.
