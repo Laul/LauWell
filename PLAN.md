@@ -53,8 +53,10 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       `GOOGLE_WEB_CLIENT_ID` → `BuildConfig`. Required a toolchain bump: Kotlin 2.1.0 → 2.4.20,
       KSP → 2.3.12 (KSP2), AGP 8.9.1 → 8.13.2, Gradle 8.11.1 → 8.14.4 (Firebase/googleid ship Kotlin 2.3/2.4 metadata)
 - [x] `AppContainer` in `LauWellApplication` + a ViewModel factory helper (`appViewModel { … }`) (manual DI, see Decisions)
-- [ ] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
-      nonce wired)
+- [x] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
+      nonce wired). `Session` holds only `uid` (no tokens, no name/email until a screen needs them);
+      failures typed as `AuthException`. Unit tests: nonce + error mapping.
+      Follow-up: confirm the real sign-in (incl. nonce check) on device once the sign-in screen exists
 - [ ] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
 - [ ] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
 - [ ] No tokens or health data in logs (TrackAid logged the Firebase ID token)

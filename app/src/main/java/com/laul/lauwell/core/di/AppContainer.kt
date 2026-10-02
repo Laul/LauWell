@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.credentials.CredentialManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.laul.lauwell.BuildConfig
+import com.laul.lauwell.core.auth.AuthRepository
+import com.laul.lauwell.core.auth.FirebaseAuthRepository
 
 /**
  * Manual dependency injection: the one place that builds the app's process-wide singletons
@@ -23,4 +26,8 @@ class AppContainer(context: Context) {
     val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     val credentialManager: CredentialManager by lazy { CredentialManager.create(appContext) }
+
+    val authRepository: AuthRepository by lazy {
+        FirebaseAuthRepository(firebaseAuth, credentialManager, BuildConfig.GOOGLE_WEB_CLIENT_ID)
+    }
 }
