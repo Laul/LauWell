@@ -1,0 +1,14 @@
+{
+  "name": "lauwell-firebase",
+  "private": true,
+  "description": "Firestore security rules for LauWell and their emulator tests.",
+  "type": "module",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-lauwell \"node --test test/\"",
+    "deploy:rules": "firebase deploy --only firestore:rules"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.19.0"
+  }
+}

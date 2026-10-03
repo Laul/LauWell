@@ -60,7 +60,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [x] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
       (Home → Settings → Sign out). Verified on device: sign-in, session survives app kill,
       sign-out returns to sign-in with no back stack, sheet shown again, dismiss shows no error
-- [ ] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
+- [x] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
+      (`firebase/`: owner-only `users/{uid}/**`, deny everything else; 7 emulator tests via `npm test`;
+      deployed to `lauwell-app` 2026-10-03)
 - [ ] No tokens or health data in logs (TrackAid logged the Firebase ID token)
 
 ### M2 — Feature framework

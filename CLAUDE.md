@@ -9,6 +9,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `PLAN.md` — milestones and the current task sequence. Update it as tasks complete.
 - `app/` — the `:app` Gradle module (standard Android Studio layout: `app/src/main/...`).
   The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
+- `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
+  (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
 - `docs/claude/` — everything Claude produces that is not app source: notes, research,
   design docs, generated assets. Write here, not elsewhere in `docs/`.
