@@ -46,7 +46,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       port its code into packages, or revisit the module decision
 - [ ] Add a "Superseded" note to the Notion *Tech Stack* page
 
-### M1 — Authentication and app shell
+### M1 — Authentication and app shell ✅ (2026-10-03)
 - [x] Provision the Firebase project and the Google OAuth "Web application" client;
       add `google-services.json` and `GOOGLE_WEB_CLIENT_ID` (not committed)
 - [x] Gradle: google-services plugin, Firebase BOM (auth, firestore), Credential Manager, googleid;
@@ -71,6 +71,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 ### M2 — Feature framework
 - [ ] `FeatureDescriptor` + `FeatureRegistry`; enabled set persisted; toggles in Settings
 - [ ] Nav host and Home read from the registry instead of hard-coding features
+      (also replaces Home's temporary "Settings" link added in M1)
 - [ ] Domain model: `Measurement(metric, instant, value, source)`, typed `MetricDefinition`
       (unit, precision, target, aggregation, chart kind)
 - [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}`, FHIR-inspired common fields,
@@ -105,6 +106,8 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
 - M6 — Dashboard and UX: cross-feature Home, real palette and type scale, accessibility pass
 - Backlog: Life's Essential 8 survey, lab results, user-configurable targets, BigQuery export for ML,
   FHIR export, CI (lint, tests, build)
+- Maintenance (from the M1 lint run): update the ~14 outdated dependencies and AGP, add an app icon
+  (`MissingApplicationIcon`); CI could also run the Firestore rules tests (`firebase/`, `npm test`)
 
 ## Done
 
