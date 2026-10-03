@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// LauWell Firestore rules.
+//
+// Every document lives under users/{uid}/… (see PLAN.md → M2 data conventions), and only the
+// signed-in owner of that uid may read or write it. Anything not matched below is denied,
+// including any top-level collection other than users.
+//
+// Tests: firebase/test/firestore.rules.test.mjs (npm test, from firebase/).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // {path=**} matches zero or more segments: the user's own document and everything below it.
+    match /users/{uid}/{path=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

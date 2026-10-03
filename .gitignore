@@ -23,3 +23,6 @@ google-services.json
 
 # Scratch (see CLAUDE.md)
 tmp/
+
+# Understand-Anything knowledge graph (generated)
+.ua/

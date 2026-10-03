@@ -46,22 +46,32 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       port its code into packages, or revisit the module decision
 - [ ] Add a "Superseded" note to the Notion *Tech Stack* page
 
-### M1 — Authentication and app shell
+### M1 — Authentication and app shell ✅ (2026-10-03)
 - [x] Provision the Firebase project and the Google OAuth "Web application" client;
       add `google-services.json` and `GOOGLE_WEB_CLIENT_ID` (not committed)
 - [x] Gradle: google-services plugin, Firebase BOM (auth, firestore), Credential Manager, googleid;
       `GOOGLE_WEB_CLIENT_ID` → `BuildConfig`. Required a toolchain bump: Kotlin 2.1.0 → 2.4.20,
       KSP → 2.3.12 (KSP2), AGP 8.9.1 → 8.13.2, Gradle 8.11.1 → 8.14.4 (Firebase/googleid ship Kotlin 2.3/2.4 metadata)
-- [ ] `AppContainer` in `LauWellApplication` + a ViewModel factory helper (manual DI, see Decisions)
-- [ ] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
-      nonce wired)
-- [ ] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
-- [ ] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
-- [ ] No tokens or health data in logs (TrackAid logged the Firebase ID token)
+- [x] `AppContainer` in `LauWellApplication` + a ViewModel factory helper (`appViewModel { … }`) (manual DI, see Decisions)
+- [x] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
+      nonce wired). `Session` holds only `uid` (no tokens, no name/email until a screen needs them);
+      failures typed as `AuthException`. Unit tests: nonce + error mapping.
+      Verified on device (2026-10-02): Firebase accepts the raw nonce (`setIdTokenWithRawNonce`)
+- [x] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
+      (Home → Settings → Sign out). Verified on device: sign-in, session survives app kill,
+      sign-out returns to sign-in with no back stack, sheet shown again, dismiss shows no error
+- [x] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
+      (`firebase/`: owner-only `users/{uid}/**`, deny everything else; 7 emulator tests via `npm test`;
+      deployed to `lauwell-app` 2026-10-03)
+- [x] No tokens or health data in logs (TrackAid logged the Firebase ID token). Audit 2026-10-03:
+      no logging calls in `app/src`; device logcat over sign-out → sign-in → relaunch has no ID token,
+      nonce or email. Also: app data excluded from cloud backup and device transfer
+      (`allowBackup="false"` + `data_extraction_rules.xml`), since it holds the Firebase session
 
 ### M2 — Feature framework
 - [ ] `FeatureDescriptor` + `FeatureRegistry`; enabled set persisted; toggles in Settings
 - [ ] Nav host and Home read from the registry instead of hard-coding features
+      (also replaces Home's temporary "Settings" link added in M1)
 - [ ] Domain model: `Measurement(metric, instant, value, source)`, typed `MetricDefinition`
       (unit, precision, target, aggregation, chart kind)
 - [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}`, FHIR-inspired common fields,
@@ -96,6 +106,8 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
 - M6 — Dashboard and UX: cross-feature Home, real palette and type scale, accessibility pass
 - Backlog: Life's Essential 8 survey, lab results, user-configurable targets, BigQuery export for ML,
   FHIR export, CI (lint, tests, build)
+- Maintenance (from the M1 lint run): update the ~14 outdated dependencies and AGP, add an app icon
+  (`MissingApplicationIcon`); CI could also run the Firestore rules tests (`firebase/`, `npm test`)
 
 ## Done
 

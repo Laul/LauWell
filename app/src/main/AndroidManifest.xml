@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        No backup or transfer of app data: it holds the Firebase session and (later) cached health
+        data. allowBackup="false" covers Android 11 and below; dataExtractionRules covers 12+, where
+        allowBackup no longer blocks device-to-device transfer. fullBackupContent (lint's
+        DataExtractionRules suggestion) would be ignored, since allowBackup is false.
+    -->
     <application
         android:name=".LauWellApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:label="@string/app_name"
         android:theme="@style/Theme.LauWell"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        tools:ignore="DataExtractionRules">
 
         <activity
             android:name=".MainActivity"

@@ -18,7 +18,9 @@ import com.laul.lauwell.feature.settings.SettingsScreen
 @Composable
 fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = LauWellDestination.Home.route) {
-        composable(LauWellDestination.Home.route) { HomeScreen() }
+        composable(LauWellDestination.Home.route) {
+            HomeScreen(onOpenSettings = { navController.navigate(LauWellDestination.Settings.route) })
+        }
         composable(LauWellDestination.Settings.route) { SettingsScreen() }
     }
 }
