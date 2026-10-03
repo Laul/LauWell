@@ -63,7 +63,10 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [x] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
       (`firebase/`: owner-only `users/{uid}/**`, deny everything else; 7 emulator tests via `npm test`;
       deployed to `lauwell-app` 2026-10-03)
-- [ ] No tokens or health data in logs (TrackAid logged the Firebase ID token)
+- [x] No tokens or health data in logs (TrackAid logged the Firebase ID token). Audit 2026-10-03:
+      no logging calls in `app/src`; device logcat over sign-out → sign-in → relaunch has no ID token,
+      nonce or email. Also: app data excluded from cloud backup and device transfer
+      (`allowBackup="false"` + `data_extraction_rules.xml`), since it holds the Firebase session
 
 ### M2 — Feature framework
 - [ ] `FeatureDescriptor` + `FeatureRegistry`; enabled set persisted; toggles in Settings
