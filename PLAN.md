@@ -56,8 +56,10 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [x] `core.auth`: `AuthRepository` returning `AppResult<Session>` (Credential Manager + Firebase Auth,
       nonce wired). `Session` holds only `uid` (no tokens, no name/email until a screen needs them);
       failures typed as `AuthException`. Unit tests: nonce + error mapping.
-      Follow-up: confirm the real sign-in (incl. nonce check) on device once the sign-in screen exists
-- [ ] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
+      Verified on device (2026-10-02): Firebase accepts the raw nonce (`setIdTokenWithRawNonce`)
+- [x] `AuthGate` (no session → sign-in, session → nav host), sign-in screen, sign-out
+      (Home → Settings → Sign out). Verified on device: sign-in, session survives app kill,
+      sign-out returns to sign-in with no back stack, sheet shown again, dismiss shows no error
 - [ ] Firestore Security Rules scoped to `request.auth.uid`, tested with the emulator
 - [ ] No tokens or health data in logs (TrackAid logged the Firebase ID token)
 
