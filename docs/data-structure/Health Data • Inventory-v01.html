@@ -1,0 +1,491 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Health Hub Data Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F4F5F2;
+    --surface:#FCFCFB;
+    --surface-2:#EDEFEA;
+    --ink:#191E1C;
+    --ink-2:#4E5955;
+    --ink-3:#7E8985;
+    --line:#DCE0D9;
+    --line-strong:#C3C9C0;
+    --accent:#2C6A57;
+    --accent-soft:#E2EDE7;
+    --c-stream:#2D6CA8;
+    --c-event:#A76313;
+    --c-document:#6B5A96;
+    --c-reference:#47606B;
+    --c-insight:#96395A;
+    --shadow:0 1px 2px rgba(25,30,28,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#111614;
+      --surface:#181E1B;
+      --surface-2:#1F2623;
+      --ink:#E9EEEB;
+      --ink-2:#A6B1AC;
+      --ink-3:#77837E;
+      --line:#2A322E;
+      --line-strong:#3A443F;
+      --accent:#74C2A4;
+      --accent-soft:#1D2D27;
+      --c-stream:#84B6E2;
+      --c-event:#E0A661;
+      --c-document:#AC99D6;
+      --c-reference:#92A8B2;
+      --c-insight:#DE8EA7;
+      --shadow:0 1px 2px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111614;
+    --surface:#181E1B;
+    --surface-2:#1F2623;
+    --ink:#E9EEEB;
+    --ink-2:#A6B1AC;
+    --ink-3:#77837E;
+    --line:#2A322E;
+    --line-strong:#3A443F;
+    --accent:#74C2A4;
+    --accent-soft:#1D2D27;
+    --c-stream:#84B6E2;
+    --c-event:#E0A661;
+    --c-document:#AC99D6;
+    --c-reference:#92A8B2;
+    --c-insight:#DE8EA7;
+    --shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:44px 72px}
+
+  header.masthead{display:flex;flex-direction:column;gap:14px;max-width:70ch}
+  .eyebrow{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+  }
+  h1{
+    font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+    font-size:clamp(28px,5vw,40px);line-height:1.12;margin:0;text-wrap:balance;
+    letter-spacing:-.015em;
+  }
+  .lede{margin:0;color:var(--ink-2);font-size:16px}
+
+  .axes{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;
+    margin-block:34px 26px;overflow:hidden;
+  }
+  .axis{background:var(--surface);padding:14px 16px}
+  .axis dt{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--ink-3);margin-bottom:5px;
+  }
+  .axis dd{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+  .axis dd b{color:var(--ink);font-weight:600}
+
+  .toolbar{
+    position:sticky;top:env(safe-area-inset-top,0px);z-index:5;
+    background:var(--paper);padding-block:12px;
+    border-bottom:1px solid var(--line);margin-bottom:0;
+  }
+  .toolrow{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+  .search{
+    flex:1 1 230px;min-width:0;
+    font:inherit;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:3px;padding:7px 11px;
+  }
+  .search::placeholder{color:var(--ink-3)}
+  .search:focus-visible,.chip:focus-visible,th button:focus-visible,.reset:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+  .group{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+  .group > span.glabel{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--ink-3);margin-right:2px;
+  }
+  .chip{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    background:transparent;color:var(--ink-2);
+    border:1px solid var(--line-strong);border-radius:99px;padding:3px 10px;cursor:pointer;
+    transition:background .12s,color .12s,border-color .12s;
+  }
+  .chip:hover{border-color:var(--ink-3)}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+  .reset{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    background:none;border:none;color:var(--accent);cursor:pointer;padding:3px 2px;text-decoration:underline;
+  }
+  .count{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-3);
+    margin-left:auto;white-space:nowrap;
+  }
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-top:none;background:var(--surface);border-radius:0 0 3px 3px}
+  table{border-collapse:collapse;width:100%;min-width:820px}
+  thead th{
+    position:sticky;top:0;z-index:2;background:var(--surface-2);
+    text-align:left;padding:0;border-bottom:1px solid var(--line-strong);
+    font-weight:500;white-space:nowrap;
+  }
+  thead th button{
+    all:unset;cursor:pointer;display:block;width:100%;padding:9px 14px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-2);
+  }
+  thead th button:hover{color:var(--accent)}
+  thead th[aria-sort] button{color:var(--accent)}
+  .arrow{color:var(--accent);font-size:9px}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--accent-soft)}
+  td{padding:9px 14px;vertical-align:top;font-size:13.5px}
+  td.item{font-weight:600;color:var(--ink);min-width:200px}
+  td.domain{color:var(--ink-2);white-space:nowrap}
+  td.note{color:var(--ink-3);font-size:12.5px;line-height:1.4;min-width:220px}
+  td.look{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+  td.cap{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+
+  .tag{
+    display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-2);
+  }
+  .tag::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--dot,var(--ink-3))}
+  .t-Stream{--dot:var(--c-stream)}
+  .t-Event{--dot:var(--c-event)}
+  .t-Document{--dot:var(--c-document)}
+  .t-Reference{--dot:var(--c-reference)}
+  .t-Insight{--dot:var(--c-insight)}
+
+  .empty{padding:36px 16px;text-align:center;color:var(--ink-3);font-size:14px}
+
+  footer.note{
+    margin-top:26px;color:var(--ink-3);font-size:13px;max-width:72ch;
+  }
+  footer.note b{color:var(--ink-2);font-weight:600}
+
+  @media (max-width:640px){
+    .wrap{padding-block:30px 56px}
+    .count{margin-left:0;width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">LauWell · information architecture · drafted with Claude</div>
+    <h1>Health Hub Data Inventory</h1>
+    <p class="lede">Everything a personal health hub could plausibly hold, tagged along three axes that cut across medical topic. Sort or filter by an axis to see groupings that a topic-based menu would hide.</p>
+  </header>
+
+  <dl class="axes">
+    <div class="axis">
+      <dt>Shape</dt>
+      <dd>What the thing actually is. <b>Stream</b> = continuous series, <b>Event</b> = timestamped entry, <b>Document</b> = a file, <b>Reference</b> = a fact that rarely changes, <b>Insight</b> = computed from the rest.</dd>
+    </div>
+    <div class="axis">
+      <dt>Capture</dt>
+      <dd>How it gets in. <b>Sensor</b> costs the user nothing; <b>Manual</b> costs attention every single time and is where an app lives or dies; <b>Import</b> is bulk; <b>Computed</b> is free.</dd>
+    </div>
+    <div class="axis">
+      <dt>Looked at</dt>
+      <dd>How often it's consulted — not how often it's written. <b>Emergency</b> items must be reachable in seconds; <b>Archival</b> ones only need to be findable, never surfaced.</dd>
+    </div>
+  </dl>
+
+  <div class="toolbar">
+    <div class="toolrow">
+      <input class="search" id="q" type="search" placeholder="Search data items, domains, notes…" aria-label="Search the inventory">
+      <div class="group" id="f-shape"><span class="glabel">Shape</span></div>
+      <div class="group" id="f-capture"><span class="glabel">Capture</span></div>
+    </div>
+    <div class="toolrow" style="margin-top:9px">
+      <div class="group" id="f-look"><span class="glabel">Looked at</span></div>
+      <div class="group" id="f-domain"><span class="glabel">Domain</span></div>
+      <button class="reset" id="reset" type="button">Clear all</button>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-key="item" aria-sort="ascending"><button type="button">Data item <span class="arrow">▲</span></button></th>
+          <th data-key="domain"><button type="button">Domain <span class="arrow"></span></button></th>
+          <th data-key="shape"><button type="button">Shape <span class="arrow"></span></button></th>
+          <th data-key="capture"><button type="button">Capture <span class="arrow"></span></button></th>
+          <th data-key="look"><button type="button">Looked at <span class="arrow"></span></button></th>
+          <th data-key="note"><button type="button">Detail <span class="arrow"></span></button></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No rows match those filters.</div>
+  </div>
+
+  <footer class="note">
+    <b>Reading the table:</b> sort by <i>Looked at</i> and the daily surface shrinks to about a dozen rows — everything else is retrieval, not navigation. Sort by <i>Capture</i> and every Manual row is a moment you have to design an entry gesture for. Sort by <i>Shape</i> and the Document and Reference rows collapse into something closer to a filing cabinet than a tracker.
+  </footer>
+</div>
+
+<script>
+const D = [
+  ["Heart rate","Vitals","Stream","Sensor","Daily","Resting, live, max, zones — watch or chest strap"],
+  ["Heart rate variability","Vitals","Stream","Sensor","Daily","Overnight and daytime baseline"],
+  ["Blood pressure","Vitals","Event","Sensor","Daily","Systolic / diastolic / MAP; orthostatic pairs"],
+  ["Blood oxygen (SpO₂)","Vitals","Stream","Sensor","Daily","Spot checks and overnight series"],
+  ["Respiratory rate","Vitals","Stream","Sensor","Weekly","Usually derived from the watch overnight"],
+  ["Body temperature","Vitals","Event","Sensor","Episodic","Absolute reading vs skin-temp deviation from baseline"],
+  ["Blood glucose","Vitals","Stream","Sensor","Daily","CGM stream and fingerstick events — one metric, two shapes"],
+  ["Ketones","Vitals","Event","Manual","Episodic","Blood or urine strip"],
+  ["ECG trace","Vitals","Document","Sensor","Episodic","Waveform file plus rhythm classification"],
+  ["Weight","Vitals","Event","Sensor","Daily","Smart scale or manual"],
+  ["Body composition","Vitals","Event","Sensor","Weekly","Fat %, muscle, water, bone mass"],
+  ["Body measurements","Vitals","Event","Manual","Monthly","Waist, hip, limb circumference — oedema tracking"],
+  ["Height","Vitals","Reference","Manual","Archival","Needed for BMI and dosing, changes almost never"],
+  ["VO₂max / fitness age","Vitals","Insight","Computed","Monthly","Estimated by the wearable"],
+  ["Peak flow / spirometry","Vitals","Event","Sensor","Episodic","FEV1, PEF from a connected meter"],
+  ["Pain score","Vitals","Event","Manual","Episodic","0–10 scale, optionally with location"],
+
+  ["Steps, distance, floors","Activity","Stream","Sensor","Daily","The default ambient metric everyone has"],
+  ["Workouts","Activity","Event","Sensor","Episodic","Type, duration, splits, GPS track, power, cadence"],
+  ["Strength sets & loads","Activity","Event","Manual","Episodic","Exercise, reps, weight, RPE"],
+  ["Energy expenditure","Activity","Insight","Computed","Daily","Active vs total calories"],
+  ["Sedentary & standing time","Activity","Stream","Sensor","Daily","Hourly stand goals, sitting blocks"],
+  ["Training load & readiness","Activity","Insight","Computed","Daily","Body battery, recovery, acute vs chronic load"],
+  ["Gait & mobility metrics","Activity","Stream","Sensor","Monthly","Walking speed, stride length, asymmetry, double support"],
+  ["Fall events","Activity","Event","Sensor","Emergency","Detection plus emergency contact trigger"],
+  ["Rehab / physio adherence","Activity","Event","Manual","Daily","Prescribed exercise programme completion"],
+
+  ["Sleep duration & stages","Sleep","Stream","Sensor","Daily","Deep, light, REM, awake"],
+  ["Bed & wake times","Sleep","Event","Sensor","Daily","Schedule consistency is its own metric"],
+  ["Naps","Sleep","Event","Sensor","Episodic","Often needs separating from main sleep"],
+  ["Nocturnal vitals","Sleep","Stream","Sensor","Daily","Overnight HR, HRV, SpO₂, skin temp"],
+  ["Breathing disturbances","Sleep","Stream","Sensor","Weekly","Snoring audio, apnoea indicators"],
+  ["CPAP session data","Sleep","Stream","Import","Daily","Usage hours, AHI, pressure, mask leak"],
+  ["Subjective sleep quality","Sleep","Event","Manual","Daily","The rating that explains the numbers"],
+
+  ["Meals & portions","Nutrition","Event","Manual","Daily","Highest-friction manual entry in any health app"],
+  ["Calories & macros","Nutrition","Insight","Computed","Daily","Rolled up from meal entries"],
+  ["Micronutrients","Nutrition","Insight","Computed","Weekly","Sodium, potassium, fibre, iron — condition-specific relevance"],
+  ["Fluid intake","Nutrition","Event","Manual","Daily","Volume and type"],
+  ["Caffeine & alcohol","Nutrition","Event","Manual","Daily","Correlates with sleep and HRV"],
+  ["Fasting windows","Nutrition","Event","Manual","Daily","Start / end timestamps"],
+  ["Food trigger log","Nutrition","Event","Manual","Episodic","Links a food to a symptom hours later"],
+  ["Food photos & barcodes","Nutrition","Document","Manual","Daily","Photo-first entry lowers the friction above"],
+
+  ["Prescription list","Medication","Reference","Import","Weekly","Drug, dose, route, frequency, prescriber, indication"],
+  ["Dose schedule & adherence","Medication","Event","Manual","Daily","Taken / skipped / late, per scheduled dose"],
+  ["PRN doses","Medication","Event","Manual","Episodic","As-needed meds — count matters clinically"],
+  ["Injection site rotation","Medication","Event","Manual","Episodic","Body map with last-used dates"],
+  ["Infusion / biologic cycles","Medication","Event","Manual","Monthly","Cycle day, next infusion, pre-meds"],
+  ["Refills & pharmacy","Medication","Reference","Manual","Monthly","Quantity left, run-out date, pharmacy contact"],
+  ["Side effect log","Medication","Event","Manual","Episodic","Needs to link back to a specific drug and dose"],
+  ["Interaction warnings","Medication","Insight","Computed","Episodic","Checked against the active list"],
+  ["Immunisations","Medication","Reference","Import","Yearly","Date, product, lot, booster due"],
+  ["Allergies & intolerances","Medication","Reference","Manual","Emergency","Substance, reaction, severity — must be instantly visible"],
+
+  ["Ostomy appliance change","Appliances","Event","Manual","Daily","Wear time, product reference, planned vs leak-driven"],
+  ["Output volume & consistency","Appliances","Event","Manual","Daily","Volume, colour, emptying frequency"],
+  ["Stoma measurements","Appliances","Event","Manual","Weekly","Diameter, shape, protrusion — drives product sizing"],
+  ["Stoma & peristomal photos","Appliances","Document","Manual","Weekly","Visual change over time beats any score"],
+  ["Peristomal skin score","Appliances","Event","Manual","Weekly","Irritation, erosion, leakage location"],
+  ["Accessories used","Appliances","Event","Manual","Daily","Barrier rings, paste, powder, adhesive remover"],
+  ["CGM sensor sessions","Appliances","Event","Sensor","Weekly","Insertion site, start, expiry, warm-up"],
+  ["Infusion sets, catheters, dressings","Appliances","Event","Manual","Episodic","Same change-and-consume pattern as above"],
+  ["Consumable inventory","Appliances","Reference","Manual","Weekly","Stock on hand, reorder threshold, supplier"],
+  ["Supply cost & coverage","Appliances","Reference","Manual","Monthly","Cost per change, reimbursement, coverage limits"],
+
+  ["Symptom entries","Symptoms","Event","Manual","Daily","Type, severity, duration, suspected trigger"],
+  ["Body-map pain entries","Symptoms","Event","Manual","Episodic","Location, quality, radiation"],
+  ["Mood, stress, energy","Symptoms","Event","Manual","Daily","Cheap to log, expensive to interpret"],
+  ["Fatigue","Symptoms","Event","Manual","Daily","Often the most actionable subjective metric"],
+  ["Bowel & bladder log","Symptoms","Event","Manual","Daily","Bristol scale, frequency, urgency"],
+  ["Menstrual cycle","Symptoms","Event","Manual","Daily","Phase context changes how other metrics read"],
+  ["Skin, rash & wound photos","Symptoms","Document","Manual","Episodic","Serial photos of the same site"],
+  ["Flare / episode markers","Symptoms","Event","Manual","Episodic","Spans a period rather than a moment"],
+  ["Journal & voice notes","Symptoms","Document","Manual","Episodic","Unstructured catch-all — the escape hatch"],
+
+  ["Lab results (structured)","Records","Event","Import","Yearly","Analyte, value, unit, reference range — trended over years"],
+  ["Lab report PDFs","Records","Document","Import","Yearly","The source document behind the values"],
+  ["Imaging reports","Records","Document","Import","Yearly","Radiologist's written findings"],
+  ["Imaging files (DICOM)","Records","Document","Import","Archival","Large, rarely opened, must never be lost"],
+  ["Pathology reports","Records","Document","Import","Archival","Biopsy and histology results"],
+  ["Visit & consultation notes","Records","Document","Import","Episodic","From the provider, or typed up afterwards"],
+  ["Discharge & operative reports","Records","Document","Import","Archival","Detailed, dense, needed at the next admission"],
+  ["Referrals & scanned prescriptions","Records","Document","Import","Episodic","Often the thing you need at the counter"],
+  ["Diagnosis / problem list","Records","Reference","Manual","Emergency","Condition, onset date, status, code"],
+  ["Procedure & surgery history","Records","Reference","Manual","Archival","Date, facility, surgeon, implants"],
+  ["Hospitalisations","Records","Event","Manual","Archival","Admission and discharge dates, reason"],
+  ["Care plans & protocols","Records","Document","Import","Episodic","What to do when X happens"],
+  ["Genetic / genomic report","Records","Document","Import","Archival","Variants, carrier status, pharmacogenomics"],
+
+  ["Providers & clinics","Care & admin","Reference","Manual","Episodic","Specialty, contact, address, your notes on each"],
+  ["Pharmacies","Care & admin","Reference","Manual","Monthly","Contact, hours, which prescriptions sit where"],
+  ["Appointments","Care & admin","Event","Import","Weekly","Calendar sync, prep instructions, travel time"],
+  ["Questions for the visit","Care & admin","Event","Manual","Episodic","Built up between visits, emptied at the visit"],
+  ["Post-visit notes","Care & admin","Document","Manual","Episodic","What was said, what changed, next step"],
+  ["Insurance policies & claims","Care & admin","Reference","Manual","Monthly","Coverage, limits, claim status"],
+  ["Receipts & out-of-pocket costs","Care & admin","Document","Manual","Monthly","Tax and reimbursement trail"],
+  ["Prior authorisations","Care & admin","Document","Import","Episodic","Approval letters with expiry dates"],
+  ["Medical certificates & leave papers","Care & admin","Document","Import","Archival","Work and disability documentation"],
+  ["Travel letters for supplies","Care & admin","Document","Manual","Archival","Carrying medication and devices through security"],
+  ["Advance directives & consent","Care & admin","Document","Manual","Emergency","Directives, power of attorney, organ donor status"],
+  ["Emergency card","Care & admin","Insight","Computed","Emergency","Blood type, conditions, meds, allergies, contacts — must open without unlocking the app"],
+
+  ["Location, travel & timezone","Context","Stream","Sensor","Daily","Explains sudden shifts in every other metric"],
+  ["Weather, pollen, air quality, UV","Context","Stream","Import","Daily","Correlation fuel for respiratory and skin symptoms"],
+  ["Noise & headphone exposure","Context","Stream","Sensor","Weekly","Hearing health over years"],
+  ["Screen time","Context","Stream","Import","Weekly","Mostly interesting against sleep"],
+
+  ["Connected device registry","Devices","Reference","Manual","Monthly","Watch, ring, scale, cuff, CGM, CPAP, pump, inhaler, hearing aids"],
+  ["Device status","Devices","Stream","Sensor","Daily","Battery, firmware, last sync, calibration due"],
+  ["Source priority rules","Devices","Reference","Manual","Archival","Which device wins when two report the same metric"],
+  ["File imports","Devices","Document","Import","Episodic","Apple Health / Google Fit exports, CSV, FHIR, HL7"],
+  ["Provider portal connections","Devices","Reference","Import","Archival","Credentials and sync state for each portal"],
+  ["Per-datapoint provenance","Devices","Reference","Computed","Archival","Where each value came from and whether it was edited"],
+
+  ["Baselines & trends","Insights","Insight","Computed","Weekly","Personal normal, not population normal"],
+  ["Anomaly detection","Insights","Insight","Computed","Daily","Deviation from your own baseline"],
+  ["Cross-metric correlations","Insights","Insight","Computed","Monthly","Sleep vs glucose, food vs symptoms, meds vs side effects"],
+  ["Goals & targets","Insights","Reference","Manual","Daily","Target BP, time-in-range, weight, steps"],
+  ["Adherence rates","Insights","Insight","Computed","Weekly","Medication, therapy, appliance change schedule"],
+  ["Timeline annotations","Insights","Event","Manual","Episodic","Treatment change, illness, life event — markers on every chart"],
+  ["Threshold alerts & reminders","Insights","Reference","Manual","Daily","The rules engine behind every notification"],
+  ["Appointment summary export","Insights","Document","Computed","Episodic","One PDF built for one specific consultation"],
+
+  ["Screening due dates","Prevention","Reference","Manual","Yearly","Bloodwork, colonoscopy, mammogram, dental, eye exam"],
+  ["Dental records","Prevention","Document","Import","Yearly","X-rays, treatment history"],
+  ["Optical prescription","Prevention","Reference","Manual","Yearly","Glasses and contact lens parameters"],
+  ["Hearing tests","Prevention","Document","Import","Archival","Audiograms over time"],
+  ["Mole mapping photos","Prevention","Document","Manual","Yearly","Serial photos of the same sites"],
+
+  ["Standardised questionnaires","Mental health","Event","Manual","Monthly","PHQ-9, GAD-7 and similar, scored and trended"],
+  ["Mindfulness & breathing sessions","Mental health","Event","Sensor","Daily","Duration and HRV response"],
+  ["Therapy sessions","Mental health","Event","Manual","Weekly","Dates, themes, homework"],
+  ["Cognitive test results","Mental health","Event","Manual","Yearly","Memory, attention, processing speed"],
+
+  ["Dependent & family profiles","People","Reference","Manual","Episodic","Children, parents, pets — whole second data set each"],
+  ["Caregiver access & permissions","People","Reference","Manual","Archival","Who can see or edit what"],
+  ["Family medical history","People","Reference","Manual","Archival","Hereditary risk, relative, age at onset"]
+].map(r => ({item:r[0],domain:r[1],shape:r[2],capture:r[3],look:r[4],note:r[5]}));
+
+const LOOK_ORDER = ["Daily","Weekly","Monthly","Yearly","Episodic","Archival","Emergency"];
+const SHAPE_ORDER = ["Stream","Event","Document","Reference","Insight"];
+const CAPTURE_ORDER = ["Sensor","Manual","Import","Computed"];
+const DOMAINS = [...new Set(D.map(d => d.domain))];
+
+const state = {q:"", shape:new Set(), capture:new Set(), look:new Set(), domain:new Set(), key:"item", dir:1};
+
+function buildChips(id, values, field){
+  const host = document.getElementById(id);
+  values.forEach(v => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = v;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", () => {
+      const s = state[field];
+      if (s.has(v)) { s.delete(v); b.setAttribute("aria-pressed","false"); }
+      else { s.add(v); b.setAttribute("aria-pressed","true"); }
+      render();
+    });
+    host.appendChild(b);
+  });
+}
+buildChips("f-shape", SHAPE_ORDER, "shape");
+buildChips("f-capture", CAPTURE_ORDER, "capture");
+buildChips("f-look", LOOK_ORDER, "look");
+buildChips("f-domain", DOMAINS, "domain");
+
+const rank = (arr, v) => { const i = arr.indexOf(v); return i < 0 ? 999 : i; };
+
+function sortVal(row, key){
+  if (key === "look") return String(rank(LOOK_ORDER, row.look)).padStart(2,"0");
+  if (key === "shape") return String(rank(SHAPE_ORDER, row.shape)).padStart(2,"0");
+  if (key === "capture") return String(rank(CAPTURE_ORDER, row.capture)).padStart(2,"0");
+  return row[key].toLowerCase();
+}
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  let rows = D.filter(r =>
+    (!state.shape.size || state.shape.has(r.shape)) &&
+    (!state.capture.size || state.capture.has(r.capture)) &&
+    (!state.look.size || state.look.has(r.look)) &&
+    (!state.domain.size || state.domain.has(r.domain)) &&
+    (!q || (r.item + " " + r.domain + " " + r.note).toLowerCase().includes(q))
+  );
+  rows.sort((a,b) => {
+    const x = sortVal(a, state.key), y = sortVal(b, state.key);
+    if (x < y) return -1 * state.dir;
+    if (x > y) return 1 * state.dir;
+    return a.item.localeCompare(b.item);
+  });
+
+  const tb = document.getElementById("rows");
+  tb.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="item"></td>' +
+      '<td class="domain"></td>' +
+      '<td><span class="tag t-' + r.shape + '"></span></td>' +
+      '<td class="cap"></td>' +
+      '<td class="look"></td>' +
+      '<td class="note"></td>';
+    tr.children[0].textContent = r.item;
+    tr.children[1].textContent = r.domain;
+    tr.children[2].firstChild.textContent = r.shape;
+    tr.children[3].textContent = r.capture;
+    tr.children[4].textContent = r.look;
+    tr.children[5].textContent = r.note;
+    frag.appendChild(tr);
+  });
+  tb.appendChild(frag);
+  document.getElementById("empty").hidden = rows.length > 0;
+  document.getElementById("count").textContent = rows.length + " of " + D.length + " items";
+}
+
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+
+document.querySelectorAll("thead th").forEach(th => {
+  th.querySelector("button").addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (state.key === key) state.dir *= -1; else { state.key = key; state.dir = 1; }
+    document.querySelectorAll("thead th").forEach(o => {
+      o.removeAttribute("aria-sort");
+      o.querySelector(".arrow").textContent = "";
+    });
+    th.setAttribute("aria-sort", state.dir === 1 ? "ascending" : "descending");
+    th.querySelector(".arrow").textContent = state.dir === 1 ? "▲" : "▼";
+    render();
+  });
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  state.q = ""; document.getElementById("q").value = "";
+  ["shape","capture","look","domain"].forEach(f => state[f].clear());
+  document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed","false"));
+  render();
+});
+
+render();
+</script>
+
+</body></html>

@@ -26,8 +26,6 @@ tmp/
 
 # Understand-Anything knowledge graph (generated)
 .ua/
-docs/data-structure/Health Data • Inventory-v01.csv
-docs/data-structure/Health Data • Inventory-v01.html
-docs/data-structure/Health Data • Inventory-v02.csv
-docs/data-structure/Health Data • Inventory-v02.html
-docs/data-structure/Review • Existing Health Apps.html
+
+# docs/ is tracked on purpose — see CLAUDE.md → Layout.
+# Generated pages live beside their source in docs/data-structure/_src/.

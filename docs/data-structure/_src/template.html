@@ -1,0 +1,512 @@
+<title>Patient Data Categories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F4F5F2; --surface:#FCFCFB; --surface-2:#EDEFEA;
+    --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
+    --line:#DCE0D9; --line-strong:#C3C9C0;
+    --accent:#2C6A57; --accent-soft:#E2EDE7;
+    --c1:#2D6CA8; --c2:#45636F; --c3:#47873F; --c4:#A7561A; --c5:#7A4BA8;
+    --warn:#A7561A; --ok:#2C6A57;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+      --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+      --line:#2A322E; --line-strong:#3A443F;
+      --accent:#74C2A4; --accent-soft:#1D2D27;
+      --c1:#84B6E2; --c2:#9BB4C0; --c3:#93CC87; --c4:#E0A469; --c5:#BDA0E0;
+      --warn:#E0A661; --ok:#74C2A4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+    --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+    --line:#2A322E; --line-strong:#3A443F;
+    --accent:#74C2A4; --accent-soft:#1D2D27;
+    --c1:#84B6E2; --c2:#9BB4C0; --c3:#93CC87; --c4:#E0A469; --c5:#BDA0E0;
+    --warn:#E0A661; --ok:#74C2A4;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding-inline:20px;padding-block:48px 80px}
+  .wide{max-width:1120px;margin-inline:auto}
+
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+    font-size:clamp(30px,5.5vw,42px);line-height:1.1;margin:.5rem 0 0;
+    letter-spacing:-.018em;text-wrap:balance}
+  .lede{margin:16px 0 0;color:var(--ink-2);font-size:17px;max-width:62ch}
+
+  h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:23px;
+    margin:60px 0 6px;letter-spacing:-.012em;text-wrap:balance}
+  h2 + .sub{margin:0 0 22px;color:var(--ink-3);font-size:14px;max-width:74ch}
+  .sub b{color:var(--ink-2)}
+  p{max-width:68ch}
+
+  .axis{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;
+    background:var(--surface);padding:18px 20px;margin-top:30px}
+  .axis h3{margin:0 0 8px;font-size:15px;font-weight:600;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .axis p{margin:0;font-size:14.5px;color:var(--ink-2)}
+  .axis p + p{margin-top:9px}
+  .axis b{color:var(--ink)}
+
+  .glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:24px}
+  .gcard{background:var(--surface);padding:16px 18px 18px;display:flex;flex-direction:column;gap:7px}
+  .gnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.12em;
+    color:var(--cc);display:flex;align-items:center;gap:7px}
+  .gnum::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--cc)}
+  .gcard h3{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .gtest{margin:0;font-size:14px;color:var(--ink-2);font-style:italic;line-height:1.45}
+
+  .cat{border:1px solid var(--line);border-left:3px solid var(--cc);border-radius:3px;
+    background:var(--surface);padding:24px 24px 26px;margin-top:20px}
+  .cat h3{margin:0 0 3px;font-family:"IBM Plex Serif",Georgia,serif;font-size:21px;font-weight:600;
+    letter-spacing:-.012em;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .cat h3 em{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cc)}
+  .test{margin:0 0 16px;font-size:15px;color:var(--cc);font-weight:500}
+  .cat p{margin:0 0 14px;color:var(--ink-2);font-size:14.5px}
+  .cat p:last-child{margin-bottom:0}
+
+  .lbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-3);margin:18px 0 7px;display:block}
+  .items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+  .item{font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:3px;padding:3px 9px;color:var(--ink-2)}
+  .excl{border-style:dashed;opacity:.8;text-decoration:line-through;text-decoration-color:var(--ink-3)}
+
+  .edge{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+  .edge dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:3px}
+  .edge dd{margin:0 0 12px;font-size:14px;color:var(--ink-2);line-height:1.5}
+  .edge dd:last-child{margin-bottom:0}
+  .edge dd b{color:var(--ink);font-weight:600}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:640px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+  thead th{background:var(--surface-2);border-bottom:1px solid var(--line-strong);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-2);font-weight:500;vertical-align:bottom;line-height:1.3}
+  tbody th{font-weight:600;color:var(--ink);font-size:13.5px;white-space:nowrap}
+  tbody th small{display:block;font-weight:400;color:var(--ink-3);font-size:11.5px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.02em;margin-top:2px}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  td.m{text-align:center;font-size:14px;font-weight:600;color:var(--ok);
+    font-family:"IBM Plex Mono",ui-monospace,monospace}
+  td.m.no{color:var(--line-strong);font-weight:400}
+
+  #maptable table{min-width:960px}
+  #maptable tbody tr:hover{background:var(--accent-soft)}
+  td.dname{font-weight:600;color:var(--ink);white-space:nowrap}
+  td.dsub{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  td.dshape{white-space:nowrap}
+  td.ddesc{color:var(--ink-2);font-size:13px;line-height:1.5;min-width:300px}
+  .pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
+    border:1px solid var(--line-strong);border-radius:99px;padding:2px 9px;color:var(--ink-2)}
+  .pill::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--cc)}
+  .shp{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);
+    border:1px solid var(--line);border-radius:3px;padding:2px 7px;background:var(--surface-2)}
+
+  .structure{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:20px}
+  .sgroup{background:var(--surface);padding:13px 15px 15px}
+  .sgroup h4{margin:0 0 9px;font-size:11.5px;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;color:var(--ink-2)}
+  .sgroup h4::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--cc)}
+  .sgroup ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+  .sgroup li{font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+  .sgroup li span{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3)}
+
+  .toolrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:12px}
+  .search{flex:1 1 200px;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:3px;padding:6px 10px}
+  .search::placeholder{color:var(--ink-3)}
+  .search:focus-visible,.fchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .fchip{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;background:transparent;
+    color:var(--ink-2);border:1px solid var(--line-strong);border-radius:99px;padding:3px 10px;cursor:pointer}
+  .fchip:hover{border-color:var(--ink-3)}
+  .fchip[aria-pressed="true"]{background:var(--cc,var(--accent));border-color:var(--cc,var(--accent));color:var(--paper)}
+  .glbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--ink-3)}
+  .count{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);margin-left:auto}
+
+  .finding{display:grid;grid-template-columns:auto 1fr;gap:0 16px;margin-top:22px;
+    padding-top:20px;border-top:1px solid var(--line)}
+  .finding:first-of-type{border-top:none;padding-top:4px}
+  .fnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;color:var(--cc,var(--accent));
+    padding-top:3px;font-weight:500}
+  .fbody h4{margin:0 0 7px;font-size:16px;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
+  .fbody p{margin:0 0 10px;color:var(--ink-2);font-size:14.5px}
+  .fbody p:last-child{margin-bottom:0}
+  .verdict{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;
+    letter-spacing:.05em;border:1px solid var(--line-strong);border-radius:99px;padding:2px 10px;
+    color:var(--accent);margin-top:2px}
+  .verdict.done{color:var(--ok);border-color:var(--ok)}
+
+  .close{margin-top:52px;padding:22px 24px;border:1px solid var(--line);border-radius:3px;
+    background:var(--accent-soft)}
+  .close h3{margin:0 0 10px;font-family:"IBM Plex Serif",Georgia,serif;font-size:19px;font-weight:600}
+  .close p{margin:0 0 12px;font-size:14.5px;color:var(--ink-2)}
+  .close p:last-child{margin-bottom:0}
+  .close b{color:var(--ink)}
+
+  @media (max-width:560px){
+    .wrap{padding-block:32px 60px}
+    .cat{padding:18px 16px 20px}
+    .finding{grid-template-columns:1fr;gap:4px}
+    .count{margin-left:0;width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">LauWell · data structure · October 2026 · v3 · drafted with Claude</div>
+    <h1>Patient Data Categories</h1>
+    <p class="lede">Five categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes. Written to be the navigation layer of the app and the starting point for the entity model underneath it.</p>
+  </header>
+
+  <div class="axis">
+    <h3>The dividing axis</h3>
+    <p><b>Is this value read against a clinical normal range, or against a goal you set yourself?</b> A blood pressure of 160/100 is abnormal to any clinician; nobody reads 4,000 steps as pathological. Clinical band → <b>Vitals</b>. Personal goal → <b>Lifestyle</b>.</p>
+    <p>This replaces the earlier mix of a shape-based rule for Vitals and a topic-based rule for Lifestyle. One question now decides both, and it rules correctly on the cases that broke the alternatives — mood and the menstrual cycle are daily logs without a clinical band, so they sit in Lifestyle without needing an exception.</p>
+  </div>
+
+  <div class="glance">
+    <div class="gcard" style="--cc:var(--c1)">
+      <div class="gnum">01 · Vitals</div><h3>Vitals</h3>
+      <p class="gtest">A measured value a clinician would read against a normal range.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c2)">
+      <div class="gnum">02 · Records</div><h3>Medical Records</h3>
+      <p class="gtest">Standing facts about me, and the record of my care.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c3)">
+      <div class="gnum">03 · Lifestyle</div><h3>Lifestyle</h3>
+      <p class="gtest">My daily log, measured against my own goals.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c4)">
+      <div class="gnum">04 · Symptoms</div><h3>Symptoms</h3>
+      <p class="gtest">Something I feel, that I report myself.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c5)">
+      <div class="gnum">05 · Treatments</div><h3>Treatments &amp; appliances</h3>
+      <p class="gtest">What I'm taking or using, and the products behind it.</p>
+    </div>
+  </div>
+
+  <h2>The five, in detail</h2>
+  <p class="sub">Example lists are illustrative. The authoritative row set is the data map further down.</p>
+
+  <section class="cat" style="--cc:var(--c1)">
+    <h3>Vitals <em>clinical measurement</em></h3>
+    <p class="test">A measured value with a unit and a timestamp, read against a clinical normal range.</p>
+    <p>The strongest category in the set, because it describes a <i>shape</i> plus one interpretive test rather than a topic. Anything shaped like value + unit + timestamp, whose number a clinician would call normal or abnormal, is a Vital — so a sensor you connect in 2028 lands here with no new category and no new screen.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items">
+      <span class="item">Cardiovascular</span><span class="item">Respiratory</span>
+      <span class="item">Metabolic</span><span class="item">Body measures</span>
+      <span class="item">Laboratory</span><span class="item">Digestive output</span>
+    </div>
+    <dl class="edge">
+      <dt>Lab results</dt>
+      <dd>By the rule these are Vitals — value, unit, timestamp, reference range — and the only difference from a home reading is who took the sample. <b>One measurement entity with a <code>source</code> attribute</b>, not a separate category. "Labs" can still be a visible section; it's a view over Vitals filtered by source.</dd>
+      <dt>Stoma output volume sits here, not in Lifestyle</dt>
+      <dd>Volume has a genuine clinical threshold — sustained high output risks dehydration — so the axis puts it in Vitals even though the rest of the ostomy routine is in Lifestyle. <b>The volume is a measurement, the change routine is a log.</b></dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c2)">
+    <h3>Medical Records <em>standing fact + care record</em></h3>
+    <p class="test">A fact with a start date rather than a timestamp, or the record of an encounter with the health system.</p>
+    <p>Renamed from "Medical history", which was working against you — it signalled <i>the past</i>, so a patient wouldn't look there for their current diagnosis, and the active diagnosis list is one of the two things anyone needs in a consultation. Appointments, visits and providers now live here rather than in a sixth category: a visit is a record of something that happened, with a date, a person and usually a document, which is the same shape as everything else here.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items">
+      <span class="item">Conditions</span><span class="item">Sensitivities</span>
+      <span class="item">Procedures</span><span class="item">Preventive care</span>
+      <span class="item">Care &amp; visits</span><span class="item">Documents</span>
+      <span class="item">Identity</span><span class="item">Administration</span>
+    </div>
+    <dl class="edge">
+      <dt>A future appointment is not a record</dt>
+      <dd>Everything else here describes something settled; a scheduled visit describes something pending. Filing it here is fine, but <b>upcoming appointments must also surface on Home</b> — nobody opens an archive to find out what they're doing on Thursday.</dd>
+      <dt>Status, not deletion</dt>
+      <dd>A resolved condition stays visible as resolved rather than disappearing. The fact that something ended is itself clinical information.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c3)">
+    <h3>Lifestyle <em>daily log</em></h3>
+    <p class="test">Something I logged about my day, measured against a goal I set rather than a clinical range.</p>
+    <p>This is where the modifiable variables live — the levers you can actually pull — which makes it the input side of nearly every correlation the app will run. It also holds the ostomy routine: changes, wear time, emptying, accessories and leaks are daily facts about how the day went, which is what this category is for.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items">
+      <span class="item">Sleep</span><span class="item">Activity</span>
+      <span class="item">Nutrition &amp; intake</span><span class="item">Mind &amp; mood</span>
+      <span class="item">Cycle</span><span class="item">Ostomy routine</span>
+      <span class="item">Context</span>
+    </div>
+    <dl class="edge">
+      <dt>Mood and cycle fit without an exception</dt>
+      <dd>Under an agency-based rule both would have been forced into Vitals, because you choose neither. Under the reference-range rule they're plainly Lifestyle: daily logs, no clinical band. That's the main reason this axis won.</dd>
+      <dt>Ostomy routine here, ostomy product in Treatments</dt>
+      <dd>The change event is a log entry; the appliance is a catalogue item with attributes. <b>The product must stay a separate entity</b> — that separation, not the filing, is what decides whether you can ever compare configurations.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c4)">
+    <h3>Symptoms <em>self-report</em></h3>
+    <p class="test">Something I feel and rate myself — no instrument involved.</p>
+    <p>The separation from Vitals is <b>who produced the value</b>: a device or a lab, versus you. That settles the awkward cases — a pain score is a number with a timestamp exactly like a blood pressure, but you generated it, so it's a Symptom. Sub-categories here follow body systems, which is what patients and clinicians both expect, with one general bucket for the records that aren't tied to a system.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items">
+      <span class="item">General</span><span class="item">Systemic</span>
+      <span class="item">Cardiac</span><span class="item">Respiratory</span>
+      <span class="item">Neurological</span><span class="item">Digestive</span>
+      <span class="item">Pain</span><span class="item">Skin &amp; stoma</span>
+    </div>
+    <dl class="edge">
+      <dt>The taxonomy problem</dt>
+      <dd>Clinical symptom vocabularies (SNOMED CT, ICD-11) are complete, rigorously classified, and hostile to browse. <b>The answer is two vocabularies:</b> a coded reference terminology underneath for correctness and any export to a clinician, and a patient-facing layer on top — everyday names, synonyms so "tummy ache" finds the right code, a body map, and a personal shortlist of the eight or ten symptoms you actually track. The sub-categories here are that patient-facing layer; they are not the terminology.</dd>
+      <dt>Two shapes live here</dt>
+      <dd>A symptom logged now is a measurement; a flare is an interval with a start, an end and a severity curve. Both read as Symptoms to the patient but they're different records.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c5)">
+    <h3>Treatments &amp; appliances <em>intervention + catalogue</em></h3>
+    <p class="test">What I'm taking or using, and the product that delivers it.</p>
+    <p>With the ostomy routine in Lifestyle, this category settles into a cleaner job: it holds the <b>things</b> — drugs, appliances, accessories, devices — and the intervention records that govern them, while the day-to-day acts of using them are logged as Lifestyle.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items">
+      <span class="item">Medication</span><span class="item">Therapies</span>
+      <span class="item">Ostomy</span><span class="item">Devices</span>
+      <span class="item">Supplies</span><span class="item">Experiments</span>
+    </div>
+    <dl class="edge">
+      <dt>Product and act must stay separate entities</dt>
+      <dd>The single most consequential decision in the set. Product attributes — convexity, flange size, barrier chemistry, brand, reference — belong to a catalogue entity; the Lifestyle change event references it. Only then can you ask <b>"did the 25mm convex barrier give me longer wear time and better skin than the flat one"</b>. If product is a free-text field on the event, that question is permanently out of reach.</dd>
+      <dt>Experiments is a sub-category, not an afterthought</dt>
+      <dd>Trial periods are what make comparison possible. Mark <b>labelled intervals</b> — "on Coloplast X, convex, 30mm from 12 March" — rather than comparing all-time averages, which get confounded by season, diet and stoma maturation.</dd>
+    </dl>
+  </section>
+
+  <h2>Data map</h2>
+  <p class="sub">Every data point the app is expected to hold, at the level a patient would recognise it. <b>Category</b> is the navigation home, <b>sub-category</b> the second level inside it, and <b>shape</b> the storage form — which is what makes this row set directly translatable into tables. Filter by either to see one slice.</p>
+
+  <div class="wide">
+    <div class="structure" id="structure"></div>
+    <div class="toolrow">
+      <input class="search" id="q" type="search" placeholder="Search data points…" aria-label="Search">
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="filters"></div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="toolrow" style="margin-top:-4px">
+      <span class="glbl">Shape</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="shapefilters"></div>
+    </div>
+    <div class="tablewrap" id="maptable">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Category</th><th>Sub-category</th><th>Shape</th><th>What it is</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Categories are not entities</h2>
+  <p class="sub">Five navigation categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart. This is the bridge between this document and the ER diagram.</p>
+
+  <div class="tablewrap" id="shapematrix"></div>
+
+  <h2>Where the model stands</h2>
+  <p class="sub">Two tensions resolved in this revision, two still open.</p>
+
+  <div class="finding" style="--cc:var(--ok)">
+    <div class="fnum">01</div>
+    <div class="fbody">
+      <h4>Vitals and Lifestyle now share one axis</h4>
+      <p>Previously Vitals was defined by shape and Lifestyle by topic, so sleep, steps and hydration qualified as both. The reference-range test settles it with one question and handles mood and the cycle without exceptions.</p>
+      <span class="verdict done">Resolved</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--ok)">
+    <div class="fnum">02</div>
+    <div class="fbody">
+      <h4>"Records" stops hiding the active data, and absorbs encounters</h4>
+      <p>The rename removes the signal that this is where old things live, and folding appointments, visits and providers in avoids a sixth category for what is structurally the same shape. Five holds.</p>
+      <span class="verdict done">Resolved</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c5)">
+    <div class="fnum">03</div>
+    <div class="fbody">
+      <h4>One category, two entities — and the model must say so</h4>
+      <p>Treatments holds a catalogue and a log; Symptoms holds a symptom type and its occurrences; Medication holds the drug and the dose. In every case a reference table says <i>what kinds of things exist</i> and a log records <i>what happened</i>.</p>
+      <p>The shape column makes this visible: wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table. It's the same pattern four times over, which is the extensibility the navigation was aiming for.</p>
+      <span class="verdict">Core modelling decision</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c4)">
+    <div class="fnum">04</div>
+    <div class="fbody">
+      <h4>Nothing in the five is an output</h4>
+      <p>All five describe data going in. Trends, correlations, adherence rates and the appointment export are a layer over the five rather than a sixth sibling — correct, but it means the categories alone don't say what the app is <i>for</i>.</p>
+      <p>Only two rows in the whole map carry the <b>Derived</b> shape today. That's a fair reflection of a schema, and a reminder that the value sits in joins — Treatments against Symptoms, Lifestyle against Vitals — which need to be first-class rather than inferred at query time.</p>
+      <span class="verdict">Design the joins deliberately</span>
+    </div>
+  </div>
+
+  <h2>Still outside the five</h2>
+  <p class="sub">Four things that deliberately aren't categories, and what they are instead.</p>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">01</div>
+    <div class="fbody">
+      <h4>Documents — an attachment, not a category</h4>
+      <p>Lab PDFs, imaging, letters, product specs, stoma photos. They attach to records in all five categories, which is why <b>Document</b> appears as a shape rather than a home. Make it an attachment entity that hangs off any record, plus one "all files" view, and allow unattached files too.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">02</div>
+    <div class="fbody">
+      <h4>Emergency view — derived, not stored</h4>
+      <p>Blood type, active conditions, current medications, allergies, contacts. Every element already lives in Records and Treatments; what's missing is the assembly. It must be reachable without unlocking the app — any design where finding a blood type takes two taps has failed at the only moment it mattered.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">03</div>
+    <div class="fbody">
+      <h4>Provenance — fields on every record</h4>
+      <p>Which device, which lab, entered by hand or synced, edited since. When two sources disagree about the same measurement you need a rule, and when you show a clinician a number they will ask where it came from.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">04</div>
+    <div class="fbody">
+      <h4>Free text — attaches anywhere</h4>
+      <p>The note that doesn't fit a field: what the nurse said, why today was different, a question to remember. A note should attach to any record and also stand alone with a date. Every structured system needs its escape hatch, or people stop using the structured parts.</p>
+    </div>
+  </div>
+
+  <div class="close">
+    <h3>Where this leaves things</h3>
+    <p>Five categories, thirty-one sub-categories, seven storage shapes, and a named home for every data point the app is expected to hold. Nothing in the set requires a patient to learn a vocabulary, and nothing in the shape column requires a developer to guess at a table.</p>
+    <p>The thing to protect from here is the <b>Catalogue plus Event</b> pattern. It looks like an implementation detail and it is actually the feature — the difference between an app that records that you changed a pouch and one that can tell you which pouch works better for you.</p>
+    <p>Underneath, Vitals, Lifestyle and the measured part of Symptoms are all the same storage shape. Category and sub-category are <b>facets on the data type</b>, not separate tables, so if an assignment turns out wrong in six months it's a config row rather than a migration.</p>
+  </div>
+</div>
+
+<script>
+const CATS = {
+  "Vitals":"--c1", "Medical Records":"--c2", "Lifestyle":"--c3",
+  "Symptoms":"--c4", "Treatments & appliances":"--c5"
+};
+const SHAPES = ["Measurement","Event","Interval","Standing fact","Catalogue","Document","Derived"];
+const SHAPE_DESC = {
+  "Measurement":"value · unit · timestamp",
+  "Event":"timestamp · optional duration",
+  "Interval":"start · end · status",
+  "Standing fact":"no timestamp · true until changed",
+  "Catalogue":"a thing with attributes",
+  "Document":"a file with a date",
+  "Derived":"computed from the rest"
+};
+
+const DATA = /*__DATA__*/;
+const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], desc:r[4] }));
+
+/* sub-category structure */
+(function(){
+  document.getElementById("structure").innerHTML = Object.keys(CATS).map(c => {
+    const subs = {};
+    rows.filter(r => r.cat === c).forEach(r => subs[r.sub] = (subs[r.sub] || 0) + 1);
+    return '<div class="sgroup" style="--cc:var(' + CATS[c] + ')"><h4>' + c + '</h4><ul>' +
+      Object.entries(subs).sort((a,b) => b[1] - a[1])
+        .map(s => '<li>' + s[0] + '<span>' + s[1] + '</span></li>').join("") +
+      '</ul></div>';
+  }).join("");
+})();
+
+/* shape x category matrix, generated from the rows */
+(function(){
+  const cats = Object.keys(CATS);
+  const short = c => c === "Treatments & appliances" ? "Treatments" : c.replace("Medical ", "");
+  const head = '<thead><tr><th>Shape</th>' +
+    cats.map(c => '<th>' + short(c) + '</th>').join("") + '<th>Total</th></tr></thead>';
+  const body = '<tbody>' + SHAPES.map(s => {
+    const cells = cats.map(c => {
+      const n = rows.filter(r => r.shape === s && r.cat === c).length;
+      return n ? '<td class="m">' + n + '</td>' : '<td class="m no">·</td>';
+    }).join("");
+    const total = rows.filter(r => r.shape === s).length;
+    return '<tr><th>' + s + '<small>' + SHAPE_DESC[s] + '</small></th>' + cells +
+      '<td class="m">' + total + '</td></tr>';
+  }).join("") + '</tbody>';
+  document.getElementById("shapematrix").innerHTML = '<table>' + head + body + '</table>';
+})();
+
+/* map table */
+const state = { q:"", cat:new Set(), shape:new Set() };
+function chip(host, label, field, colorVar){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "fchip"; b.textContent = label;
+  if (colorVar) b.style.setProperty("--cc", "var(" + colorVar + ")");
+  b.setAttribute("aria-pressed","false");
+  b.addEventListener("click", () => {
+    const s = state[field];
+    if (s.has(label)) { s.delete(label); b.setAttribute("aria-pressed","false"); }
+    else { s.add(label); b.setAttribute("aria-pressed","true"); }
+    render();
+  });
+  host.appendChild(b);
+}
+Object.keys(CATS).forEach(c => chip(document.getElementById("filters"), c, "cat", CATS[c]));
+SHAPES.forEach(s => chip(document.getElementById("shapefilters"), s, "shape", null));
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  const out = rows.filter(r =>
+    (!state.cat.size || state.cat.has(r.cat)) &&
+    (!state.shape.size || state.shape.has(r.shape)) &&
+    (!q || (r.name + " " + r.cat + " " + r.sub + " " + r.shape + " " + r.desc).toLowerCase().includes(q))
+  );
+  const tb = document.getElementById("rows");
+  tb.innerHTML = out.map(() =>
+    '<tr><td class="dname"></td><td><span class="pill"></span></td>' +
+    '<td class="dsub"></td><td class="dshape"><span class="shp"></span></td>' +
+    '<td class="ddesc"></td></tr>'
+  ).join("");
+  [...tb.children].forEach((tr, i) => {
+    const r = out[i];
+    tr.children[0].textContent = r.name;
+    const pill = tr.children[1].firstChild;
+    pill.textContent = r.cat;
+    pill.style.setProperty("--cc", "var(" + CATS[r.cat] + ")");
+    tr.children[2].textContent = r.sub;
+    tr.children[3].firstChild.textContent = r.shape;
+    tr.children[4].textContent = r.desc;
+  });
+  document.getElementById("count").textContent = out.length + " of " + rows.length;
+}
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+render();
+</script>

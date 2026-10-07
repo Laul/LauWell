@@ -1,5 +1,7 @@
 # Feature modules and on/off toggles
 
+*Drafted with Claude, 2026-09-30. Status: proposal — adoption is still open, see PLAN.md → M0.*
+
 _Status: proposal, to be adopted in M0 (PLAN.md task "Adopt the feature descriptor + registry
 proposal")._
 

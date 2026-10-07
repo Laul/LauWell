@@ -1,5 +1,7 @@
 # TrackAid Review for LauWell
 
+*Drafted with Claude, 2026-09-30. Status: incorporated — the lessons are summarised in PLAN.md → Decisions.*
+
 Sep 28, 2026 · @Lauranne
 
 TrackAid got the product ideas right (Health Connect as the source, range-bar vitals charts, target bands) but had no layers: one 420-line class fetched, aggregated and shaped data for the chart library, which caused its refresh bugs and broke on every chart-library upgrade. The review covers the `dev` branch (59 commits, last Oct 2024) and the `healthcareAI` branch; `main` holds only the first 2 commits.
