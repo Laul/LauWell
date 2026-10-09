@@ -1,104 +1,110 @@
 # Feature modules and on/off toggles
 
-*Drafted with Claude, 2026-09-30. Status: proposal — adoption is still open, see PLAN.md → M0.*
-
-_Status: proposal, to be adopted in M0 (PLAN.md task "Adopt the feature descriptor + registry
-proposal")._
+*Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work. Status:
+adopted (PLAN.md → M0). Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
 
-LauWell will have feature modules (vitals, activity, sleep, medication, ostomy, glycemia, …)
-that the user can turn on or off. Does that change how the app is built with Gradle?
+LauWell holds many kinds of health data (vitals, activity, sleep, medication, ostomy, glucose, …)
+and the user should be able to hide what they don't track. Does that change how the app is built
+with Gradle, and what is the unit that gets switched on and off?
 
-## Short answer
+## Runtime toggle, not build-time exclusion
 
-No. There are two separate meanings of "optional":
+There are two separate meanings of "optional":
 
 | | Runtime toggle | Build-time exclusion |
 |---|---|---|
-| What it is | One APK containing every feature; a setting hides or shows each one | Gradle product flavors or dynamic feature modules produce different APKs |
+| What it is | One APK containing everything; a setting hides or shows each part | Gradle product flavors or dynamic feature modules produce different APKs |
 | Changing it | Instant, from Settings | Rebuild, or a Play Store download |
 | Good for | A personal app where the choice may change | Separate product editions, or cutting APK size at scale |
 
-LauWell needs the **runtime toggle**. It is already implied by the planned Settings screen
-("module enable/disable"). Gradle stays as it is: a single `:app` module.
+LauWell needs the **runtime toggle**. Gradle stays as it is: a single `:app` module. Separate
+Gradle modules would only be worth it for build reasons (slow incremental builds, compiler-enforced
+boundaries); neither applies today. Dynamic feature modules need Play Store distribution and are
+not recommended.
 
-## Consequences of a disabled feature
+## The toggle unit is the data hierarchy itself
 
-Example: vitals on, activity off.
+The first version of this document proposed a `FeatureDescriptor` per feature, each bringing its
+own screens. Two later decisions made that the wrong shape (PLAN.md → Decisions):
 
-- **Code:** the activity code still ships in the APK but never runs. The size cost is negligible.
-- **Data:** the feature's storage still exists and simply stays unused: its Firestore collection
-  (`users/{uid}/{feature}/…`) for user-logged data, or its tables in the shared Room database
-  (`LauWellDatabase`) for Health Connect data. That is harmless, and it keeps a single schema and
-  a single migration history. (See PLAN.md → Decisions → Data placement.)
-- **Permissions:** this is the real constraint. `AndroidManifest.xml` must declare every
-  permission any feature might need (e.g. each Health Connect data type). At runtime, the app
-  *requests* only the permissions of enabled features.
-- **Background work:** syncs, reminders and WorkManager jobs are scheduled only for enabled
-  features. Enabling or disabling a feature must start or cancel its jobs.
-- **UI:** navigation (`LauWellDestination`), the Home dashboard and notifications list only
-  enabled features.
-- **User data:** disabling should **hide** a feature's data, not delete it, so turning the
-  feature back on loses nothing. Deleting should be a separate, explicit action in Settings.
+- Adding a tracker is a **registry entry, never a new screen or navigation destination**.
+- Every data point already has a home in a three-level hierarchy
+  (`docs/data-structure/Patient Data Categories`):
 
-## Proposal: a feature descriptor and a registry
+| Level | Count | Example | In code |
+|---|---|---|---|
+| Category | 5 | Vitals | `Category` enum |
+| Sub-category | 35 | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
+| Data point | 81 | Heart rate | `MetricDefinition` |
 
-Each feature exposes a single descriptor object that lists everything the app needs to know
-about it. Nothing outside the feature reaches into its internals.
+So there is no separate "feature" concept to invent. **Any level of that hierarchy can be switched
+off**: a whole category, a sub-category, or a single metric. The hierarchy also answers the old
+"who owns heart rate?" question for free: each metric has exactly one sub-category.
 
-```kotlin
-// core/feature/FeatureDescriptor.kt (sketch, names not final)
-interface FeatureDescriptor {
-    val id: String                          // stable key, stored in settings
-    val label: String
-    val destinations: List<LauWellRoute>    // screens this feature adds to navigation
-    val dashboardCard: (@Composable () -> Unit)?
-    val permissions: Set<String>            // requested only when enabled
-    fun onEnabled(context: Context)         // e.g. schedule its workers
-    fun onDisabled(context: Context)        // e.g. cancel its workers; keep data
-}
-```
+### What gets stored: the switched-off set
 
-A central registry lists every descriptor and filters them by the enabled set from settings
-(e.g. DataStore):
+The app stores the set of things the user has turned **off**, not what is on. Each entry is a
+stable key at one of the three levels:
 
 ```kotlin
-object FeatureRegistry {
-    val all: List<FeatureDescriptor> = listOf(/* VitalsFeature, ActivityFeature, ... */)
-    fun enabled(enabledIds: Set<String>) = all.filter { it.id in enabledIds }
+// core/catalog (sketch, names not final)
+sealed interface ToggleKey {
+    data class OfCategory(val category: Category) : ToggleKey
+    data class OfSubCategory(val subCategory: SubCategory) : ToggleKey
+    data class OfMetric(val metricId: String) : ToggleKey
 }
+
+fun isVisible(metric: MetricDefinition, off: Set<ToggleKey>): Boolean =
+    ToggleKey.OfMetric(metric.id) !in off &&
+    ToggleKey.OfSubCategory(metric.subCategory) !in off &&
+    ToggleKey.OfCategory(metric.subCategory.category) !in off
 ```
 
-`LauWellNavHost`, `HomeScreen`, the permission flow and the reminder engine then read from
-`FeatureRegistry.enabled(...)` instead of hard-coding features. The toggle logic lives in one
-place.
+Why "off" rather than "on":
 
-### Why this shape
+- An empty set means **everything visible**, which is the MVP behaviour, with nothing to seed on
+  first launch.
+- A metric added in a later release appears without a migration of the stored set.
+- Whatever the Settings screen ends up looking like (per category, per sub-category, per metric),
+  it only adds and removes keys. Nothing else changes.
 
-- **One place for the on/off decision:** no `if (activityEnabled)` checks scattered across
-  screens.
-- **Adding a feature** means writing one descriptor and one line in the registry.
-- **Future-proof:** if the project later moves to one Gradle module per feature
-  (`:feature:vitals`, …), each descriptor moves with its feature. Only the registry's list
-  changes, because it would then gather descriptors from the modules (e.g. via Hilt multibinding).
+`isVisible` is **the only place** that decides visibility. Home, the category screens, the
+permission flow and background sync all ask it (through a repository exposing
+`Flow<Set<ToggleKey>>`); none of them checks a toggle directly.
 
-## When separate Gradle modules would be worth it
+### MVP scope
 
-Only for build reasons, not for toggling:
+- No selection screen after sign-in. Everything is visible.
+- The switched-off set sits behind an interface; the first implementation returns an empty set.
+  The DataStore-backed implementation lands together with the Settings toggles, which are backlog.
+- When the Settings toggles do land, Settings is their primary home.
 
-- Build times grow enough to hurt, and incremental builds per module would help.
-- You want the compiler to *enforce* that features can't depend on each other's internals.
+## Consequences of a hidden part
 
-Neither applies today. Dynamic feature modules (download on demand) require Play Store
-distribution and add complexity. They are not recommended here.
+Example: Lifestyle → Activity switched off.
 
-## Open points to decide
+- **Code:** still ships in the APK, never runs. Negligible size cost.
+- **Data:** hidden, **never deleted**. Turning it back on loses nothing. Deleting data is a
+  separate, explicit action in Settings. Storage (Firestore `users/{uid}/…`, Room tables) keeps
+  one schema and one migration history either way.
+- **Permissions:** `AndroidManifest.xml` declares every permission any metric might need. At
+  runtime a permission is requested only for a visible metric, and only when it is first needed
+  (e.g. the first heart-rate read), never all at once. Partial grants are fine. Permissions and
+  data sources are declared on the **metric definition**, so they follow any toggle level.
+- **Background work:** syncs and reminders are scheduled only for visible metrics. A change in the
+  switched-off set starts or cancels the matching jobs.
+- **UI:** navigation is generic — Home, `category/{id}`, `metric/{id}`, Settings — and lists only
+  visible metrics. Adding a metric never touches the nav host.
 
-1. **Feature granularity:** is "health" one feature, or are vitals / activity / sleep separate
-   toggles? (The example above assumes separate toggles.)
-2. **Cross-feature data:** e.g. heart rate recorded during activity. Which feature owns it,
-   and what does the other show when the owner is disabled?
-3. **Where the enabled set is stored:** DataStore (simple) or a Room table.
-4. **Default state on first launch:** all features off, with an onboarding picker, or a
-   sensible default set.
+## Deferred: switching off everything related to one condition
+
+Some data is related across categories. Ostomy is the clearest case: output volume is in Vitals,
+the change routine in Lifestyle, peristomal skin in Symptoms, products in Treatments & appliances.
+The ideal behaviour is one switch that turns off *everything related to ostomy*, wherever it is
+filed, and the same question applies to other conditions.
+
+Not needed for the MVP. The likely shape is a tag (or "topic") on the metric definition plus a
+fourth `ToggleKey` variant, which fits the switched-off set without reworking it. To be decided
+when it is needed.

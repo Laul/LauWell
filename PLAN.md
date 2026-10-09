@@ -6,8 +6,15 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 
 - **Mobile:** Kotlin + Jetpack Compose, native Android only. No Material3 dependency (own theme tokens).
 - **Code structure:** single `:app` Gradle module, one package per feature (`feature.vitals`, …) plus
-  shared `core.*` packages. Features are turned on/off at runtime, not at build time.
+  shared `core.*` packages. Data is shown or hidden at runtime, not at build time.
   → Notion: *Modular Architecture*; `docs/architecture/feature-modules-and-toggles.md`.
+- **Toggles:** no separate "feature" concept. The data hierarchy itself is the toggle unit:
+  category (5) → sub-category (35) → metric (81), and any level can be switched off. The app stores
+  the **switched-off** set (empty = everything visible, new metrics appear on their own), and one
+  `isVisible` function is the only place that reads it. Hiding never deletes data. Permissions and
+  syncs are declared per metric and run only for visible ones. MVP: everything on, no selection
+  screen after sign-in; the Settings toggles are backlog. Switching off everything related to one
+  condition across categories (e.g. ostomy) is deferred.
 - **Backend:** Firebase — Firebase Auth (Google sign-in), Cloud Firestore (data), Cloud Storage (photos).
   Custom, FHIR-inspired schema (LOINC codes where trivial). History: Medplum/FHIR rejected (provider-oriented,
   overkill for one user) → Supabase rejected (free tier pauses after 7 days) → Firebase.
@@ -43,7 +50,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   Vitals vs Lifestyle is settled by one question: *clinical normal range, or personal goal?* That is
   why mood and the menstrual cycle sit in Lifestyle without an exception, and why stoma output volume
   sits in Vitals (sustained high output is a clinical dehydration threshold) while the change routine
-  stays in Lifestyle. 31 sub-categories form the second level.
+  stays in Lifestyle. 35 sub-categories form the second level, identified by category + name
+  ("Respiratory" exists under both Vitals and Symptoms).
   → `docs/data-structure/Patient Data Categories.html` (+ `.csv`).
 - **Storage shapes:** category and sub-category are *facets on the metric definition*, not tables.
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
@@ -51,6 +59,12 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   `CatalogueItem` (a thing with attributes), `Document` (a file with a date), `Derived` (computed —
   e.g. wear time from consecutive appliance changes). The map of 81 data points to shapes lives in the
   same doc, and its shape×category matrix is generated from the rows so the two cannot drift.
+- **Terminology codes:** each metric definition can carry standard codes (FHIR `Coding` shape: LOINC
+  for measurements, SNOMED CT later for symptoms / conditions / procedures, DIN + ATC for medication)
+  and a UCUM unit, for interoperability (FHIR export, clinician sharing, lab import) and unambiguous
+  structured data. Codes live on the definition, not on records (lab results excepted: per analyte),
+  and are never load-bearing in app logic — our own metric IDs are. First pass: 16 data points coded,
+  11 codes still to verify. → `docs/data-structure/Patient Data Codings.csv`.
 - **Catalogue + occurrence:** wherever a category holds both a *thing* and an *act*, they are two
   tables — medication vs dose, ostomy product vs appliance change, device vs reading, supplier vs
   order. Product attributes (brand, reference code, convexity, flange size, barrier type) belong to the
@@ -76,8 +90,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 ### M0 — Lock the foundations
 - [x] Fill in the Stack section of CLAUDE.md (DI still open, see next task)
 - [x] Choose dependency injection → manual wiring via `AppContainer` (see Decisions)
-- [ ] Adopt the feature descriptor + registry proposal and settle its open points (feature granularity,
-      cross-feature data ownership, where the enabled set is stored, default state on first launch)
+- [x] Settle feature toggles (2026-10-08): the category → sub-category → metric hierarchy is the toggle
+      unit, a switched-off set is stored, everything on for the MVP (see Decisions → Toggles).
+      The earlier `FeatureDescriptor` proposal is replaced
 
 ### M1 — Authentication and app shell ✅ (2026-10-03)
 - [x] Provision the Firebase project and the Google OAuth "Web application" client;
@@ -102,8 +117,11 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       (`allowBackup="false"` + `data_extraction_rules.xml`), since it holds the Firebase session
 
 ### M2 — Feature framework
-- [ ] `FeatureDescriptor` + `FeatureRegistry`; enabled set persisted; toggles in Settings
-- [ ] Nav host and Home read from the registry instead of hard-coding features
+- [ ] Catalogue of the hierarchy: `Category` (5), `SubCategory` (35, keyed by category + name),
+      a `MetricRegistry` of `MetricDefinition`s (starting with Vitals → Cardiovascular)
+- [ ] Visibility: `ToggleKey` (category / sub-category / metric), `isVisible`, unit-tested; the
+      switched-off set behind an interface whose first implementation is empty (everything on)
+- [ ] Generic navigation: Home → `category/{id}` → `metric/{id}`, all read from the registry
       (also replaces Home's temporary "Settings" link added in M1)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
       `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
@@ -119,7 +137,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       without it people stop using the structured fields)
 - [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}`, FHIR-inspired common fields,
       one typed model per feature, repositories returning `Flow<AppResult<…>>`
-- [ ] Per-feature permission request (partial grants allowed, no all-or-nothing)
+- [ ] Permissions declared per metric, requested only for visible metrics when first needed
+      (partial grants allowed, no all-or-nothing)
+- [ ] Terminology: `MetricDefinition.codings` (FHIR Coding shape + UCUM unit) filled from `docs/data-structure/Patient Data Codings.csv`; confirm the `Verified = no` rows in the LOINC search first. Codes are never load-bearing in app logic
 
 ### M3 — Health Connect, starting with steps
 Builds the reusable pieces with the simplest data type (read-only, one number per day).
@@ -153,7 +173,9 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
 - M6 — Dashboard and UX: cross-feature Home driven by the five categories, real palette and type
   scale, accessibility pass. Upcoming appointments surface on Home even though they are filed under
   Medical Records — nobody opens an archive to find out what they are doing on Thursday
-- Backlog: emergency view assembled from Medical Records + Treatments (blood type, active conditions,
+- Backlog: Settings toggles over the switched-off set (DataStore-backed; Settings is their home, no
+  picker after sign-in); one switch per condition across categories (e.g. all ostomy data, likely a
+  tag on `MetricDefinition` + a fourth `ToggleKey`); emergency view assembled from Medical Records + Treatments (blood type, active conditions,
   current medications, allergies, contacts) and reachable without unlocking the app; symptom
   terminology import (coded subset + synonym layer); factor-to-outcome analysis with a minimum-evidence
   gate; Life's Essential 8 survey, lab results (same `Measurement` entity, `source = lab`),
