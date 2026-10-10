@@ -87,4 +87,26 @@ fs.writeFileSync(path.join(OUT, CNAME + '.csv'), ccsv.join('\r\n') + '\r\n');
 const coded = new Set(CODINGS.map(c => c[0]));
 const unverified = CODINGS.filter(c => c[7] === 'no').length;
 console.log(`${coded.size} data points coded (${CODINGS.length} codings, ${unverified} still unverified) -> ${CNAME}.csv`);
-console.log('uncoded by default status:', count(r => coded.has(r[0]) ? null : CODING_DEFAULTS.find(d => d[0](r))[1]));
+console.log('uncoded by default status:', count(r => coded.has(r[0]) ? 'coded' : CODING_DEFAULTS.find(d => d[0](r))[1]));
+
+// --- combined sheet: one row per data point, categories + description + coding ---
+const MNAME = 'Patient Data Model';
+const statusOf = r => {
+  const cs = CODINGS.filter(c => c[0] === r[0]);
+  return cs.length ? cs.find(c => c[1] === 'primary')[2] : CODING_DEFAULTS.find(d => d[0](r))[1];
+};
+const fmtCoding = c => `${c[3]} ${c[4]} ${c[5]}${c[6] ? ' [' + c[6] + ']' : ''} (${c[1]})`;
+const mcsv = [['Data','Category','Sub-category','Shape','Description','Coding status','Code system','Code','Code display','UCUM unit','Other codings','Verified','Coding note']
+  .map(esc).join(',')];
+rows.forEach(r => {
+  const cs = CODINGS.filter(c => c[0] === r[0]);
+  const p = cs.find(c => c[1] === 'primary');
+  const others = cs.filter(c => c !== p);
+  const ver = !cs.length ? '' : cs.every(c => c[7] === 'yes') ? 'yes' : cs.every(c => c[7] === 'no') ? 'no' : 'partial';
+  const notes = [...new Set(cs.map(c => c[8]).filter(Boolean))].join(' | ');
+  mcsv.push([r[0], r[1], r[2], r[3], r[4], statusOf(r),
+    p ? p[3] : '', p ? p[4] : '', p ? p[5] : '', p ? p[6] : '',
+    others.map(fmtCoding).join('; '), ver, notes].map(esc).join(','));
+});
+fs.writeFileSync(path.join(OUT, MNAME + '.csv'), mcsv.join('\r\n') + '\r\n');
+console.log(`${rows.length} rows -> ${MNAME}.csv (categories + codings combined)`);

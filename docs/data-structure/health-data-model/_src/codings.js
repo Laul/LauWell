@@ -42,9 +42,15 @@ const CODINGS = [
 //   per-analyte    the record itself carries a LOINC code (lab results)
 //   snomed-later   code with a curated SNOMED CT subset when that feature is built
 //   din-atc-later  code with Health Canada DIN (product) + WHO ATC (class) when medication is built
+//   via-catalogue  the event inherits its coding from the catalogue entry it points at (dose -> medication,
+//                  appliance change -> ostomy product); nothing to code on the event itself
+//   loinc-doc-later  carries a LOINC document-type code when attachments are built
 //   none           no sensible standard code; local metric ID only
 const CODING_DEFAULTS = [
   [r => r[0] === 'Lab result',                                   'per-analyte'],
+  [r => ['Dose scheduled','Dose taken or skipped','As-needed dose','Appliance change','Accessory used'].includes(r[0]), 'via-catalogue'],
+  [r => ['Clinical document','Imaging study'].includes(r[0]),    'loinc-doc-later'],
+  [r => r[0] === 'Immunisation',                                 'snomed-later'],
   [r => ['Medication','Supplement'].includes(r[0]),              'din-atc-later'],
   [r => r[3] === 'Catalogue',                                    'own-catalogue'],
   [r => r[1] === 'Symptoms',                                     'snomed-later'],

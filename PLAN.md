@@ -117,10 +117,18 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       (`allowBackup="false"` + `data_extraction_rules.xml`), since it holds the Firebase session
 
 ### M2 — Feature framework
-- [ ] Catalogue of the hierarchy: `Category` (5), `SubCategory` (35, keyed by category + name),
-      a `MetricRegistry` of `MetricDefinition`s (starting with Vitals → Cardiovascular)
-- [ ] Visibility: `ToggleKey` (category / sub-category / metric), `isVisible`, unit-tested; the
-      switched-off set behind an interface whose first implementation is empty (everything on)
+- [x] Catalogue of the hierarchy (`core.catalog`, 2026-10-08): `Category` (5), `SubCategory` (35, keyed
+      by category + name), `StorageShape` (7), `MetricDefinition` (quantities with UCUM unit, precision
+      and normal range; aggregation; chart kind; goal; codings) and a `MetricRegistry`, starting with
+      the 4 Vitals → Cardiovascular metrics. `CatalogMatchesDocsTest` checks the code against the CSVs
+      in `docs/data-structure/` (categories, sub-categories, each metric's filing and shape, codes)
+- [x] Visibility: `ToggleKey` (category / sub-category / metric, with stable storage keys), `isVisible`,
+      `MetricRegistry.visible`, unit-tested; `ToggleRepository` in `AppContainer`, first implementation
+      `EverythingOnToggleRepository` (everything on)
+- [ ] Follow-ups from the catalogue: HRV is RMSSD (what Health Connect provides) but the drafted LOINC
+      code 80404-7 is SDNN — find an RMSSD code or leave HRV uncoded, then fix `codings.js`; verify the
+      diastolic code 8462-4 (`Verified = no`); review the generic adult normal ranges (HR 60–100,
+      BP 90–120 / 60–80)
 - [ ] Generic navigation: Home → `category/{id}` → `metric/{id}`, all read from the registry
       (also replaces Home's temporary "Settings" link added in M1)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,

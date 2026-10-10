@@ -31,21 +31,18 @@ names) and refuses to write if anything fails.
 - `_src/build.js` — the generator (plain Node, no dependencies); also validates the codings
   (known names, roles, systems, well-formed LOINC codes, exactly one primary per coded point)
 
-## Codings (LOINC / SNOMED CT)
+## Codings (LOINC / SNOMED CT) and the combined sheet
 
-*Drafted by Claude (Claude Desktop session), Oct 2026. Status: first pass, in review.*
+`_src/codings.js` holds the standard-terminology codes; `build.js` joins it to `rows.js` and writes two files:
 
-**Why.** Our category / sub-category / metric names are patient-facing and our own. Attaching a
-standard code to each metric definition makes the data interoperable (FHIR export, sharing with a
-clinician, importing lab results) and gives us structured data we can act on unambiguously:
-"heart rate" from a watch, a cuff or a lab report is recognisably the same thing (LOINC `8867-4`),
-with a standard UCUM unit. It is a layer on top, not a replacement: app logic keys on our own
-metric IDs and never depends on a code being present.
+- `Patient Data Model.csv` - **the combined sheet**: one row per data point (81), with category, sub-category,
+  shape and description from `rows.js` plus the primary code, UCUM unit, any other codings, a `Verified` summary
+  (`yes` / `partial` / `no`) and the coding note. This is the file to import into Notion.
+- `Patient Data Codings.csv` - the detail view: one row per coding (a panel and its components, or a variant,
+  each get a row). Use it when wiring `MetricDefinition.codings`.
 
-`Patient Data Codings.csv` is generated from `_src/codings.js` by the same `build.js` run. It maps data points
-to standard terminology codes (one row per coding) and gives every other data point a default status
-(`snomed-later`, `din-atc-later`, `own-catalogue`, `per-analyte`, `none`). Codes attach to the metric
-definition, never to individual records — except lab results (`per-analyte`), where each record carries the
-code of its own analyte. The `Verified` column is `yes` only when the code and its display name were
-confirmed in the LOINC search; treat `no` rows as drafts.
-
+Data points with no entry in `codings.js` get a default `Coding status`: `snomed-later`, `din-atc-later`,
+`loinc-doc-later`, `via-catalogue` (inherits from the catalogue entry it points at), `own-catalogue`,
+`per-analyte` or `none`. Codes attach to the metric definition, never to individual records. `Verified = yes`
+only when the code and display name were confirmed in the LOINC search; treat `no` as a draft.
+*Drafted by Claude, Oct 2026 - first pass, in review.*

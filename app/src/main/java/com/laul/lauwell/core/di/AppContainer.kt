@@ -7,6 +7,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.laul.lauwell.BuildConfig
 import com.laul.lauwell.core.auth.AuthRepository
 import com.laul.lauwell.core.auth.FirebaseAuthRepository
+import com.laul.lauwell.core.catalog.EverythingOnToggleRepository
+import com.laul.lauwell.core.catalog.ToggleRepository
 
 /**
  * Manual dependency injection: the one place that builds the app's process-wide singletons
@@ -30,4 +32,7 @@ class AppContainer(context: Context) {
     val authRepository: AuthRepository by lazy {
         FirebaseAuthRepository(firebaseAuth, credentialManager, BuildConfig.GOOGLE_WEB_CLIENT_ID)
     }
+
+    /** What the user switched off. MVP: nothing, see [EverythingOnToggleRepository]. */
+    val toggleRepository: ToggleRepository = EverythingOnToggleRepository
 }
