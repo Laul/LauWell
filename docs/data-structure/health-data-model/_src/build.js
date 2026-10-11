@@ -4,7 +4,7 @@
  * from rows.js + template.html. One source, two outputs — so the page and the
  * spreadsheet can never disagree.
  *
- * Usage:  node docs/data-structure/_src/build.js
+ * Usage:  node docs/data-structure/health-data-model/_src/build.js
  * No dependencies. Edit rows.js to change the data; never edit the outputs.
  */
 const fs = require('fs');

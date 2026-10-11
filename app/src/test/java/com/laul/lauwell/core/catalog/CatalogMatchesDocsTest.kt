@@ -7,16 +7,15 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Keeps the code and the data map in `docs/data-structure/` from drifting apart. The CSVs are
- * generated from `docs/data-structure/_src/` and are the reference; when this fails, either the
+ * Keeps the code and the data map in `docs/data-structure/health-data-model/` from drifting apart. The CSVs are
+ * generated from `docs/data-structure/health-data-model/_src/` and are the reference; when this fails, either the
  * code or the docs are out of date.
  */
 class CatalogMatchesDocsTest {
 
-    private val dataDir = File("../docs/data-structure")
+    private val dataDir = File("../docs/data-structure/health-data-model")
 
     private val dataPoints = readCsv("Patient Data Categories.csv")
-    private val codings = readCsv("Patient Data Codings.csv")
 
     @Test
     fun `categories match the data map`() {
@@ -44,34 +43,6 @@ class CatalogMatchesDocsTest {
             assertEquals("${metric.id} category", row.getValue("Category"), metric.category.label)
             assertEquals("${metric.id} sub-category", row.getValue("Sub-category"), metric.subCategory.label)
             assertEquals("${metric.id} shape", row.getValue("Shape"), metric.shape.label)
-        }
-    }
-
-    @Test
-    fun `every code in the registry is in the codings table`() {
-        MetricRegistry.all.forEach { metric ->
-            val inCode = metric.codings.map { it to null } +
-                metric.quantities.mapNotNull { q -> q.coding?.let { it to q.unit } }
-            inCode.forEach { (coding, unit) ->
-                val row = codings.singleOrNull {
-                    it["Data"] == metric.label && it["System"] == coding.system.label && it["Code"] == coding.code
-                }
-                assertNotNull("${metric.id}: ${coding.code} is not in the codings table", row)
-                row!!
-                assertEquals("${coding.code} role", row.getValue("Role"), coding.role.label)
-                assertEquals("${coding.code} display", row.getValue("Display"), coding.display)
-                assertEquals("${coding.code} verified", row.getValue("Verified") == "yes", coding.verified)
-                if (unit != null) assertEquals("${coding.code} unit", row.getValue("UCUM unit"), unit)
-            }
-        }
-    }
-
-    @Test
-    fun `single-quantity metrics use the unit of their primary code`() {
-        MetricRegistry.all.filter { it.quantities.size == 1 }.forEach { metric ->
-            val primary = metric.codings.singleOrNull { it.role == Coding.Role.Primary } ?: return@forEach
-            val row = codings.single { it["Data"] == metric.label && it["Code"] == primary.code }
-            assertEquals("${metric.id} unit", row.getValue("UCUM unit"), metric.quantities.single().unit)
         }
     }
 

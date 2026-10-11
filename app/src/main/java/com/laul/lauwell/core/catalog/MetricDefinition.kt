@@ -17,7 +17,7 @@ value class MetricId(val value: String) {
  * Everything the app needs to know about one tracked data point, so that adding a tracker is an
  * entry in [MetricRegistry] and never a new screen (PLAN.md → Decisions).
  *
- * [label] matches the "Data" column of `docs/data-structure/Patient Data Categories.csv`.
+ * [label] matches the "Data" column of `docs/data-structure/health-data-model/Patient Data Categories.csv`.
  */
 data class MetricDefinition(
     val id: MetricId,
@@ -31,8 +31,6 @@ data class MetricDefinition(
     val chartKind: ChartKind? = null,
     /** Default personal goal (Lifestyle). Clinical ranges live on each [Quantity] instead. */
     val goal: Goal? = null,
-    /** Standard codes for the metric as a whole; per-quantity codes live on [Quantity.coding]. */
-    val codings: List<Coding> = emptyList(),
 ) {
     val category: Category get() = subCategory.category
 
@@ -43,9 +41,6 @@ data class MetricDefinition(
         require(quantities.map { it.key }.distinct().size == quantities.size) {
             "$id: quantity keys must be unique"
         }
-        require(codings.count { it.role == Coding.Role.Primary } <= 1) {
-            "$id: at most one primary coding"
-        }
         require(chartKind == null || aggregation != null) { "$id: a chart needs an aggregation" }
     }
 }
@@ -54,8 +49,7 @@ data class MetricDefinition(
  * One numeric value inside a record.
  *
  * @param key stable within its metric, e.g. "systolic".
- * @param unit UCUM code, e.g. "/min", "mm[Hg]" — what is stored.
- * @param displayUnit what the user reads, e.g. "bpm", "mmHg".
+ * @param unit what the user reads, e.g. "bpm", "mmHg".
  * @param precision decimals shown.
  * @param normalRange generic adult clinical range (Vitals); null when there is no meaningful one.
  *   User-configurable targets are backlog.
@@ -64,10 +58,8 @@ data class Quantity(
     val key: String,
     val label: String,
     val unit: String,
-    val displayUnit: String,
     val precision: Int = 0,
     val normalRange: ClosedFloatingPointRange<Double>? = null,
-    val coding: Coding? = null,
 ) {
     init {
         require(precision >= 0) { "precision must be >= 0" }
@@ -96,28 +88,3 @@ enum class Aggregation {
 /** Mapped to an actual chart by the `ChartSpec` layer (M3), the only place that knows Vico. */
 enum class ChartKind { Line, Bar, RangeBar }
 
-/**
- * A standard terminology code (FHIR `Coding` shape). Codes are a layer on top: app logic keys on
- * [MetricId], never on a code (PLAN.md → Decisions → Terminology codes). Source of truth:
- * `docs/data-structure/Patient Data Codings.csv`.
- *
- * @param verified true once code and display were confirmed in the LOINC search.
- */
-data class Coding(
-    val system: System,
-    val code: String,
-    val display: String,
-    val role: Role,
-    val verified: Boolean,
-) {
-    enum class System(val label: String, val uri: String) {
-        Loinc("LOINC", "http://loinc.org"),
-        SnomedCt("SNOMED CT", "http://snomed.info/sct"),
-    }
-
-    enum class Role(val label: String) {
-        Primary("primary"),
-        Component("component"),
-        Variant("variant"),
-    }
-}

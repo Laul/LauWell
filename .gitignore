@@ -28,4 +28,4 @@ tmp/
 .ua/
 
 # docs/ is tracked on purpose — see CLAUDE.md → Layout.
-# Generated pages live beside their source in docs/data-structure/_src/.
+# Generated pages live beside their source in docs/data-structure/health-data-model/_src/.

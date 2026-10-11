@@ -52,19 +52,27 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   sits in Vitals (sustained high output is a clinical dehydration threshold) while the change routine
   stays in Lifestyle. 35 sub-categories form the second level, identified by category + name
   ("Respiratory" exists under both Vitals and Symptoms).
-  → `docs/data-structure/Patient Data Categories.html` (+ `.csv`).
+  → `docs/data-structure/health-data-model/Patient Data Categories.html` (+ `.csv`).
 - **Storage shapes:** category and sub-category are *facets on the metric definition*, not tables.
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
   `CatalogueItem` (a thing with attributes), `Document` (a file with a date), `Derived` (computed —
   e.g. wear time from consecutive appliance changes). The map of 81 data points to shapes lives in the
   same doc, and its shape×category matrix is generated from the rows so the two cannot drift.
-- **Terminology codes:** each metric definition can carry standard codes (FHIR `Coding` shape: LOINC
-  for measurements, SNOMED CT later for symptoms / conditions / procedures, DIN + ATC for medication)
-  and a UCUM unit, for interoperability (FHIR export, clinician sharing, lab import) and unambiguous
-  structured data. Codes live on the definition, not on records (lab results excepted: per analyte),
-  and are never load-bearing in app logic — our own metric IDs are. First pass: 16 data points coded,
-  11 codes still to verify. → `docs/data-structure/Patient Data Codings.csv`.
+- **Terminology codes** (decided 2026-10-09; options and verdicts in the Notion *Data Model* page §2):
+  standards give a metric its identity, not navigation. Each metric definition can carry codes (FHIR
+  `Coding` shape) and a UCUM unit, for interoperability (FHIR export, clinician sharing, lab import) and
+  unambiguous structured data. Codes live on the definition, not on records (lab results excepted: per
+  analyte), and are never load-bearing in app logic — our own metric IDs are; a metric with no standard
+  code gets a local namespace. Core set: LOINC + UCUM for measurements and labs now; a SNOMED CT subset
+  for symptoms / conditions / procedures when symptoms are built; Health Canada DIN + WHO ATC for
+  medication; GS1 GTIN to fill the ostomy product catalogue; Health Connect record types are the input
+  mapping. Considered and skipped: openEHR, Open mHealth, IEEE 11073 (ICD-11 only if an administrative
+  export is ever needed; ICPC-2 to evaluate for the symptom vocabulary). Lab reference ranges vary by
+  lab, age and sex and LOINC does not carry them: store the range printed on each result, with the MUHC
+  list (`docs/data-structure/health_data_standards/`) as a fallback seed. First pass: 16 data points
+  coded, 11 codings still unverified. → `docs/data-structure/health-data-model/Patient Data Model.csv` (combined sheet),
+  `Patient Data Codings.csv` (one row per coding).
 - **Catalogue + occurrence:** wherever a category holds both a *thing* and an *act*, they are two
   tables — medication vs dose, ostomy product vs appliance change, device vs reading, supplier vs
   order. Product attributes (brand, reference code, convexity, flange size, barrier type) belong to the
@@ -72,7 +80,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   barrier give longer wear time and better skin than the flat one" answerable; without it that
   question is permanently out of reach, and it is the one thing no existing ostomy app does.
 - **Symptom terminology:** two vocabularies, not one. A coded reference terminology underneath
-  (SNOMED CT / ICD-11 subset) for correctness and any export to a clinician, and a patient-facing
+  (SNOMED CT subset; ICPC-2 to evaluate as a lighter base) for correctness and any export to a
+  clinician, and a patient-facing
   layer on top — everyday names, synonyms, body-map entry, recents and a personal shortlist of the
   handful of symptoms actually tracked. Browsing the full tree is the rare path, never the default.
 - **Lessons from the app teardown** (`docs/research/Review • Existing Health Apps.html`):
@@ -118,17 +127,17 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 
 ### M2 — Feature framework
 - [x] Catalogue of the hierarchy (`core.catalog`, 2026-10-08): `Category` (5), `SubCategory` (35, keyed
-      by category + name), `StorageShape` (7), `MetricDefinition` (quantities with UCUM unit, precision
-      and normal range; aggregation; chart kind; goal; codings) and a `MetricRegistry`, starting with
+      by category + name), `StorageShape` (7), `MetricDefinition` (quantities with unit, precision and
+      normal range; aggregation; chart kind; goal — no terminology codes yet) and a `MetricRegistry`, starting with
       the 4 Vitals → Cardiovascular metrics. `CatalogMatchesDocsTest` checks the code against the CSVs
-      in `docs/data-structure/` (categories, sub-categories, each metric's filing and shape, codes)
+      in `docs/data-structure/health-data-model/` (categories, sub-categories, each metric's filing and shape)
 - [x] Visibility: `ToggleKey` (category / sub-category / metric, with stable storage keys), `isVisible`,
       `MetricRegistry.visible`, unit-tested; `ToggleRepository` in `AppContainer`, first implementation
       `EverythingOnToggleRepository` (everything on)
-- [ ] Follow-ups from the catalogue: HRV is RMSSD (what Health Connect provides) but the drafted LOINC
-      code 80404-7 is SDNN — find an RMSSD code or leave HRV uncoded, then fix `codings.js`; verify the
-      diastolic code 8462-4 (`Verified = no`); review the generic adult normal ranges (HR 60–100,
-      BP 90–120 / 60–80)
+- [ ] Review the generic adult normal ranges in `CardiovascularMetrics` (HR 60–100, BP 90–120 / 60–80)
+- [ ] Split the multi-metric rows in `rows.js` and `codings.js`, then rebuild and update the catalogue
+      test: peak flow / spirometry (peak flow, FEV1), body composition (only body fat has a clean
+      code), blood type (ABO group, Rh)
 - [ ] Generic navigation: Home → `category/{id}` → `metric/{id}`, all read from the registry
       (also replaces Home's temporary "Settings" link added in M1)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
@@ -147,7 +156,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       one typed model per feature, repositories returning `Flow<AppResult<…>>`
 - [ ] Permissions declared per metric, requested only for visible metrics when first needed
       (partial grants allowed, no all-or-nothing)
-- [ ] Terminology: `MetricDefinition.codings` (FHIR Coding shape + UCUM unit) filled from `docs/data-structure/Patient Data Codings.csv`; confirm the `Verified = no` rows in the LOINC search first. Codes are never load-bearing in app logic
+- [ ] *Deferred — Lauranne handles standardization separately; the code carries no codes or UCUM units
+      until then.* Terminology: `MetricDefinition.codings` (FHIR Coding shape + UCUM unit) filled from `docs/data-structure/health-data-model/Patient Data Codings.csv`; confirm the `Verified = no` rows in the LOINC search first (glucose, ketones, peak flow and blood type are still candidates;
+      HRV is RMSSD in the app, while the drafted code 80404-7 is SDNN). Codes are never load-bearing in app logic
 
 ### M3 — Health Connect, starting with steps
 Builds the reusable pieces with the simplest data type (read-only, one number per day).
@@ -172,9 +183,9 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
 - [ ] Then: blood pressure, heart rate, temperature
 
 ### Later (review after M3/M4)
-- M5 — Logged-data features: medication (+ shared reminder engine; dose taken **vs skipped**, since
-  the skipped case carries as much information and most apps drop it), ostomy (appliance change events
-  referencing the product catalogue, wear time derived from consecutive changes, leak events,
+- M5 — Logged-data features: medication (+ DIN / ATC lookup from Health Canada's drug database, shared reminder engine; dose taken **vs skipped**, since
+  the skipped case carries as much information and most apps drop it), ostomy (GTIN barcode scan to fill the product catalogue, appliance change events
+  referencing it, wear time derived from consecutive changes, leak events,
   peristomal skin, photos in Cloud Storage), glucose logs. **Trial periods** land here — a labelled
   interval on one configuration, so product comparisons run period-against-period instead of being
   averaged across every change ever made and confounded by season, diet and stoma maturation
@@ -185,8 +196,9 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
   picker after sign-in); one switch per condition across categories (e.g. all ostomy data, likely a
   tag on `MetricDefinition` + a fourth `ToggleKey`); emergency view assembled from Medical Records + Treatments (blood type, active conditions,
   current medications, allergies, contacts) and reachable without unlocking the app; symptom
-  terminology import (coded subset + synonym layer); factor-to-outcome analysis with a minimum-evidence
-  gate; Life's Essential 8 survey, lab results (same `Measurement` entity, `source = lab`),
+  terminology import (SNOMED CT subset or ICPC-2, plus synonym layer — evaluate ICPC-2 first); factor-to-outcome analysis with a minimum-evidence
+  gate; Life's Essential 8 survey, lab results (same `Measurement` entity, `source = lab`, with the
+  reference range as printed on each report),
   user-configurable targets, BigQuery export for ML, FHIR export, CI (lint, tests, build)
 - Maintenance (from the M1 lint run): update the ~14 outdated dependencies and AGP, add an app icon
   (`MissingApplicationIcon`); CI could also run the Firestore rules tests (`firebase/`, `npm test`)

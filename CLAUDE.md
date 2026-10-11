@@ -12,10 +12,14 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
-- `docs/data-structure/` — the data model reference: patient data categories, the data map
-  (every data point → category / sub-category / storage shape), and the competitive review
-  behind them. `Patient Data Categories` is the current reference; the `.csv` beside each
-  `.html` holds the same rows and is the diffable copy.
+- `docs/data-structure/` — the data model reference.
+  - `health-data-model/` — patient data categories, the data map (every data point → category /
+    sub-category / storage shape), and the terminology codings (LOINC / SNOMED CT / UCUM).
+    `Patient Data Categories` is the current reference; `Patient Data Model.csv` is the combined
+    sheet (categories + codings). Generated from `_src/` by `node _src/build.js`; the `.csv` files
+    are the diffable copies. Earlier inventories are kept beside them as snapshots.
+  - `health_data_standards/` — source material for standardization, e.g. the MUHC laboratory
+    reference ranges list.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design work.

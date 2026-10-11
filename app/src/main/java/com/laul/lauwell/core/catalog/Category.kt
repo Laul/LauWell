@@ -2,7 +2,7 @@ package com.laul.lauwell.core.catalog
 
 /**
  * The five patient-facing categories: the top level of the data hierarchy
- * (`docs/data-structure/Patient Data Categories`). Each comes with the test that decides whether a
+ * (`docs/data-structure/health-data-model/Patient Data Categories`). Each comes with the test that decides whether a
  * new data point belongs in it.
  *
  * [key] is stable: it ends up in stored settings and must never change once shipped.

@@ -8,7 +8,7 @@ import com.laul.lauwell.core.catalog.Category.Vitals
 
 /**
  * The 35 sub-categories: the second level of the data hierarchy. Mirrors
- * `docs/data-structure/Patient Data Categories.csv`; `CatalogMatchesDocsTest` fails if they drift.
+ * `docs/data-structure/health-data-model/Patient Data Categories.csv`; `CatalogMatchesDocsTest` fails if they drift.
  *
  * A label is only unique within its category ("Respiratory" exists under both Vitals and
  * Symptoms), so identity is the [category] plus the [key]. [storageKey] combines both and is

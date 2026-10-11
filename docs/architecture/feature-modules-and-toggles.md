@@ -31,7 +31,7 @@ own screens. Two later decisions made that the wrong shape (PLAN.md → Decision
 
 - Adding a tracker is a **registry entry, never a new screen or navigation destination**.
 - Every data point already has a home in a three-level hierarchy
-  (`docs/data-structure/Patient Data Categories`):
+  (`docs/data-structure/health-data-model/Patient Data Categories`):
 
 | Level | Count | Example | In code |
 |---|---|---|---|

@@ -18,7 +18,7 @@ The competitive review behind them is in `docs/research/`.
 edit them by hand — edit `_src/rows.js` (data points) or `_src/codings.js` (codes) and run:
 
 ```
-node docs/data-structure/_src/build.js
+node docs/data-structure/health-data-model/_src/build.js
 ```
 
 One source, two outputs, so the page and the spreadsheet cannot disagree. The build

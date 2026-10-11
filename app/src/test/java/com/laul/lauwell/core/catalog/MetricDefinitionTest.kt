@@ -5,7 +5,7 @@ import org.junit.Test
 
 class MetricDefinitionTest {
 
-    private fun quantity(key: String) = Quantity(key = key, label = key, unit = "1", displayUnit = "")
+    private fun quantity(key: String) = Quantity(key = key, label = key, unit = "")
 
     @Test(expected = IllegalArgumentException::class)
     fun `a measurement needs a quantity`() {
@@ -26,15 +26,6 @@ class MetricDefinitionTest {
             MetricId("x"), "X", SubCategory.VitalsMetabolic, StorageShape.Measurement,
             quantities = listOf(quantity("a")),
             chartKind = ChartKind.Line,
-        )
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun `at most one primary coding`() {
-        val primary = Coding(Coding.System.Loinc, "1-1", "x", Coding.Role.Primary, verified = false)
-        MetricDefinition(
-            MetricId("x"), "X", SubCategory.RecordsDocuments, StorageShape.Document,
-            codings = listOf(primary, primary.copy(code = "2-2")),
         )
     }
 
