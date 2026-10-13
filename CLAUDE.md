@@ -12,7 +12,9 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
-- `docs/data-structure/` — the data model reference.
+- `docs/data-structure/` — the data model reference. **Being reconciled** with the simplified model in
+  Notion (*Data Model [Simplified]*: six categories incl. Labs, a `Nav. Screens` column): until it is
+  regenerated, PLAN.md → Decisions → *Simplified data model* wins where the two disagree.
   - `health-data-model/` — patient data categories, the data map (every data point → category /
     sub-category / storage shape), and the terminology codings (LOINC / SNOMED CT / UCUM).
     `Patient Data Categories` is the current reference; `Patient Data Model.csv` is the combined
@@ -32,9 +34,17 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - Language: English for code, comments, and docs.
 - Keep `PLAN.md` current: mark tasks done, add follow-ups discovered along the way.
 - Prefer small, reviewable changes; explain trade-offs before large refactors.
-- Every new data point gets a category, a sub-category and a storage shape before it gets a
-  screen — see `docs/data-structure/` and PLAN.md → Decisions. Adding a tracker should be a
-  registry entry, not a new navigation destination.
+- Every new data point gets a category, a sub-category, a storage shape and the screen(s) it shows on
+  (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
+  Adding a tracker should be a registry entry, not a new navigation destination.
+- Navigation: four bottom tabs — **Today** (quick-log row, upcoming events), **Tracker** (vitals,
+  symptoms, activity, sleep, mood, cycle), **Care** (treatments, appliances, the ostomy module) and
+  **Records** (labs, documents, appointments, history); "Care" is a working name. Details and rationale:
+  PLAN.md → Decisions → *App navigation*.
+- Logging: quick entry lives on Today as a row of shortcuts opening a bottom sheet. No floating
+  action button. Tracker rows show *synced* (sensor-fed) vs *+ add* (manual).
+- Data shown on two tabs (e.g. ostomy output volume in Care and Tracker) is stored once; the second
+  tab reads from the same registry entry.
 
 ## Stack
 

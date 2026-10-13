@@ -1,5 +1,11 @@
 # Data structure
 
+> **Status (2026-10-11):** the model was simplified in Notion (*Data Model [Simplified]*): six
+> categories including Labs, far fewer data points, and a `Nav. Screens` column. The files below still
+> describe the **earlier** five-category, 81-point map and are kept as the reference for what was cut
+> and for storage shapes and codings, until they are regenerated. Where they disagree, PLAN.md →
+> Decisions → *Simplified data model* wins. Clean-up and regeneration steps: PLAN.md → M2.
+
 The reference for how LauWell's health data is organised.
 
 | File | What it is |

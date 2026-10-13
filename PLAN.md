@@ -9,7 +9,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   shared `core.*` packages. Data is shown or hidden at runtime, not at build time.
   → Notion: *Modular Architecture*; `docs/architecture/feature-modules-and-toggles.md`.
 - **Toggles:** no separate "feature" concept. The data hierarchy itself is the toggle unit:
-  category (5) → sub-category (35) → metric (81), and any level can be switched off. The app stores
+  category → sub-category → metric (counts were 5 / 35 / 81; being revised, see *Simplified data model*), and any level can be switched off. The app stores
   the **switched-off** set (empty = everything visible, new metrics appear on their own), and one
   `isVisible` function is the only place that reads it. Hiding never deletes data. Permissions and
   syncs are declared per metric and run only for visible ones. MVP: everything on, no selection
@@ -40,7 +40,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - **Lessons from TrackAid** (`docs/research/TrackAid review.md`): layered design (source →
   repository → ViewModel → UI), typed metric definitions, charts behind our own layer, `Instant` for time,
   `null` for missing data (never 0), unit-tested stats, no health data in logs.
-- **Patient data categories:** five patient-facing categories, each with a test that decides where a
+- **Patient data categories** (2026-10, revised 2026-10-11 — see *Simplified data model* below: Labs is now a sixth category and some placements changed): five patient-facing categories, each with a test that decides where a
   new data point goes. **Vitals** — a measured value read against a clinical normal range.
   **Medical Records** — a fact with a start date rather than a timestamp, or the record of an
   encounter (absorbs appointments, visits and providers; renamed from "Medical history", which
@@ -53,6 +53,42 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   stays in Lifestyle. 35 sub-categories form the second level, identified by category + name
   ("Respiratory" exists under both Vitals and Symptoms).
   → `docs/data-structure/health-data-model/Patient Data Categories.html` (+ `.csv`).
+- **Simplified data model** (decided 2026-10-11; source of truth for now is the Notion database
+  *Data Model [Simplified]*, until `docs/data-structure/` is regenerated from it). Prompted by the
+  interface design: many data points were far from current priorities, so the map was cut down and
+  each point now says where it is shown.
+  - **Six categories:** Vitals, **Labs** (new — promoted out of Vitals → Laboratory, so lab work gets
+    its own home), Medical Records, Lifestyle, Symptoms, Treatments & Appliances.
+  - **`Nav. Screens` column:** each data point is tagged with the tab(s) that show it. A point is
+    stored once and may be shown on several tabs (e.g. ostomy output volume: owned by Care, charted in
+    Tracker). Today is not a tag: it reads from the same registry. The column currently offers only
+    Tracker and Records and still tags the Treatments & Appliances rows as Records — it needs a
+    **Care** option (see the M2 clean-up task).
+  - **Tab ↔ category:** Tracker = Vitals, Lifestyle (activity, sleep, mood, stress, cycle), Symptoms;
+    Records = Labs, Medical Records; Care = Treatments & Appliances (the whole ostomy module).
+  - **Labs:** one row per analyte (sub-category = panel: hematology, lipid profile, iron studies …),
+    seeded from `docs/data-structure/health_data_labs/common_lab_tests.csv`. Same `Measurement` shape
+    with `source = lab`; the reference range printed on each report is kept.
+  - **Ostomy** now sits entirely under Treatments & Appliances → Ostomy (output volume and
+    consistency, appliance change with its reason, pouch emptying, accessories used, peristomal skin).
+    It used to be spread over Vitals, Lifestyle and Symptoms. A leak is a *reason* on an appliance
+    change rather than its own event. This largely settles the "one switch per condition across
+    categories" backlog item: switching off the Ostomy sub-category now does it.
+  - **Cut or merged** (the old map keeps them if they come back): from Vitals — heart rate
+    variability, ECG trace, peak flow, ketones, weight, body composition, temperature, height; from
+    Medical Records — pregnancy, family history, allergy, intolerance, provider, blood type, imaging
+    study (pictures and documents remain); from Lifestyle — nutrition and intake, mindfulness, sleep
+    quality rating, travel and weather context; from Symptoms — flare, suspected trigger,
+    breathlessness, headache, dizziness, skin condition.
+  - **Moved:** menstrual cycle from Lifestyle to Vitals (sub-category Woman Health, shown in Tracker);
+    visit / encounter is now *Note (Encounter)*, attached to an appointment; an appointment is one
+    record that is upcoming or past (see App navigation).
+  - **Not finished, by choice:** Treatments & Appliances holds only the six ostomy rows. Medication
+    (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies,
+    devices, supplies and trial periods stay as defined in the old map (`Patient Data Categories`)
+    and get re-added later; this does not block the rest.
+  - The Notion table has no *Shape* column. The seven shapes and the catalogue + occurrence rule
+    below still apply; shapes come from the old map until the two are merged.
 - **Storage shapes:** category and sub-category are *facets on the metric definition*, not tables.
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
@@ -93,6 +129,24 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   plan by time-of-day with a daily completion percentage, and picks the input control per tracker
   (slider / pips / chips). OstoBuddy already carries cross-brand product references with stock levels;
   what nobody does is join those attributes to outcomes.
+- **App navigation** (decided 2026-10-10, data model simplified 2026-10-11). Four bottom-nav tabs,
+  replacing the category-per-destination idea; which tab shows a data point is the `Nav. Screens`
+  column of the simplified model:
+  - **Today** — home. Quick-log row at the top (one tap opens a bottom sheet; **no FAB**, logging lives on
+    the screen itself), current status, medications due, a "symptom check?" prompt, and upcoming
+    appointments. Shortcuts into the other tabs, not a second navigation system. Keep it light: only
+    widgets you would act on. Quick-log set: default list first; adaptive ordering is a later option.
+  - **Tracker** — Vitals, Symptoms, Activity, Sleep, Mood and stress, Menstrual cycle, each with its own flow (hub → metric
+    detail → history and charts), Samsung Health style. Hub rows show **synced** (sensor-fed, Health
+    Connect) vs **+ add** (manual). Symptoms and Periods are event logs and may need a different detail
+    screen; revisit if they strain the shared one. Ostomy output volume and peristomal skin score appear
+    here as read-through metrics from the Care module (stored once).
+  - **Care** (working name; "Treatments & Appliances" as the screen title) — medications and the whole
+    ostomy module: product catalogue, comparison, changes, issues and entries.
+  - **Records** — labs, clinical documents, pictures, appointments with their encounter notes,
+    medical history (diagnosis, surgery, hospitalization, immunisation), insurance. An appointment is one record with a status (upcoming / done); upcoming ones also show on Today.
+  - A new tracker is still a registry entry, never a new destination; Today's chips and the Tracker hub
+    read from the same registry.
 
 ## Milestones
 
@@ -138,8 +192,23 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [ ] Split the multi-metric rows in `rows.js` and `codings.js`, then rebuild and update the catalogue
       test: peak flow / spirometry (peak flow, FEV1), body composition (only body fat has a clean
       code), blood type (ABO group, Rh)
-- [ ] Generic navigation: Home → `category/{id}` → `metric/{id}`, all read from the registry
-      (also replaces Home's temporary "Settings" link added in M1)
+- [ ] Generic navigation: four tabs (Today / Tracker / Care / Records, see Decisions → App navigation);
+      Tracker hub → `metric/{id}`, all read from the registry (also replaces Home's temporary
+      "Settings" link added in M1). Supersedes the earlier Home → `category/{id}` → `metric/{id}` sketch
+- [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
+      model), then regenerate `docs/data-structure/`. In order:
+  - [ ] Clean the Notion rows first: Blood Pressure is filed under Respiratory (should be
+        Cardiovascular); Steps has no sub-category; "Activiy", "Accessoiries" and "Encoutner" are typos;
+        the *Ostomy Output Volume* description still says it "sits in Vitals" although the row is under
+        Treatments & Appliances; the sub-category list is one flat select shared by all categories
+  - [ ] Add a **Care** option to `Nav. Screens` and retag the Treatments & Appliances rows (they say
+        Records / Tracker today); decide which ostomy entries show in Tracker besides output volume
+        and peristomal skin
+  - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
+  - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs to
+        the `Category` enum, revise `SubCategory`, and fix `CatalogMatchesDocsTest` in the same change
+        (the test compares code against the generated CSVs, so docs and code must move together)
+  - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
       `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
       aggregation and chart kind **plus `category` and `subCategory` as facets** — so adding a tracker
@@ -177,10 +246,14 @@ Builds the reusable pieces with the simplest data type (read-only, one number pe
 - [ ] Then: heart rate (range bar + average), sleep
 - [ ] Daily summaries uploaded to Firestore (WorkManager, only for enabled features)
 
-### M4 — Manual vitals, starting with weight
+### M4 — Manual entries, starting with fatigue
 Adds the entry form and Firestore writes, reusing M3's chart and card.
-- [ ] Weight: entry form, Firestore repository, list, chart, Home card
-- [ ] Then: blood pressure, heart rate, temperature
+Weight, temperature and height were cut from the data model on purpose (2026-10-11). Fatigue goes first
+instead: a single 1–10 rating, so the entry form, the Firestore write and the chart are proven on the
+simplest possible input before blood pressure's two values.
+- [ ] Fatigue (Symptoms → Systemic, `Measurement`, one 1–10 rating): entry form, Firestore repository,
+      list, chart, quick-log chip on Today, Tracker hub row
+- [ ] Then: blood pressure (two values), heart rate (manual entry alongside the synced one)
 
 ### Later (review after M3/M4)
 - M5 — Logged-data features: medication (+ DIN / ATC lookup from Health Canada's drug database, shared reminder engine; dose taken **vs skipped**, since
@@ -189,7 +262,7 @@ Adds the entry form and Firestore writes, reusing M3's chart and card.
   peristomal skin, photos in Cloud Storage), glucose logs. **Trial periods** land here — a labelled
   interval on one configuration, so product comparisons run period-against-period instead of being
   averaged across every change ever made and confounded by season, diet and stoma maturation
-- M6 — Dashboard and UX: cross-feature Home driven by the five categories, real palette and type
+- M6 — Dashboard and UX: the Today screen (see Decisions → App navigation), real palette and type
   scale, accessibility pass. Upcoming appointments surface on Home even though they are filed under
   Medical Records — nobody opens an archive to find out what they are doing on Thursday
 - Backlog: Settings toggles over the switched-off set (DataStore-backed; Settings is their home, no

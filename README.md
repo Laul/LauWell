@@ -20,10 +20,13 @@ app/src/main/java/com/laul/lauwell/
 │   ├── navigation/   root NavHost + destinations
 │   └── ui/theme/     custom theme tokens (colors, typography)
 └── feature/
-    ├── home/         dashboard across enabled modules
+    ├── home/         Today: quick-log row, upcoming events (becomes one of four tabs)
     └── settings/     module enable/disable, thresholds, reminders
 ```
 
 Room schema exports are written to `app/schemas/`.
 
-How data-type features (vitals, activity and sleep, medication, ostomy, glycemia, …) will be grouped is still being decided — see `PLAN.md` for current status and next steps.
+Navigation will be four bottom tabs: **Today**, **Tracker** (vitals, symptoms, activity, sleep, mood,
+cycle), **Care** (treatments, appliances, ostomy) and **Records** (labs, documents, appointments,
+history). Data points are grouped by a category → sub-category → metric hierarchy rather than by
+feature module. See `PLAN.md` → Decisions for the rationale and current status.

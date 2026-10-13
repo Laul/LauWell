@@ -1,7 +1,8 @@
 # Feature modules and on/off toggles
 
-*Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work. Status:
-adopted (PLAN.md → M0). Replaces the earlier "feature descriptor + registry" proposal.*
+*Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
+2026-10-11 for the simplified data model and the four-tab navigation. Status: adopted (PLAN.md → M0).
+Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
 
@@ -35,9 +36,12 @@ own screens. Two later decisions made that the wrong shape (PLAN.md → Decision
 
 | Level | Count | Example | In code |
 |---|---|---|---|
-| Category | 5 | Vitals | `Category` enum |
-| Sub-category | 35 | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
-| Data point | 81 | Heart rate | `MetricDefinition` |
+| Category | 6 (was 5; Labs added 2026-10-11) | Vitals | `Category` enum |
+| Sub-category | being revised (was 35) | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
+| Data point | being revised (was 81) | Heart rate | `MetricDefinition` |
+
+Counts and names follow the simplified data model (PLAN.md → Decisions → *Simplified data model*);
+the enums in code still reflect the older five-category map until `docs/data-structure/` is regenerated.
 
 So there is no separate "feature" concept to invent. **Any level of that hierarchy can be switched
 off**: a whole category, a sub-category, or a single metric. The hierarchy also answers the old
@@ -95,16 +99,19 @@ Example: Lifestyle → Activity switched off.
   data sources are declared on the **metric definition**, so they follow any toggle level.
 - **Background work:** syncs and reminders are scheduled only for visible metrics. A change in the
   switched-off set starts or cancels the matching jobs.
-- **UI:** navigation is generic — Home, `category/{id}`, `metric/{id}`, Settings — and lists only
-  visible metrics. Adding a metric never touches the nav host.
+- **UI:** navigation is four bottom tabs — Today, Tracker, Care, Records (PLAN.md → Decisions → *App
+  navigation*) — plus Settings. Each data point carries the tab(s) it shows on (`Nav. Screens`), and
+  every tab lists only visible metrics. Today's quick-log row and the Tracker hub read from the same
+  registry. Adding a metric never touches the nav host.
 
 ## Deferred: switching off everything related to one condition
 
-Some data is related across categories. Ostomy is the clearest case: output volume is in Vitals,
+Some data is related across categories. Ostomy was the clearest case: output volume was in Vitals,
 the change routine in Lifestyle, peristomal skin in Symptoms, products in Treatments & appliances.
 The ideal behaviour is one switch that turns off *everything related to ostomy*, wherever it is
-filed, and the same question applies to other conditions.
+filed.
 
-Not needed for the MVP. The likely shape is a tag (or "topic") on the metric definition plus a
-fourth `ToggleKey` variant, which fits the switched-off set without reworking it. To be decided
-when it is needed.
+**Mostly resolved by the simplified data model (2026-10-11):** every ostomy data point now sits in
+Treatments & Appliances → Ostomy, so switching off that sub-category is the one switch. The
+cross-category tag (a "topic" on the metric definition plus a fourth `ToggleKey` variant) is only
+needed if another condition turns out to span categories; revisit then.
