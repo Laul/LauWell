@@ -129,24 +129,100 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   plan by time-of-day with a daily completion percentage, and picks the input control per tracker
   (slider / pips / chips). OstoBuddy already carries cross-brand product references with stock levels;
   what nobody does is join those attributes to outcomes.
-- **App navigation** (decided 2026-10-10, data model simplified 2026-10-11). Four bottom-nav tabs,
-  replacing the category-per-destination idea; which tab shows a data point is the `Nav. Screens`
-  column of the simplified model:
-  - **Today** — home. Quick-log row at the top (one tap opens a bottom sheet; **no FAB**, logging lives on
-    the screen itself), current status, medications due, a "symptom check?" prompt, and upcoming
-    appointments. Shortcuts into the other tabs, not a second navigation system. Keep it light: only
-    widgets you would act on. Quick-log set: default list first; adaptive ordering is a later option.
+- **App navigation** (decided 2026-10-10, data model simplified 2026-10-11, Today revised by the design
+  on 2026-10-12). Four bottom-nav tabs, replacing the category-per-destination idea; which tab shows a
+  data point is the `Nav. Screens` column of the simplified model:
+  - **Today** — home, top to bottom: date + greeting, the **Quick log** chip row (one tap opens a bottom
+    sheet; **no FAB**, logging lives on the screen itself), **Pinned** — six metric tiles in a 3 × 2 grid
+    (value, unit, progress bar when there is a goal, context line such as "of 8,000" or "3 days ago"),
+    edited from a settings icon in the section header — and **Medications** due today ("2/3 taken"; tap
+    the circle to mark a dose taken, no separate Take button), then, **below Medications**, the
+    "symptom check?" prompt and **upcoming appointments**. Those last two are missing from the final
+    design file by mistake, not by decision: they stay, and need drawing in the locked system. Keep it
+    light: only widgets you would act on. The pinned grid replaces the earlier "current status" row
+    (tiles wrap instead of scrolling sideways).
+    Defaults: quick log = Fatigue, Blood pressure, Ostomy output, Mood, Symptom; pinned = Steps, Resting
+    HR, Sleep, Fatigue, BP, Ostomy output. Both sets are default lists first; the entry point to edit
+    the pinned set is designed (an icon), the editor screen is not (tracked in M6); adaptive ordering
+    is a later option.
   - **Tracker** — Vitals, Symptoms, Activity, Sleep, Mood and stress, Menstrual cycle, each with its own flow (hub → metric
-    detail → history and charts), Samsung Health style. Hub rows show **synced** (sensor-fed, Health
-    Connect) vs **+ add** (manual). Symptoms and Periods are event logs and may need a different detail
-    screen; revisit if they strain the shared one. Ostomy output volume and peristomal skin score appear
-    here as read-through metrics from the Care module (stored once).
+    detail → history and charts), Samsung Health style. The hub is grouped by category (Vitals,
+    Lifestyle, Symptoms, then Treatments & Appliances for read-through rows), with a search icon in
+    the header. Hub rows show **synced** (sensor-fed, Health Connect) vs **+ Add** (manual). Symptoms and Periods are event logs and may need a different detail
+    screen; revisit if they strain the shared one. Ostomy output volume (and peristomal skin score,
+    not drawn yet) appear here as read-through metrics from the Care module (stored once).
   - **Care** (working name; "Treatments & Appliances" as the screen title) — medications and the whole
-    ostomy module: product catalogue, comparison, changes, issues and entries.
+    ostomy module: product catalogue, comparison, changes, issues and entries. *Not designed yet.*
   - **Records** — labs, clinical documents, pictures, appointments with their encounter notes,
-    medical history (diagnosis, surgery, hospitalization, immunisation), insurance. An appointment is one record with a status (upcoming / done); upcoming ones also show on Today.
-  - A new tracker is still a registry entry, never a new destination; Today's chips and the Tracker hub
-    read from the same registry.
+    medical history (diagnosis, surgery, hospitalization, immunisation), insurance. An appointment is
+    one record with a status (upcoming / done); upcoming ones also show on Today. *Not designed yet.*
+  - A new tracker is still a registry entry, never a new destination; Today's chips, the pinned tiles
+    and the Tracker hub read from the same registry.
+- **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
+  Desktop). Reference (local only, `docs/design/` is gitignored): `LauWell Final Design (for Figma import).html` — six screens in light
+  and dark, the token sheet (with a ready `Color.kt`) and the icon list. The exploration rounds are in
+  `LauWell Design Directions.html`; the PNGs beside them are snapshots of round 5 (not final).
+  - **Look:** page `#F4F6F7`; content sits in light panels (`#FAFBFB`, 1px `#E4E8EB` hairline, 12dp
+    corners); section labels (uppercase, 11.5 sp, tracked) sit **outside** the panels on a 2px ink
+    rule. Primary is near-black ink (`#16191C`; `#ECEFF1` in dark), not a hue. Light and dark
+    themes, following the system.
+  - **Type:** Bricolage Grotesque for display, headlines and titles; IBM Plex Sans for body and
+    labels; **IBM Plex Mono for every metric value** (numbers, times, "2/3"). Scale: display 56 sp/700,
+    headline 28/700, title 18/600, body 16/400, label 11.5/600, metric 20/500, metric-xl 60/500.
+  - **Color = data category.** Six hues (Vitals, Labs, Medical Records, Lifestyle, Symptoms,
+    Treatments & Appliances), each with an `fg` (text, icons, bars) and a `tint`, per mode. A metric
+    keeps its category color wherever it is shown (ostomy output stays teal in Tracker). Neutrals:
+    `bg, surface, surface2, ink, ink2, line, accent, onAccent, panel, panelLine`. Values below, copied
+    from the token sheet. (The icon table in the same file uses slightly different hexes; the token sheet wins.)
+
+    | Neutral   | Light     | Dark      |
+    |-----------|-----------|-----------|
+    | bg        | `#F4F6F7` | `#090B0D` |
+    | surface   | `#FFFFFF` | `#12161A` |
+    | surface2  | `#E9EDF0` | `#1B2127` |
+    | ink       | `#12171B` | `#E4EAEE` |
+    | ink2      | `#56616B` | `#93A0AB` |
+    | line      | `#16191C` | `#ECEFF1` |
+    | accent    | `#16191C` | `#ECEFF1` |
+    | onAccent  | `#FFFFFF` | `#0B0D0F` |
+    | panel     | `#FAFBFB` | `#14191D` |
+    | panelLine | `#E4E8EB` | `#262E35` |
+
+    | Category                | Light fg  | Light tint | Dark fg   | Dark tint |
+    |-------------------------|-----------|------------|-----------|-----------|
+    | Vitals                  | `#984742` | `#FFD8D4`  | `#F4A69F` | `#3F1917` |
+    | Labs                    | `#6D5398` | `#E9DEFF`  | `#C7B0F2` | `#2B1F3F` |
+    | Medical Records         | `#1F689D` | `#CAE9FF`  | `#8AC4F6` | `#062942` |
+    | Lifestyle               | `#267543` | `#CDEFD5`  | `#90CFA0` | `#0A2F17` |
+    | Symptoms                | `#895700` | `#FAE0C1`  | `#E3B479` | `#382100` |
+    | Treatments & Appliances | `#007677` | `#BFF0EF`  | `#6DD1D0` | `#002F2F` |
+
+    Quick-log chip strokes are a mid-tone of the category hue (light: Vitals `#EBABA5`, Lifestyle
+    `#99CDA6`, Symptoms `#DDB687`, Treatments & Appliances `#80CECD`); the design derives them in
+    OKLCH (L 0.80 light / 0.45 dark, chroma 0.077), as it does every category color (fg L 0.50,
+    chroma 0.11; tint L 0.92, chroma 0.05; dark fg L 0.80, chroma 0.094; dark tint L 0.27, chroma 0.06). Hues: Vitals 25,
+    Labs 300, Medical Records 245, Lifestyle 152, Symptoms 72, Treatments & Appliances 195.
+  - **Shape and spacing:** panels 12dp; chips, controls and icon tiles 8dp; spacing scale
+    4 / 8 / 12 / 16 / 20 / 24 / 32 dp.
+  - **Controls:** a filled ink button only for the screen's main action (Save, Allow, Continue with
+    Google); 1.5px stroke otherwise. Quick-log chips are outlined in a mid-tone of the category hue,
+    with icon and text in the category `fg`. Metric icon tiles are outlined in the category `fg`, with no fill.
+    Rating input = ten outlined pips, the selected one filled. Bottom nav on the page background;
+    the active tab is a filled icon + bold label, with no pill.
+  - **Icons:** Material Symbols Outlined (weight 400, FILL 0; FILL 1 only for the active tab), 27 in
+    use, listed with their color in the final file. One custom glyph: a hexagon gear for "edit pinned"
+    (24 × 24, 1.5 stroke: a rounded hexagon with a radius-3 circle in the middle). Any SVG taken from
+    a third-party site (e.g. the Target and Folder icons in the local `docs/design/Icons/`) needs its
+    licence checked before it goes into the app.
+  - **Chart conventions** (Steps detail): bars in the category `fg`; days below goal dimmed; today
+    outlined; a missing day drawn as a dashed empty slot (`null`, never 0); dashed goal line; Week /
+    Month / 3 months selector; stats row (daily average, best day, days at goal); per-day list with
+    notes ("goal met", "watch not worn"); a source line ("Health Connect · Pixel Watch · synced 09:12").
+  - **Screens designed:** sign-in, Health Connect grant, Today (without its symptom-check prompt and
+    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker hub, Steps detail.
+    **Not yet:** Today's symptom-check prompt and upcoming-appointments section, Care, Records, Labs
+    (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
+    picker, empty and error states.
 
 ## Milestones
 
@@ -156,6 +232,13 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [x] Settle feature toggles (2026-10-08): the category → sub-category → metric hierarchy is the toggle
       unit, a switched-off set is stored, everything on for the MVP (see Decisions → Toggles).
       The earlier `FeatureDescriptor` proposal is replaced
+- [x] Lock the visual design (2026-10-12, direction 13b): tokens, type, icons and six screens
+      (see Decisions → Visual design)
+- [x] Fonts and icons ship inside the app, nothing downloaded at runtime (decided 2026-10-13): the
+      three font families bundled in `res/font`, the Material Symbols in use imported as vector
+      drawables
+- [x] `docs/design/` is gitignored (decided 2026-10-13): the exports stay local. PLAN.md → Decisions →
+      *Visual design* is the in-repo record of the design, so keep it complete enough to build from
 
 ### M1 — Authentication and app shell ✅ (2026-10-03)
 - [x] Provision the Firebase project and the Google OAuth "Web application" client;
@@ -192,9 +275,21 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [ ] Split the multi-metric rows in `rows.js` and `codings.js`, then rebuild and update the catalogue
       test: peak flow / spirometry (peak flow, FEV1), body composition (only body fat has a clean
       code), blood type (ABO group, Rh)
-- [ ] Generic navigation: four tabs (Today / Tracker / Care / Records, see Decisions → App navigation);
-      Tracker hub → `metric/{id}`, all read from the registry (also replaces Home's temporary
-      "Settings" link added in M1). Supersedes the earlier Home → `category/{id}` → `metric/{id}` sketch
+- [ ] Theme from the locked design (`core.ui.theme`, replaces today's placeholder values):
+      `LauWellColors` with the ten neutrals + a `CategoryColor(fg, tint)` per category, light and dark
+      (the final file's token sheet has the generated `Color.kt`); `LauWellTypography` with the seven
+      styles (display, headline, title, body, label, metric, metric-xl); shape and spacing tokens;
+      fonts and icons as decided in M0. Category → color lookup lives in one place, keyed by `Category`
+- [ ] Shared components drawn in the design: section label with ink rule, panel, metric row (outlined
+      icon tile, name, context line, Mono value, Synced / + Add badge), pinned tile, outlined
+      quick-log chip, filled and stroke buttons, segmented range selector, 1–10 pip rating, bottom sheet
+- [ ] Generic navigation: four tabs (Today / Tracker / Care / Records, see Decisions → App navigation),
+      bottom bar as designed (icons `sunny`, `monitoring`, `medical_services`, `folder_open`);
+      Tracker hub grouped by category → `metric/{id}`, all read from the registry (also replaces
+      Home's temporary "Settings" link added in M1; Settings needs a new entry point, e.g. the avatar
+      on Today). Supersedes the earlier Home → `category/{id}` → `metric/{id}` sketch
+- [ ] Restyle sign-in to the design (six category bars + wordmark, filled "Continue with Google",
+      privacy line). Use the official Sign in with Google mark
 - [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
       model), then regenerate `docs/data-structure/`. In order:
   - [ ] Clean the Notion rows first: Blood Pressure is filed under Respiratory (should be
@@ -216,7 +311,14 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - [ ] Catalogue + occurrence split wherever both exist (see Decisions): catalogue tables for
       medication, ostomy product, accessory, device and supplier; event tables for their use
 - [ ] Provenance on every record: `source` (device / lab / manual / import), recorded-at, edited-at,
-      and a stated rule for when two sources report the same metric
+      and a stated rule for when two sources report the same metric. Steps detail shows the
+      originating app or device and the last sync time, so keep Health Connect's data origin and a
+      per-metric sync timestamp
+- [ ] Today's two user lists, stored as ordered metric IDs in DataStore and filtered by `isVisible`:
+      the quick-log set and the pinned set (defaults in Decisions → App navigation). Defaults only
+      for now; the pinned editor is an M6 task. A metric can only be pinned if it has a
+      "latest value" summary, so `MetricDefinition` needs one (value, unit, optional goal progress,
+      context line)
 - [ ] Attachments: a `Document` entity that can hang off any record, plus unattached files and one
       "all files" view
 - [ ] Free-text note, attachable to any record and able to stand alone with a date (the escape hatch —
@@ -239,10 +341,17 @@ Builds the reusable pieces with the simplest data type (read-only, one number pe
       `StateFlow` that changes while the screen is open. Pass → Vico for every chart; fail → try
       Koala Plot behind the same `ChartSpec`. (Notion: *Charting library*.)
 - [ ] Reusable chart component: our own `ChartSpec`, one mapper file to Vico (the only file that
-      imports Vico), range selector (week / month / 3 months), gaps drawn for missing days
+      imports Vico), range selector (week / month / 3 months), gaps drawn for missing days. Match the
+      design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
+      today outlined, missing day as a dashed empty slot
 - [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
-- [ ] Steps: Home card + detail screen with the chart
-- [ ] Onboarding when Health Connect is missing; per-metric "grant access"
+- [ ] Steps: pinned tile on Today, Tracker hub row, and the detail screen as designed (big Mono
+      value + goal progress, chart, stats row, per-day list with notes, source line). The design
+      assumes a default goal of 8,000 steps (sleep: 8 h) until user-configurable targets exist
+- [ ] Health Connect grant screen as designed: one row per requested metric (category, "read only",
+      toggle), "Allow N permissions" / "Not now", and the privacy line ("Sensor data stays on this
+      phone. Only daily summaries are saved to your account."). Also: onboarding when Health Connect
+      is missing
 - [ ] Then: heart rate (range bar + average), sleep
 - [ ] Daily summaries uploaded to Firestore (WorkManager, only for enabled features)
 
@@ -252,7 +361,10 @@ Weight, temperature and height were cut from the data model on purpose (2026-10-
 instead: a single 1–10 rating, so the entry form, the Firestore write and the chart are proven on the
 simplest possible input before blood pressure's two values.
 - [ ] Fatigue (Symptoms → Systemic, `Measurement`, one 1–10 rating): entry form, Firestore repository,
-      list, chart, quick-log chip on Today, Tracker hub row
+      list, chart, quick-log chip on Today, Tracker hub row, pinned tile. The entry form is the
+      designed quick-log sheet: category line, question ("How tired do you feel right now?"), ten
+      pips with labelled ends (1 · Rested, 10 · Exhausted), a time row (now, changeable), an optional
+      note, and "Save · 6/10"
 - [ ] Then: blood pressure (two values), heart rate (manual entry alongside the synced one)
 
 ### Later (review after M3/M4)
@@ -262,9 +374,17 @@ simplest possible input before blood pressure's two values.
   peristomal skin, photos in Cloud Storage), glucose logs. **Trial periods** land here — a labelled
   interval on one configuration, so product comparisons run period-against-period instead of being
   averaged across every change ever made and confounded by season, diet and stoma maturation
-- M6 — Dashboard and UX: the Today screen (see Decisions → App navigation), real palette and type
-  scale, accessibility pass. Upcoming appointments surface on Home even though they are filed under
-  Medical Records — nobody opens an archive to find out what they are doing on Thursday
+- M6 — Dashboard and UX: the Today screen (quick log, pinned grid, medications, symptom-check prompt,
+  upcoming appointments; see Decisions → App navigation), design Care and Records (incl. Labs) in
+  the locked system, accessibility pass (palette and type scale are done: Decisions → Visual design).
+  Upcoming appointments surface on Today even though they are filed under Medical Records — nobody
+  opens an archive to find out what they are doing on Thursday
+  - [ ] Design, then build, Today's symptom-check prompt and upcoming-appointments section (below
+        Medications), missing from the final design file
+  - [ ] Design, then build, the pinned editor (opened from the icon in the Pinned header): pick up to
+        six visible metrics that have a latest-value summary, reorder them, reset to defaults
+- Medications on Today ("2/3 taken", tap the circle when a dose is taken) need the medication
+  schedule and dose log from M5; until then the section is hidden or shows placeholder data
 - Backlog: Settings toggles over the switched-off set (DataStore-backed; Settings is their home, no
   picker after sign-in); one switch per condition across categories (e.g. all ostomy data, likely a
   tag on `MetricDefinition` + a fourth `ToggleKey`); emergency view assembled from Medical Records + Treatments (blood type, active conditions,
@@ -274,7 +394,7 @@ simplest possible input before blood pressure's two values.
   reference range as printed on each report),
   user-configurable targets, BigQuery export for ML, FHIR export, CI (lint, tests, build)
 - Maintenance (from the M1 lint run): update the ~14 outdated dependencies and AGP, add an app icon
-  (`MissingApplicationIcon`); CI could also run the Firestore rules tests (`firebase/`, `npm test`)
+  (`MissingApplicationIcon`; the six category bars from the sign-in screen are a ready candidate); CI could also run the Firestore rules tests (`firebase/`, `npm test`)
 
 ## Done
 

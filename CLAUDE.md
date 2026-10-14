@@ -22,9 +22,14 @@ activity and sleep, ostomy appliances and changes, medications, and more.
     are the diffable copies. Earlier inventories are kept beside them as snapshots.
   - `health_data_standards/` — source material for standardization, e.g. the MUHC laboratory
     reference ranges list.
+  - `health_data_labs/` — `common_lab_tests.csv`, the seed list for the Labs category.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
-- `docs/design/` — visual design work.
+- `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
+  PLAN.md → Decisions → *Visual design* is the tracked record. **`LauWell Final Design (for Figma import).html`
+  is the reference** (locked direction 13b: screens in light and dark, token sheet with `Color.kt`,
+  icon list). `LauWell Design Directions.html` holds the exploration rounds; the PNGs are round-5
+  snapshots, not final. `Icons/` holds custom SVGs. Open the HTML files in a browser (bundled pages, ~15 MB each).
   Docs are grouped by subject, not by author. Anything drafted by Claude carries a provenance
   line under its title saying so and giving its status — keep that line accurate when editing.
 - `tmp/` — scratch, gitignored. Never put deliverables here.
@@ -37,14 +42,20 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - Every new data point gets a category, a sub-category, a storage shape and the screen(s) it shows on
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
   Adding a tracker should be a registry entry, not a new navigation destination.
-- Navigation: four bottom tabs — **Today** (quick-log row, upcoming events), **Tracker** (vitals,
+- Navigation: four bottom tabs — **Today** (quick-log row, pinned metrics, medications due,
+  symptom check, upcoming appointments), **Tracker** (vitals,
   symptoms, activity, sleep, mood, cycle), **Care** (treatments, appliances, the ostomy module) and
   **Records** (labs, documents, appointments, history); "Care" is a working name. Details and rationale:
   PLAN.md → Decisions → *App navigation*.
 - Logging: quick entry lives on Today as a row of shortcuts opening a bottom sheet. No floating
   action button. Tracker rows show *synced* (sensor-fed) vs *+ add* (manual).
 - Data shown on two tabs (e.g. ostomy output volume in Care and Tracker) is stored once; the second
-  tab reads from the same registry entry.
+  tab reads from the same registry entry, and keeps its category color.
+- UI follows the locked design (PLAN.md → Decisions → *Visual design*): color = data category (an
+  `fg` and a `tint` per category and mode), near-black ink as primary, metric values always in IBM
+  Plex Mono, filled button only for a screen's main action. Take colors, sizes and radii from the
+  theme tokens, never hard-coded hex or dp in screens. Screens not in the design (Care, Records,
+  Settings…) reuse its components instead of inventing new ones.
 
 ## Stack
 
@@ -52,7 +63,9 @@ Decisions and rationale: `PLAN.md` → Decisions, and the Notion pages it links 
 
 - Kotlin 2.4, Jetpack Compose (BOM), JDK 17. Native Android only.
 - minSdk 26, compileSdk / targetSdk 36. Single `:app` module, one package per feature.
-- UI: own theme tokens (`core.ui.theme`), no Material3 dependency.
+- UI: own theme tokens (`core.ui.theme`), no Material3 dependency. Fonts: Bricolage Grotesque
+  (display, headlines, titles), IBM Plex Sans (body), IBM Plex Mono (metric values). Icons: Material
+  Symbols Outlined. Light and dark themes.
 - Backend: Firebase — Auth (Google sign-in via Credential Manager), Cloud Firestore, Cloud Storage.
 - Data: Health Connect for sensor data, cached in Room; user-logged data in Firestore only.
   Patient-facing categories and the seven storage shapes: `docs/data-structure/`.
