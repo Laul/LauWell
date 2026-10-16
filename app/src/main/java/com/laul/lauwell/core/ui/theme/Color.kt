@@ -44,6 +44,13 @@ data class LauWellColors(
     /** Content panels and their 1px hairline (also the dividers inside a panel). */
     val panel: Color,
     val panelLine: Color,
+    /**
+     * Soft divider outside panels: sheet rows, the per-day list, the bottom-nav top edge, a missing
+     * chart day. Used by the design but not on its token sheet (`lineSoft` there).
+     */
+    val lineSoft: Color,
+    /** Empty part of a progress track, e.g. a pinned tile's goal bar (`trackBg` in the design). */
+    val trackBg: Color,
     val vitals: CategoryColor,
     val labs: CategoryColor,
     val medicalRecords: CategoryColor,
@@ -72,6 +79,8 @@ val LightLauWellColors = LauWellColors(
     onAccent = Color(0xFFFFFFFF),
     panel = Color(0xFFFAFBFB),
     panelLine = Color(0xFFE4E8EB),
+    lineSoft = Color(0xFFD9DFE4),
+    trackBg = Color(0xFFE6EAED),
     vitals = CategoryColor(fg = Color(0xFF984742), tint = Color(0xFFFFD8D4), stroke = Color(0xFFEBABA5)),
     labs = CategoryColor(fg = Color(0xFF6D5398), tint = Color(0xFFE9DEFF), stroke = Color(0xFFC5B3E9)),
     medicalRecords = CategoryColor(fg = Color(0xFF1F689D), tint = Color(0xFFCAE9FF), stroke = Color(0xFF94C4ED)),
@@ -91,6 +100,8 @@ val DarkLauWellColors = LauWellColors(
     onAccent = Color(0xFF0B0D0F),
     panel = Color(0xFF14191D),
     panelLine = Color(0xFF262E35),
+    lineSoft = Color(0xFF252D35),
+    trackBg = Color(0xFF262E35),
     vitals = CategoryColor(fg = Color(0xFFF4A69F), tint = Color(0xFF3F1917), stroke = Color(0xFF7A433F)),
     labs = CategoryColor(fg = Color(0xFFC7B0F2), tint = Color(0xFF2B1F3F), stroke = Color(0xFF5C4B7A)),
     medicalRecords = CategoryColor(fg = Color(0xFF8AC4F6), tint = Color(0xFF062942), stroke = Color(0xFF2D597D)),

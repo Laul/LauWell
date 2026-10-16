@@ -60,10 +60,10 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Six categories:** Vitals, **Labs** (new — promoted out of Vitals → Laboratory, so lab work gets
     its own home), Medical Records, Lifestyle, Symptoms, Treatments & Appliances.
   - **`Nav. Screens` column:** each data point is tagged with the tab(s) that show it. A point is
-    stored once and may be shown on several tabs (e.g. ostomy output volume: owned by Care, charted in
-    Tracker). Today is not a tag: it reads from the same registry. The column currently offers only
-    Tracker and Records and still tags the Treatments & Appliances rows as Records — it needs a
-    **Care** option (see the M2 clean-up task).
+    stored once and may be shown on several tabs (e.g. peristomal skin rating: Treatments & Appliances,
+    tagged Care + Tracker). Today is not a tag: it reads from the same registry. The column offers
+    Tracker, Records and **Care** (Care added and the Treatments & Appliances rows retagged in Notion,
+    2026-10-15).
   - **Tab ↔ category:** Tracker = Vitals, Lifestyle (activity, sleep, mood, stress, cycle), Symptoms;
     Records = Labs, Medical Records; Care = Treatments & Appliances (the whole ostomy module).
   - **Labs:** one row per analyte (sub-category = panel: hematology, lipid profile, iron studies …),
@@ -74,12 +74,14 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     It used to be spread over Vitals, Lifestyle and Symptoms. A leak is a *reason* on an appliance
     change rather than its own event. This largely settles the "one switch per condition across
     categories" backlog item: switching off the Ostomy sub-category now does it.
-  - **Cut or merged** (the old map keeps them if they come back): from Vitals — heart rate
-    variability, ECG trace, peak flow, ketones, weight, body composition, temperature, height; from
+  - **Cut or merged** (the old map keeps them if they come back; as of 2026-10-15 the Notion table
+    has brought back ECG trace, sleep quality rating and headache / migraine, so they are no longer
+    cut): from Vitals — heart rate
+    variability, peak flow, ketones, weight, body composition, temperature, height; from
     Medical Records — pregnancy, family history, allergy, intolerance, provider, blood type, imaging
     study (pictures and documents remain); from Lifestyle — nutrition and intake, mindfulness, sleep
     quality rating, travel and weather context; from Symptoms — flare, suspected trigger,
-    breathlessness, headache, dizziness, skin condition.
+    breathlessness, dizziness, skin condition.
   - **Moved:** menstrual cycle from Lifestyle to Vitals (sub-category Woman Health, shown in Tracker);
     visit / encounter is now *Note (Encounter)*, attached to an appointment; an appointment is one
     record that is upcoming or past (see App navigation).
@@ -96,14 +98,15 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Sub-category stays `Ostomy`, under both categories** (identity = category + name, as Respiratory
     already exists under Vitals and Symptoms). No separate "Digestive output": it would collide with
     Symptoms → Digestive and would only do the grouping job, not the condition-switch job.
-  - **Vitals → Ostomy** (Tracker + Care): Output Volume, Output Consistency, Pouch Emptying. Signals read
+  - **Vitals → Ostomy**: Output Volume and Output Consistency (Tracker), Pouch Emptying (Tracker + Care). Signals read
     between changes against a clinical threshold (sustained high output = dehydration risk), like heart
-    rate. Emptying is the logged event; frequency is derived from it. Stored once; Care reads the same
-    registry entry and the metric keeps its Vitals color.
+    rate. Emptying is the logged event; frequency is derived from it. Stored once; where Care shows one,
+    it reads the same registry entry and the metric keeps its Vitals color.
   - **Treatments & Appliances → Ostomy** (Care): Appliance Change (+ reason; a leak is a reason, not its
     own event), Accessories used,
     Wear time (new, derived from consecutive changes; the headline outcome for comparing products) and
     Peristomal Skin Rating (one scored rating, assessed once at each change; Tracker + Care read-through).
+    Nav tags as in Notion: Accessories and Wear Time = Care; Appliance Change and Skin Rating = Tracker + Care.
   - **Rule of thumb:** read between changes = signal (Vitals); done or assessed at the change =
     intervention (Treatments & Appliances). Phases: daily signal -> intervention -> outcome (wear time, leaks).
   - **Settings toggle (proposed):** a Settings tree (category -> sub-category -> metric) hides things
@@ -173,8 +176,10 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     detail → history and charts), Samsung Health style. The hub is grouped by category (Vitals,
     Lifestyle, Symptoms, then Treatments & Appliances for read-through rows), with a search icon in
     the header. Hub rows show **synced** (sensor-fed, Health Connect) vs **+ Add** (manual). Symptoms and Periods are event logs and may need a different detail
-    screen; revisit if they strain the shared one. Ostomy output volume (and peristomal skin score,
-    not drawn yet) appear here as read-through metrics from the Care module (stored once).
+    screen; revisit if they strain the shared one. Ostomy output volume, consistency and pouch emptying
+    are Vitals → Ostomy rows (Vitals color, although the design drew output in teal); appliance change
+    and peristomal skin rating (not drawn yet) appear as read-through rows from Treatments &
+    Appliances (stored once).
   - **Care** (working name; "Treatments & Appliances" as the screen title) — medications and the whole
     ostomy module: product catalogue, comparison, changes, issues and entries. *Not designed yet.*
   - **Records** — labs, clinical documents, pictures, appointments with their encounter notes,
@@ -195,7 +200,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     headline 28/700, title 18/600, body 16/400, label 11.5/600, metric 20/500, metric-xl 60/500.
   - **Color = data category.** Six hues (Vitals, Labs, Medical Records, Lifestyle, Symptoms,
     Treatments & Appliances), each with an `fg` (text, icons, bars) and a `tint`, per mode. A metric
-    keeps its category color wherever it is shown (ostomy output stays teal in Tracker). Neutrals:
+    keeps its category color wherever it is shown (peristomal skin stays teal in Tracker; ostomy output,
+    now Vitals → Ostomy, takes the Vitals color even though the design drew it teal). Neutrals:
     `bg, surface, surface2, ink, ink2, line, accent, onAccent, panel, panelLine`. Values below, copied
     from the token sheet. (The icon table in the same file uses slightly different hexes; the token sheet wins.)
 
@@ -227,10 +233,16 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     chroma 0.11; tint L 0.92, chroma 0.05; dark fg L 0.80, chroma 0.094; dark tint L 0.27, chroma 0.06). Hues: Vitals 25,
     Labs 300, Medical Records 245, Lifestyle 152, Symptoms 72, Treatments & Appliances 195.
   - **Shape and spacing:** panels 12dp; chips, controls and icon tiles 8dp; spacing scale
-    4 / 8 / 12 / 16 / 20 / 24 / 32 dp.
+    4 / 8 / 12 / 16 / 20 / 24 / 32 dp, plus 14dp inside panels.
+  - **Tokens the screens use beyond the token sheet** (read from the design's render code,
+    2026-10-15, now in the theme): `lineSoft` `#D9DFE4` / `#252D35` (dividers outside panels, nav top
+    edge, missing chart day) and `trackBg` `#E6EAED` / `#262E35` (empty goal bar); shapes `badge` 6dp,
+    `sheet` 14dp top corners, `bar` 2dp; text styles `item` (Plex Sans 15/500), `caption` (12/400)
+    and `metricSmall` (Mono 15/500) for rows, tiles and sheets.
   - **Controls:** a filled ink button only for the screen's main action (Save, Allow, Continue with
     Google); 1.5px stroke otherwise. Quick-log chips are outlined in a mid-tone of the category hue,
-    with icon and text in the category `fg`. Metric icon tiles are outlined in the category `fg`, with no fill.
+    with the icon in the category `fg` and the label in ink (the locked render; an earlier note said
+    both in `fg`). Metric icon tiles are outlined in the category `fg`, with no fill.
     Rating input = ten outlined pips, the selected one filled. Bottom nav on the page background;
     the active tab is a filled icon + bold label, with no pill.
   - **Icons:** Material Symbols Outlined (weight 400, FILL 0; FILL 1 only for the active tab), 27 in
@@ -296,9 +308,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       `MetricRegistry.visible`, unit-tested; `ToggleRepository` in `AppContainer`, first implementation
       `EverythingOnToggleRepository` (everything on)
 - [ ] Review the generic adult normal ranges in `CardiovascularMetrics` (HR 60–100, BP 90–120 / 60–80)
-- [ ] Split the multi-metric rows in `rows.js` and `codings.js`, then rebuild and update the catalogue
-      test: peak flow / spirometry (peak flow, FEV1), body composition (only body fat has a clean
-      code), blood type (ABO group, Rh)
+- [x] ~~Split the multi-metric rows in `rows.js` and `codings.js`~~ — dropped 2026-10-15: peak flow,
+      body composition and blood type were all cut by the simplified model. Revisit if one comes back
 - [x] Theme from the locked design (`core.ui.theme`, 2026-10-13): `LauWellColors` with the ten
       neutrals + a `CategoryColor(fg, tint, stroke)` per category, light and dark (`stroke` is the
       quick-log chip mid-tone); `LauWellColors.forCategory(Category)` is the one lookup;
@@ -306,13 +317,23 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       and `LauWellSpacing`. Fonts bundled in `res/font` (Bricolage Grotesque and IBM Plex Sans as
       variable fonts, Bricolage's optical size set per style; Plex Mono Regular + Medium), OFL texts
       in `assets/licenses/`. Screens moved to the new color names
-  - [ ] Material Symbols as vector drawables: do it with the shared components, which are the first to use icons
+  - [x] Material Symbols as vector drawables (2026-10-15): the 25 glyphs in use + filled variants of
+        the four tab icons, `res/drawable/ic_*.xml`, converted from Google's Material Symbols SVGs;
+        the hexagon gear as `ic_edit_pinned`. Apache 2.0 text in `assets/licenses/`
   - [ ] Map `Category.Labs` in `forCategory` when Labs joins the enum (the colors already exist)
   - [ ] Show the font licences somewhere in Settings (open-source notices)
   - [ ] Drop the `ExperimentalTextApi` opt-in in `Type.kt` once variable-font resources are stable in Compose
-- [ ] Shared components drawn in the design: section label with ink rule, panel, metric row (outlined
-      icon tile, name, context line, Mono value, Synced / + Add badge), pinned tile, outlined
-      quick-log chip, filled and stroke buttons, segmented range selector, 1–10 pip rating, bottom sheet
+- [x] Shared components drawn in the design (`core.ui.components`, 2026-10-15): `SectionHeader` /
+      `Section` (label on the 2dp ink rule, optional category dot and trailing slot), `Panel` +
+      `PanelDivider`, `MetricIconTile`, `MetricRow` (Synced / + Add via `MetricSource`), `PinnedTile`
+      (goal bar), `QuickLogChip`, `FilledButton` / `StrokeButton` / `QuietButton`,
+      `SegmentedSelector`, `PipRating`, `LauWellBottomSheet`, `CategoryLine`, `LauWellIcon`.
+      Light/dark previews in `ComponentsPreview.kt`; compiled, not yet checked on a device
+  - [ ] Check the previews against the design side by side (light and dark), on a device too
+  - [ ] Bottom sheet: drag to dismiss, and IME padding once the note field exists (today: scrim tap
+        and Back only; drawn in the caller's layout, not its own window)
+  - [ ] Toggle switch (Health Connect grant rows) and the medication check row: build with the
+        screens that first use them (M3 grant screen, M6 Today)
 - [ ] Generic navigation: four tabs (Today / Tracker / Care / Records, see Decisions → App navigation),
       bottom bar as designed (icons `sunny`, `monitoring`, `medical_services`, `folder_open`);
       Tracker hub grouped by category → `metric/{id}`, all read from the registry (also replaces
@@ -322,13 +343,16 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       privacy line). Use the official Sign in with Google mark
 - [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
       model), then regenerate `docs/data-structure/`. In order:
-  - [ ] Clean the Notion rows first: Blood Pressure is filed under Respiratory (should be
-        Cardiovascular); Steps has no sub-category; "Activiy", "Accessoiries" and "Encoutner" are typos;
-        the *Ostomy Output Volume* description still says it "sits in Vitals" although the row is under
-        Treatments & Appliances; the sub-category list is one flat select shared by all categories
-  - [ ] Add a **Care** option to `Nav. Screens` and retag the Treatments & Appliances rows (they say
-        Records / Tracker today); decide which ostomy entries show in Tracker besides output volume
-        and peristomal skin
+  - [x] Clean the Notion rows (checked 2026-10-15): Blood Pressure under Cardiovascular, Steps under
+        Activity, typos fixed, output-volume description matches its Vitals row
+  - [ ] Still open in Notion: the sub-category list is one flat select shared by all categories, so
+        lab panel names leak into other categories — *Blood glucose* is filed as Vitals →
+        "Biochemistry - Metabolic" (should be Vitals → Metabolic or similar); "Cardiovascular" now
+        exists under Vitals, Labs and Symptoms (fine, identity is category + name). *Ostomy Wear Time*
+        has no Data Sources value (it is derived)
+  - [x] Add a **Care** option to `Nav. Screens` and retag the Treatments & Appliances rows (done in
+        Notion 2026-10-15; Tracker shows output volume / consistency / emptying, appliance change and
+        skin rating)
   - [ ] Apply *Ostomy placement* (Decisions) in `_src/rows.js` and the generated CSVs, matching the Notion
         table (already updated 2026-10-15: Pouch Emptying in Vitals -> Ostomy, Wear Time row added, skin
         description rewritten). Nav tags kept as they are (decided 2026-10-15): Output Volume = Tracker only,
@@ -337,7 +361,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [ ] Settings: one **Ostomy** switch that hides both Ostomy groups, with per-category rows underneath
   - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
   - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs to
-        the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory`, and fix `CatalogMatchesDocsTest` in the same change
+        the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory`, drop the cut
+        `HeartRateVariability` from `CardiovascularMetrics` (ECG trace stays), and fix `CatalogMatchesDocsTest` in the same change
         (the test compares code against the generated CSVs, so docs and code must move together)
   - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
@@ -406,7 +431,7 @@ simplest possible input before blood pressure's two values.
 ### Later (review after M3/M4)
 - M5 — Logged-data features: medication (+ DIN / ATC lookup from Health Canada's drug database, shared reminder engine; dose taken **vs skipped**, since
   the skipped case carries as much information and most apps drop it), ostomy (GTIN barcode scan to fill the product catalogue, appliance change events
-  referencing it, wear time derived from consecutive changes, leak events,
+  referencing it, wear time derived from consecutive changes, leaks as a change reason (not their own event),
   peristomal skin, photos in Cloud Storage), glucose logs. **Trial periods** land here — a labelled
   interval on one configuration, so product comparisons run period-against-period instead of being
   averaged across every change ever made and confounded by season, diet and stoma maturation

@@ -15,6 +15,12 @@ data class LauWellShapes(
     val control: RoundedCornerShape = RoundedCornerShape(8.dp),
     /** The outlined icon tile at the start of a metric row. */
     val tile: RoundedCornerShape = RoundedCornerShape(8.dp),
+    /** The small "+ Add" badge on a manual metric row. */
+    val badge: RoundedCornerShape = RoundedCornerShape(6.dp),
+    /** Top corners of a bottom sheet. */
+    val sheet: RoundedCornerShape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+    /** Progress tracks and the sheet handle. */
+    val bar: RoundedCornerShape = RoundedCornerShape(2.dp),
 )
 
 /** Border widths from the locked design. */
@@ -38,6 +44,8 @@ data class LauWellSpacing(
     val lg: Dp = 20.dp,
     val xl: Dp = 24.dp,
     val xxl: Dp = 32.dp,
+    /** Inner padding of a panel; the design's one value off the scale. */
+    val panel: Dp = 14.dp,
 )
 
 val LocalLauWellShapes = staticCompositionLocalOf { LauWellShapes() }

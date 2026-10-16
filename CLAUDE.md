@@ -49,7 +49,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   PLAN.md → Decisions → *App navigation*.
 - Logging: quick entry lives on Today as a row of shortcuts opening a bottom sheet. No floating
   action button. Tracker rows show *synced* (sensor-fed) vs *+ add* (manual).
-- Data shown on two tabs (e.g. ostomy output volume in Care and Tracker) is stored once; the second
+- Data shown on two tabs (e.g. peristomal skin rating in Care and Tracker) is stored once; the second
   tab reads from the same registry entry, and keeps its category color.
 - UI follows the locked design (PLAN.md → Decisions → *Visual design*): color = data category (an
   `fg` and a `tint` per category and mode), near-black ink as primary, metric values always in IBM

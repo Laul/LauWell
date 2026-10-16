@@ -38,6 +38,15 @@ data class LauWellTypography(
     val metric: TextStyle,
     /** The big value on a detail screen. 60 sp / 500, Mono. */
     val metricXl: TextStyle,
+    /**
+     * Component sizes the design uses inside rows, tiles and sheets (not on its type sheet).
+     * Row and chip names: 15 sp / 500, Plex Sans.
+     */
+    val item: TextStyle,
+    /** Context lines, units, badges and captions: 12 sp / 400, Plex Sans. */
+    val caption: TextStyle,
+    /** A value in a list row (Tracker hub, sheet): 15 sp / 500, Mono. */
+    val metricSmall: TextStyle,
 )
 
 // Fonts are bundled in res/font (decided in M0: nothing downloaded at runtime). Bricolage Grotesque
@@ -115,6 +124,24 @@ val DefaultLauWellTypography = LauWellTypography(
         fontSize = 60.sp,
         lineHeight = 60.sp,
         letterSpacing = (-0.02).em,
+    ),
+    item = TextStyle(
+        fontFamily = PlexSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp,
+        lineHeight = 20.sp,
+    ),
+    caption = TextStyle(
+        fontFamily = PlexSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+    ),
+    metricSmall = TextStyle(
+        fontFamily = PlexMono,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp,
+        lineHeight = 18.sp,
     ),
 )
 
