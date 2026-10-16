@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(LauWellTheme.colors.background),
+                        .background(LauWellTheme.colors.bg),
                 ) {
                     AuthGate(authRepository) {
                         LauWellNavHost()

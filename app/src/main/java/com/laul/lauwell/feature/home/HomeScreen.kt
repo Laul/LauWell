@@ -31,7 +31,7 @@ fun HomeScreen(onOpenSettings: () -> Unit) {
     ) {
         BasicText(
             text = "Home / Dashboard",
-            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.onBackground),
+            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.ink),
         )
         // Temporary entry point until Home gets real navigation (M2).
         Box(
@@ -42,7 +42,7 @@ fun HomeScreen(onOpenSettings: () -> Unit) {
         ) {
             BasicText(
                 text = "Settings",
-                style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.primary),
+                style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.accent),
             )
         }
     }

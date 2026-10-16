@@ -53,12 +53,12 @@ private fun SignInContent(state: SignInUiState, onSignIn: () -> Unit) {
     ) {
         BasicText(
             text = "LauWell",
-            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.onBackground),
+            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.ink),
         )
         Spacer(Modifier.height(8.dp))
         BasicText(
             text = "Your health data, in one place.",
-            style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.onBackground),
+            style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.ink),
         )
         Spacer(Modifier.height(32.dp))
         PrimaryButton(
@@ -71,7 +71,7 @@ private fun SignInContent(state: SignInUiState, onSignIn: () -> Unit) {
             BasicText(
                 text = state.error.userMessage(),
                 style = LauWellTheme.typography.body.copy(
-                    color = LauWellTheme.colors.onBackground,
+                    color = LauWellTheme.colors.ink,
                     textAlign = TextAlign.Center,
                 ),
             )
@@ -88,14 +88,14 @@ private fun PrimaryButton(text: String, enabled: Boolean, onClick: () -> Unit) {
             .heightIn(min = 56.dp)
             .alpha(if (enabled) 1f else 0.6f)
             .clip(RoundedCornerShape(12.dp))
-            .background(LauWellTheme.colors.primary)
+            .background(LauWellTheme.colors.accent)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,
     ) {
         BasicText(
             text = text,
-            style = LauWellTheme.typography.label.copy(color = LauWellTheme.colors.onPrimary),
+            style = LauWellTheme.typography.label.copy(color = LauWellTheme.colors.onAccent),
         )
     }
 }

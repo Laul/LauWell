@@ -36,7 +36,7 @@ fun SettingsScreen() {
     ) {
         BasicText(
             text = "Settings",
-            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.onBackground),
+            style = LauWellTheme.typography.title.copy(color = LauWellTheme.colors.ink),
         )
         Box(
             modifier = Modifier
@@ -47,7 +47,7 @@ fun SettingsScreen() {
         ) {
             BasicText(
                 text = "Sign out",
-                style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.primary),
+                style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.accent),
             )
         }
     }
