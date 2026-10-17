@@ -12,7 +12,7 @@ fun CareScreen() {
     ScreenColumn {
         ScreenHeader("Treatments & Appliances")
         BasicText(
-            text = "Medications and the ostomy module: products, changes, wear time and skin. Not designed yet.",
+            text = "Medications, the ostomy module (products, changes, wear time and skin) and appointments. Not designed yet.",
             style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.ink2),
         )
     }

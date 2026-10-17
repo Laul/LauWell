@@ -26,10 +26,12 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
-  PLAN.md → Decisions → *Visual design* is the tracked record. **`LauWell Final Design (for Figma import).html`
-  is the reference** (locked direction 13b: screens in light and dark, token sheet with `Color.kt`,
-  icon list). `LauWell Design Directions.html` holds the exploration rounds; the PNGs are round-5
-  snapshots, not final. `Icons/` holds custom SVGs. Open the HTML files in a browser (bundled pages, ~15 MB each).
+  PLAN.md → Decisions → *Visual design* is the tracked record. **`Design • Global direction - v13b-02.html`
+  is the reference**: a zip, despite its name, holding the later export of the locked direction 13b
+  (screens in light and dark as HTML and PNGs, token sheet with `Color.kt`, icons and icon list). It
+  supersedes the loose `LauWell Final Design (for Figma import).html`. `LauWell Design Directions.html`
+  holds the exploration rounds; the PNGs are round-5 snapshots, not final. `Icons/` holds the uploads
+  the custom tab icons were redrawn from (not shipped). Open the HTML files in a browser (bundled pages, ~15 MB each).
   Docs are grouped by subject, not by author. Anything drafted by Claude carries a provenance
   line under its title saying so and giving its status — keep that line accurate when editing.
 - `tmp/` — scratch, gitignored. Never put deliverables here.
@@ -44,8 +46,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   Adding a tracker should be a registry entry, not a new navigation destination.
 - Navigation: four bottom tabs — **Today** (quick-log row, pinned metrics, medications due,
   symptom check, upcoming appointments), **Tracker** (vitals,
-  symptoms, activity, sleep, mood, cycle), **Care** (treatments, appliances, the ostomy module) and
-  **Records** (labs, documents, appointments, history); "Care" is a working name. Details and rationale:
+  symptoms, activity, sleep, mood, cycle), **Care** (treatments, appliances, the ostomy module,
+  appointments) and **Records** (labs, documents, history); "Care" is a working name. Details and rationale:
   PLAN.md → Decisions → *App navigation*.
 - Logging: quick entry lives on Today as a row of shortcuts opening a bottom sheet. No floating
   action button. Tracker rows show *synced* (sensor-fed) vs *+ add* (manual).

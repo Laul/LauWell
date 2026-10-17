@@ -18,9 +18,9 @@ enum class TopLevelTab(
     @DrawableRes val selectedIcon: Int,
 ) {
     Today("today", "Today", R.drawable.ic_sunny, R.drawable.ic_sunny_filled),
-    Tracker("tracker", "Tracker", R.drawable.ic_monitoring, R.drawable.ic_monitoring_filled),
+    Tracker("tracker", "Tracker", R.drawable.ic_target, R.drawable.ic_target_active),
     Care("care", "Care", R.drawable.ic_medical_services, R.drawable.ic_medical_services_filled),
-    Records("records", "Records", R.drawable.ic_folder_open, R.drawable.ic_folder_open_filled),
+    Records("records", "Records", R.drawable.ic_folder, R.drawable.ic_folder_active),
     ;
 
     val graphRoute: String get() = "${route}_tab"

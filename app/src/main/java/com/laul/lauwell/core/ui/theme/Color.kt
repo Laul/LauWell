@@ -17,13 +17,14 @@ import com.laul.lauwell.core.catalog.Category
 data class CategoryColor(val fg: Color, val tint: Color, val stroke: Color)
 
 /**
- * App color tokens from the locked design (direction 13b, token sheet in the local
- * `docs/design/LauWell Final Design (for Figma import).html`; values recorded in PLAN.md).
- * Not modeled on Material3's ColorScheme: the primary is near-black [ink]/[accent], not a hue.
+ * App color tokens from the locked design (direction 13b, "Vivid" palette: token sheet in the
+ * later export, local `docs/design/Design • Global direction - v13b-02.html`; values recorded in
+ * PLAN.md). Not modeled on Material3's ColorScheme: the primary is near-black [ink]/[accent], not a hue.
  *
- * Category colors are derived in OKLCH from one hue per category (fg L 0.50 / C 0.11, tint
- * L 0.92 / C 0.05, stroke L 0.80 / C 0.077; dark: fg L 0.80 / C 0.094, tint L 0.27 / C 0.06,
- * stroke L 0.45 / C 0.077). Look them up with [forCategory] rather than the fields.
+ * Category colors are derived in OKLCH from one hue per category (vitals 28, labs 300, records 255,
+ * lifestyle 150, symptoms 352, T&A 200): fg L 0.57 / C 0.20, tint L 0.92 / C 0.05, stroke L 0.80 /
+ * C 0.14; dark: fg L 0.78 / C 0.18, tint L 0.27 / C 0.06, stroke L 0.45 / C 0.14. Look them up with
+ * [forCategory] rather than the fields.
  */
 @Immutable
 data class LauWellColors(
@@ -81,12 +82,12 @@ val LightLauWellColors = LauWellColors(
     panelLine = Color(0xFFE4E8EB),
     lineSoft = Color(0xFFD9DFE4),
     trackBg = Color(0xFFE6EAED),
-    vitals = CategoryColor(fg = Color(0xFF984742), tint = Color(0xFFFFD8D4), stroke = Color(0xFFEBABA5)),
-    labs = CategoryColor(fg = Color(0xFF6D5398), tint = Color(0xFFE9DEFF), stroke = Color(0xFFC5B3E9)),
-    medicalRecords = CategoryColor(fg = Color(0xFF1F689D), tint = Color(0xFFCAE9FF), stroke = Color(0xFF94C4ED)),
-    lifestyle = CategoryColor(fg = Color(0xFF267543), tint = Color(0xFFCDEFD5), stroke = Color(0xFF99CDA6)),
-    symptoms = CategoryColor(fg = Color(0xFF895700), tint = Color(0xFFFAE0C1), stroke = Color(0xFFDDB687)),
-    treatmentsAndAppliances = CategoryColor(fg = Color(0xFF007677), tint = Color(0xFFBFF0EF), stroke = Color(0xFF80CECD)),
+    vitals = CategoryColor(fg = Color(0xFFD4312A), tint = Color(0xFFFFD9D2), stroke = Color(0xFFFF998A)),
+    labs = CategoryColor(fg = Color(0xFF8C51D9), tint = Color(0xFFE9DEFF), stroke = Color(0xFFCCA8FF)),
+    medicalRecords = CategoryColor(fg = Color(0xFF0073E9), tint = Color(0xFFCFE7FF), stroke = Color(0xFF7DC1FF)),
+    lifestyle = CategoryColor(fg = Color(0xFF00952A), tint = Color(0xFFCEEFD3), stroke = Color(0xFF75D78D)),
+    symptoms = CategoryColor(fg = Color(0xFFC83184), tint = Color(0xFFFFD8E8), stroke = Color(0xFFFF96C7)),
+    treatmentsAndAppliances = CategoryColor(fg = Color(0xFF0095A5), tint = Color(0xFFBFEFF2), stroke = Color(0xFF00D8E1)),
 )
 
 val DarkLauWellColors = LauWellColors(
@@ -102,12 +103,12 @@ val DarkLauWellColors = LauWellColors(
     panelLine = Color(0xFF262E35),
     lineSoft = Color(0xFF252D35),
     trackBg = Color(0xFF262E35),
-    vitals = CategoryColor(fg = Color(0xFFF4A69F), tint = Color(0xFF3F1917), stroke = Color(0xFF7A433F)),
-    labs = CategoryColor(fg = Color(0xFFC7B0F2), tint = Color(0xFF2B1F3F), stroke = Color(0xFF5C4B7A)),
-    medicalRecords = CategoryColor(fg = Color(0xFF8AC4F6), tint = Color(0xFF062942), stroke = Color(0xFF2D597D)),
-    lifestyle = CategoryColor(fg = Color(0xFF90CFA0), tint = Color(0xFF0A2F17), stroke = Color(0xFF316140)),
-    symptoms = CategoryColor(fg = Color(0xFFE3B479), tint = Color(0xFF382100), stroke = Color(0xFF704E1F)),
-    treatmentsAndAppliances = CategoryColor(fg = Color(0xFF6DD1D0), tint = Color(0xFF002F2F), stroke = Color(0xFF006262)),
+    vitals = CategoryColor(fg = Color(0xFFFF8474), tint = Color(0xFF3F1915), stroke = Color(0xFF932C25)),
+    labs = CategoryColor(fg = Color(0xFFCA99FF), tint = Color(0xFF2B1F3F), stroke = Color(0xFF623E96)),
+    medicalRecords = CategoryColor(fg = Color(0xFF60B9FF), tint = Color(0xFF102743), stroke = Color(0xFF0C54A0)),
+    lifestyle = CategoryColor(fg = Color(0xFF4CD676), tint = Color(0xFF0C2E16), stroke = Color(0xFF006925)),
+    symptoms = CategoryColor(fg = Color(0xFFFF81C3), tint = Color(0xFF3C1929), stroke = Color(0xFF8B2B5D)),
+    treatmentsAndAppliances = CategoryColor(fg = Color(0xFF00D7E4), tint = Color(0xFF002F32), stroke = Color(0xFF006A74)),
 )
 
 val LocalLauWellColors = staticCompositionLocalOf { LightLauWellColors }

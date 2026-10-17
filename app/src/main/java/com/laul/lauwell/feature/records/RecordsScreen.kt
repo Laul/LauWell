@@ -12,7 +12,7 @@ fun RecordsScreen() {
     ScreenColumn {
         ScreenHeader("Records")
         BasicText(
-            text = "Labs, documents, appointments and medical history. Not designed yet.",
+            text = "Labs, documents, visit notes and medical history. Not designed yet.",
             style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.ink2),
         )
     }

@@ -181,16 +181,25 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     and peristomal skin rating (not drawn yet) appear as read-through rows from Treatments &
     Appliances (stored once).
   - **Care** (working name; "Treatments & Appliances" as the screen title) — medications and the whole
-    ostomy module: product catalogue, comparison, changes, issues and entries. *Not designed yet.*
-  - **Records** — labs, clinical documents, pictures, appointments with their encounter notes,
+    ostomy module: product catalogue, comparison, changes, issues and entries; and **appointments**
+    (decided 2026-10-16, following the later design export, which draws an Appointments screen under
+    Care: a timeline of upcoming and past visits, each tagged in its category color — stoma nurse in
+    T&A, blood test in Labs, consultation and notes in Medical Records, physio in Lifestyle). The
+    appointment data stays in Medical Records (its color, its storage); only the screen moved. How
+    Care holds both the T&A content and Appointments is not designed yet.
+  - **Records** — labs, clinical documents, pictures, the encounter notes behind past appointments,
     medical history (diagnosis, surgery, hospitalization, immunisation), insurance. An appointment is
     one record with a status (upcoming / done); upcoming ones also show on Today. *Not designed yet.*
   - A new tracker is still a registry entry, never a new destination; Today's chips, the pinned tiles
     and the Tracker hub read from the same registry.
 - **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
-  Desktop). Reference (local only, `docs/design/` is gitignored): `LauWell Final Design (for Figma import).html` — six screens in light
-  and dark, the token sheet (with a ready `Color.kt`) and the icon list. The exploration rounds are in
-  `LauWell Design Directions.html`; the PNGs beside them are snapshots of round 5 (not final).
+  Desktop). Reference (local only, `docs/design/` is gitignored): **`Design • Global direction - v13b-02.html`**,
+  a zip despite its name, holding the later export (2026-10-13) of the final design: `export/LauWell Final
+  Design (for Figma import).html` (seven screens in light and dark, incl. Appointments; the token sheet with
+  a ready `Color.kt`), `screens/*.png`, `tokens.png`, `icons/` and `lauwell-icons.csv`. It supersedes the
+  loose `LauWell Final Design (for Figma import).html` beside it, which predates the Vivid palette, the
+  custom tab icons and Appointments. The exploration rounds are in `LauWell Design Directions.html`; the
+  PNGs beside them are snapshots of round 5 (not final).
   - **Look:** page `#F4F6F7`; content sits in light panels (`#FAFBFB`, 1px `#E4E8EB` hairline, 12dp
     corners); section labels (uppercase, 11.5 sp, tracked) sit **outside** the panels on a 2px ink
     rule. Primary is near-black ink (`#16191C`; `#ECEFF1` in dark), not a hue. Light and dark
@@ -220,18 +229,21 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 
     | Category                | Light fg  | Light tint | Dark fg   | Dark tint |
     |-------------------------|-----------|------------|-----------|-----------|
-    | Vitals                  | `#984742` | `#FFD8D4`  | `#F4A69F` | `#3F1917` |
-    | Labs                    | `#6D5398` | `#E9DEFF`  | `#C7B0F2` | `#2B1F3F` |
-    | Medical Records         | `#1F689D` | `#CAE9FF`  | `#8AC4F6` | `#062942` |
-    | Lifestyle               | `#267543` | `#CDEFD5`  | `#90CFA0` | `#0A2F17` |
-    | Symptoms                | `#895700` | `#FAE0C1`  | `#E3B479` | `#382100` |
-    | Treatments & Appliances | `#007677` | `#BFF0EF`  | `#6DD1D0` | `#002F2F` |
+    | Vitals                  | `#D4312A` | `#FFD9D2`  | `#FF8474` | `#3F1915` |
+    | Labs                    | `#8C51D9` | `#E9DEFF`  | `#CA99FF` | `#2B1F3F` |
+    | Medical Records         | `#0073E9` | `#CFE7FF`  | `#60B9FF` | `#102743` |
+    | Lifestyle               | `#00952A` | `#CEEFD3`  | `#4CD676` | `#0C2E16` |
+    | Symptoms                | `#C83184` | `#FFD8E8`  | `#FF81C3` | `#3C1929` |
+    | Treatments & Appliances | `#0095A5` | `#BFEFF2`  | `#00D7E4` | `#002F32` |
 
-    Quick-log chip strokes are a mid-tone of the category hue (light: Vitals `#EBABA5`, Lifestyle
-    `#99CDA6`, Symptoms `#DDB687`, Treatments & Appliances `#80CECD`); the design derives them in
-    OKLCH (L 0.80 light / 0.45 dark, chroma 0.077), as it does every category color (fg L 0.50,
-    chroma 0.11; tint L 0.92, chroma 0.05; dark fg L 0.80, chroma 0.094; dark tint L 0.27, chroma 0.06). Hues: Vitals 25,
-    Labs 300, Medical Records 245, Lifestyle 152, Symptoms 72, Treatments & Appliances 195.
+    This is the **Vivid** palette of the later export (switched 2026-10-16; the earlier, softer one had
+    Vitals `#984742`, Symptoms in amber `#895700`). Quick-log chip strokes are a mid-tone of the
+    category hue, not on the token sheet: light Vitals `#FF998A`, Labs `#CCA8FF`, Medical Records
+    `#7DC1FF`, Lifestyle `#75D78D`, Symptoms `#FF96C7`, T&A `#00D8E1`; dark `#932C25`, `#623E96`,
+    `#0C54A0`, `#006925`, `#8B2B5D`, `#006A74`. The design derives every category color in OKLCH:
+    fg L 0.57 / chroma 0.20 (dark L 0.78 / 0.18), tint L 0.92 / 0.05 (dark L 0.27 / 0.06), stroke
+    L 0.80 / 0.14 (dark L 0.45 / 0.14). Hues: Vitals 28, Labs 300, Medical Records 255, Lifestyle 150,
+    Symptoms 352, Treatments & Appliances 200.
   - **Shape and spacing:** panels 12dp; chips, controls and icon tiles 8dp; spacing scale
     4 / 8 / 12 / 16 / 20 / 24 / 32 dp, plus 14dp inside panels.
   - **Tokens the screens use beyond the token sheet** (read from the design's render code,
@@ -246,17 +258,21 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     Rating input = ten outlined pips, the selected one filled. Bottom nav on the page background;
     the active tab is a filled icon + bold label, with no pill.
   - **Icons:** Material Symbols Outlined (weight 400, FILL 0; FILL 1 only for the active tab), 27 in
-    use, listed with their color in the final file. One custom glyph: a hexagon gear for "edit pinned"
-    (24 × 24, 1.5 stroke: a rounded hexagon with a radius-3 circle in the middle). Any SVG taken from
-    a third-party site (e.g. the Target and Folder icons in the local `docs/design/Icons/`) needs its
-    licence checked before it goes into the app.
+    use, listed with their color in the final file. Three custom glyphs: a hexagon gear for "edit pinned"
+    (24 × 24, 1.5 stroke: a rounded hexagon with a radius-3 circle in the middle), and the **Tracker
+    (target) and Records (folder) tab icons** (24 × 24, 1.6 stroke, 2.1 when active, round caps),
+    which replace Material `monitoring` / `folder_open` in the later export
+    (`docs/design/Design • Global direction - v13b-02.html`, a zip: `export/icons/`,
+    `lauwell-icons.csv`). Those two were redrawn in the design tool from the uploads in
+    `docs/design/Icons/` and share no path data with them, so the SVG Repo originals don't ship.
   - **Chart conventions** (Steps detail): bars in the category `fg`; days below goal dimmed; today
     outlined; a missing day drawn as a dashed empty slot (`null`, never 0); dashed goal line; Week /
     Month / 3 months selector; stats row (daily average, best day, days at goal); per-day list with
     notes ("goal met", "watch not worn"); a source line ("Health Connect · Pixel Watch · synced 09:12").
   - **Screens designed:** sign-in, Health Connect grant, Today (without its symptom-check prompt and
-    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker hub, Steps detail.
-    **Not yet:** Today's symptom-check prompt and upcoming-appointments section, Care, Records, Labs
+    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker hub, Steps detail,
+    Appointments (Care tab, later export).
+    **Not yet:** Today's symptom-check prompt and upcoming-appointments section, the rest of Care, Records, Labs
     (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
     picker, empty and error states.
 
@@ -357,6 +373,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       model), then regenerate `docs/data-structure/`. In order:
   - [x] Clean the Notion rows (checked 2026-10-15): Blood Pressure under Cardiovascular, Steps under
         Activity, typos fixed, output-volume description matches its Vitals row
+  - [ ] Appointments moved to the Care tab (2026-10-16): retag their `Nav. Screens` in Notion
+        (Care, plus Today for upcoming ones) before the code takes the tags
   - [ ] Still open in Notion: the sub-category list is one flat select shared by all categories, so
         lab panel names leak into other categories — *Blood glucose* is filed as Vitals →
         "Biochemistry - Metabolic" (should be Vitals → Metabolic or similar); "Cardiovascular" now
@@ -450,8 +468,8 @@ simplest possible input before blood pressure's two values.
 - M6 — Dashboard and UX: the Today screen (quick log, pinned grid, medications, symptom-check prompt,
   upcoming appointments; see Decisions → App navigation), design Care and Records (incl. Labs) in
   the locked system, accessibility pass (palette and type scale are done: Decisions → Visual design).
-  Upcoming appointments surface on Today even though they are filed under Medical Records — nobody
-  opens an archive to find out what they are doing on Thursday
+  Upcoming appointments surface on Today as well as in Care → Appointments, though they are filed
+  under Medical Records — nobody opens an archive to find out what they are doing on Thursday
   - [ ] Design, then build, Today's symptom-check prompt and upcoming-appointments section (below
         Medications), missing from the final design file
   - [ ] Design, then build, the pinned editor (opened from the icon in the Pinned header): pick up to

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LauWell's own glyph for the Records tab (active: 2.1 stroke), from the final design export (v13b-02, icons/folder.svg). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M2.4,4.4A1.6,1.6 0,0 1,4,2.75H7.9L10.9,6.1H20.4A1.6,1.6 0,0 1,22,7.7"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.1"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M2.4,15.4V7.2A1.6,1.6 0,0 1,4,5.6H7.9L10.9,8.95H20.4A1.6,1.6 0,0 1,22,10.55V20A1.6,1.6 0,0 1,20.4,21.6H4A1.6,1.6 0,0 1,2.4,20"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2.1"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

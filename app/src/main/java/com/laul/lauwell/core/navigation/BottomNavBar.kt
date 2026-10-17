@@ -26,7 +26,8 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
  * The bottom bar as designed: on the page background with a soft top edge; the active tab is a
- * filled icon and a bold ink label, no pill.
+ * filled icon (Today, Care) or a heavier stroke (Tracker, Records: custom glyphs) and a bold ink
+ * label, no pill.
  */
 @Composable
 fun BottomNavBar(
