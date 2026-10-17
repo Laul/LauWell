@@ -7,23 +7,31 @@ class MetricDefinitionTest {
 
     private fun quantity(key: String) = Quantity(key = key, label = key, unit = "")
 
+    private fun metric(
+        subCategory: SubCategory,
+        shape: StorageShape,
+        quantities: List<Quantity> = emptyList(),
+        chartKind: ChartKind? = null,
+        sources: Set<DataSource> = setOf(DataSource.Manual),
+    ) = MetricDefinition(
+        MetricId("x"), "X", subCategory, shape,
+        icon = 0, sources = sources, quantities = quantities, chartKind = chartKind,
+    )
+
     @Test(expected = IllegalArgumentException::class)
     fun `a measurement needs a quantity`() {
-        MetricDefinition(MetricId("x"), "X", SubCategory.VitalsMetabolic, StorageShape.Measurement)
+        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `quantity keys are unique`() {
-        MetricDefinition(
-            MetricId("x"), "X", SubCategory.VitalsMetabolic, StorageShape.Measurement,
-            quantities = listOf(quantity("a"), quantity("a")),
-        )
+        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement, quantities = listOf(quantity("a"), quantity("a")))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `a chart needs an aggregation`() {
-        MetricDefinition(
-            MetricId("x"), "X", SubCategory.VitalsMetabolic, StorageShape.Measurement,
+        metric(
+            SubCategory.VitalsMetabolic, StorageShape.Measurement,
             quantities = listOf(quantity("a")),
             chartKind = ChartKind.Line,
         )
@@ -34,9 +42,20 @@ class MetricDefinitionTest {
         MetricId("Heart Rate")
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun `a metric needs a source`() {
+        metric(SubCategory.SymptomsPain, StorageShape.Event, sources = emptySet())
+    }
+
+    @Test
+    fun `manual when it can be logged by hand`() {
+        assertEquals(false, metric(SubCategory.SymptomsPain, StorageShape.Event, sources = setOf(DataSource.Wearable)).isManual)
+        assertEquals(true, metric(SubCategory.SymptomsPain, StorageShape.Event, sources = setOf(DataSource.Wearable, DataSource.Manual)).isManual)
+    }
+
     @Test
     fun `category comes from the sub-category`() {
-        val metric = MetricDefinition(MetricId("x"), "X", SubCategory.SymptomsPain, StorageShape.Event)
+        val metric = metric(SubCategory.SymptomsPain, StorageShape.Event)
         assertEquals(Category.Symptoms, metric.category)
     }
 }

@@ -334,11 +334,19 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
         and Back only; drawn in the caller's layout, not its own window)
   - [ ] Toggle switch (Health Connect grant rows) and the medication check row: build with the
         screens that first use them (M3 grant screen, M6 Today)
-- [ ] Generic navigation: four tabs (Today / Tracker / Care / Records, see Decisions → App navigation),
-      bottom bar as designed (icons `sunny`, `monitoring`, `medical_services`, `folder_open`);
-      Tracker hub grouped by category → `metric/{id}`, all read from the registry (also replaces
-      Home's temporary "Settings" link added in M1; Settings needs a new entry point, e.g. the avatar
-      on Today). Supersedes the earlier Home → `category/{id}` → `metric/{id}` sketch
+- [x] Generic navigation (2026-10-15): four tabs (`TopLevelTab`), each a nested graph so a pushed
+      screen keeps the bar with its tab selected and each tab keeps its own back stack;
+      `BottomNavBar` as designed. Tracker hub grouped by category (Vitals, Lifestyle, Symptoms) from
+      `MetricRegistry.visible` → shared `metric/{id}` detail (placeholder: filing + empty value).
+      Today = date, greeting and the avatar that opens Settings (Home and its link removed). Care
+      and Records are placeholders. `MetricDefinition` gained `icon` and `sources` (Notion *Data
+      Sources*: Manual / Wearable; "+ Add" when manual, else "Synced"). New shared pieces:
+      `ScreenHeader`, `TopBar`, `IconAction`, `ScreenColumn`. Not yet run on a device
+  - [ ] Treatments & Appliances read-through rows on the hub: needs the `Nav. Screens` tags on
+        `MetricDefinition` (comes with the data-map reconciliation)
+  - [ ] Tracker search icon (in the design): add once there is a search to open
+  - [ ] Today's greeting has no name (`Session` holds only the uid by design); decide whether to
+        show the Google first name
 - [ ] Restyle sign-in to the design (six category bars + wordmark, filled "Continue with Google",
       privacy line). Use the official Sign in with Google mark
 - [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
@@ -361,8 +369,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [ ] Settings: one **Ostomy** switch that hides both Ostomy groups, with per-category rows underneath
   - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
   - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs to
-        the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory`, drop the cut
-        `HeartRateVariability` from `CardiovascularMetrics` (ECG trace stays), and fix `CatalogMatchesDocsTest` in the same change
+        the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory` (`HeartRateVariability` already
+        removed from the registry, 2026-10-15; ECG trace stays), and fix `CatalogMatchesDocsTest` in the same change
         (the test compares code against the generated CSVs, so docs and code must move together)
   - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,

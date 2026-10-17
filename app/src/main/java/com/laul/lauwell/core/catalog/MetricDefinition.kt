@@ -1,5 +1,7 @@
 package com.laul.lauwell.core.catalog
 
+import androidx.annotation.DrawableRes
+
 /**
  * Stable identifier of a metric. Ends up in Firestore paths, Room rows and stored settings, so it
  * must never change once shipped. Lowercase snake_case.
@@ -24,6 +26,10 @@ data class MetricDefinition(
     val label: String,
     val subCategory: SubCategory,
     val shape: StorageShape,
+    /** Material Symbols glyph (`R.drawable.ic_*`) on its icon tile, chip and pinned tile. */
+    @DrawableRes val icon: Int,
+    /** Where its records come from: the "Data Sources" column of the Notion data model. */
+    val sources: Set<DataSource>,
     /** What one record holds. One entry for a single value, several for e.g. blood pressure. */
     val quantities: List<Quantity> = emptyList(),
     /** How records are summarised per day; null when a daily summary means nothing. */
@@ -42,7 +48,20 @@ data class MetricDefinition(
             "$id: quantity keys must be unique"
         }
         require(chartKind == null || aggregation != null) { "$id: a chart needs an aggregation" }
+        require(sources.isNotEmpty()) { "$id: a metric needs at least one source" }
     }
+
+    /** Can be logged by hand. Tracker rows show "+ Add" for these and "Synced" for sensor-only ones. */
+    val isManual: Boolean get() = DataSource.Manual in sources
+}
+
+/** Where a metric's records come from. */
+enum class DataSource {
+    /** Logged in the app. */
+    Manual,
+
+    /** Read from Health Connect (watch, phone, connected devices). */
+    Wearable,
 }
 
 /**
