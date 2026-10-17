@@ -35,6 +35,8 @@ data class MetricDefinition(
     /** How records are summarised per day; null when a daily summary means nothing. */
     val aggregation: Aggregation? = null,
     val chartKind: ChartKind? = null,
+    /** The 7-day mini-chart on its Tracker row and widget (`docs/design/UI-spec.md`); null for none. */
+    val miniChart: MiniChartKind? = null,
     /** Default personal goal (Lifestyle). Clinical ranges live on each [Quantity] instead. */
     val goal: Goal? = null,
 ) {
@@ -51,7 +53,7 @@ data class MetricDefinition(
         require(sources.isNotEmpty()) { "$id: a metric needs at least one source" }
     }
 
-    /** Can be logged by hand. Tracker rows show "+ Add" for these and "Synced" for sensor-only ones. */
+    /** Can be logged by hand: offered in Quick log and on its detail screen. */
     val isManual: Boolean get() = DataSource.Manual in sources
 }
 
@@ -106,4 +108,25 @@ enum class Aggregation {
 
 /** Mapped to an actual chart by the `ChartSpec` layer (M3), the only place that knows Vico. */
 enum class ChartKind { Line, Bar, RangeBar }
+
+/**
+ * The small chart on a Tracker row (7 days, 56 × 24dp) and widget (34dp high), drawn by
+ * `core.ui.components.MiniChart`, not Vico. Rules: `docs/design/UI-spec.md` → Mini-chart rules.
+ */
+enum class MiniChartKind {
+    /** One bar per day, dashed goal line when there is a goal: steps, sleep, ostomy output. */
+    Bars,
+
+    /** Line over a soft area, dot on the latest value: heart rate, mood, fatigue. */
+    Line,
+
+    /** One low–high bar per day: blood pressure (diastolic to systolic). */
+    Range,
+
+    /** One dot per day, higher = more severe, hollow = none: brain fog. */
+    SeverityDots,
+
+    /** The 28-day cycle with period and fertile window tinted, today tall in ink. */
+    CycleStrip,
+}
 

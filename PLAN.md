@@ -174,8 +174,18 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     is a later option.
   - **Tracker** — Vitals, Symptoms, Activity, Sleep, Mood and stress, Menstrual cycle, each with its own flow (hub → metric
     detail → history and charts), Samsung Health style. The hub is grouped by category (Vitals,
-    Lifestyle, Symptoms, then Treatments & Appliances for read-through rows), with a search icon in
-    the header. Hub rows show **synced** (sensor-fed, Health Connect) vs **+ Add** (manual). Symptoms and Periods are event logs and may need a different detail
+    Lifestyle, Symptoms, then Treatments & Appliances for read-through rows), with a list | widgets
+    toggle and a search icon in the header. **Two views** (Tracker 15a/15b, adopted 2026-10-15,
+    `docs/design/UI-spec.md`): a **list** (default) — one row per metric with a one-line takeaway, a
+    7-day sparkline and the latest value — or **widgets**, 2-up tiles with value, a 34dp mini chart
+    and the takeaway (an odd last tile spans both columns). The choice is one global display
+    preference (`TrackerView` in DataStore), kept across sessions; switching keeps the same category
+    in view. The takeaway replaced the earlier *synced* / *+ Add* badges: manual entry goes through
+    Quick log or the detail screen. Each metric declares its mini-chart kind in the registry: bars
+    (steps, sleep, ostomy output; dashed goal line), line + soft area (heart rate, mood, fatigue),
+    range bars (blood pressure), severity dots (brain fog), 28-day strip (menstrual cycle); latest
+    day in full color, earlier days lighter, a missing day a faint placeholder, never zero. Open in
+    the design: grouping, sorting and filtering within Tracker beyond category. Symptoms and Periods are event logs and may need a different detail
     screen; revisit if they strain the shared one. Ostomy output volume, consistency and pouch emptying
     are Vitals → Ostomy rows (Vitals color, although the design drew output in teal); appliance change
     and peristomal skin rating (not drawn yet) appear as read-through rows from Treatments &
@@ -193,12 +203,15 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - A new tracker is still a registry entry, never a new destination; Today's chips, the pinned tiles
     and the Tracker hub read from the same registry.
 - **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
-  Desktop). Reference (local only, `docs/design/` is gitignored): **`Design • Global direction - v13b-02.html`**,
-  a zip despite its name, holding the later export (2026-10-13) of the final design: `export/LauWell Final
-  Design (for Figma import).html` (seven screens in light and dark, incl. Appointments; the token sheet with
-  a ready `Color.kt`), `screens/*.png`, `tokens.png`, `icons/` and `lauwell-icons.csv`. It supersedes the
-  loose `LauWell Final Design (for Figma import).html` beside it, which predates the Vivid palette, the
-  custom tab icons and Appointments. The exploration rounds are in `LauWell Design Directions.html`; the
+  Desktop; Tracker views 15a/15b added 2026-10-15). Reference (local only, `docs/design/` is
+  gitignored): **`Design • Global direction - v15.html`**, a zip despite its name (a handoff:
+  `docs/design/Design • Global direction - v15a-01.html`, the bundled final design with eight screens
+  in light and dark incl. both Tracker views and Appointments; `docs/design/UI-spec.md`, the written
+  spec; `docs/design/Icons/lauwell-icons.csv`; and the architecture doc update). The spec and icon
+  list are also copied loose into `docs/design/`. Earlier exports, superseded:
+  `Design • Global direction - v13b-02.html` (zip, 2026-10-13: Vivid palette, custom tab icons,
+  Appointments, PNG screens, `tokens.png`) and the loose `LauWell Final Design (for Figma import).html`
+  (before all of those). The exploration rounds are in `LauWell Design Directions.html`; the
   PNGs beside them are snapshots of round 5 (not final).
   - **Look:** page `#F4F6F7`; content sits in light panels (`#FAFBFB`, 1px `#E4E8EB` hairline, 12dp
     corners); section labels (uppercase, 11.5 sp, tracked) sit **outside** the panels on a 2px ink
@@ -248,7 +261,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     4 / 8 / 12 / 16 / 20 / 24 / 32 dp, plus 14dp inside panels.
   - **Tokens the screens use beyond the token sheet** (read from the design's render code,
     2026-10-15, now in the theme): `lineSoft` `#D9DFE4` / `#252D35` (dividers outside panels, nav top
-    edge, missing chart day) and `trackBg` `#E6EAED` / `#262E35` (empty goal bar); shapes `badge` 6dp,
+    edge, missing chart day) and `trackBg` `#E6EAED` / `#262E35` (empty goal bar); shapes
+    `toggleTrack` 10dp (the list | widgets switch; `badge` 6dp went with the + Add badge),
     `sheet` 14dp top corners, `bar` 2dp; text styles `item` (Plex Sans 15/500), `caption` (12/400)
     and `metricSmall` (Mono 15/500) for rows, tiles and sheets.
   - **Controls:** a filled ink button only for the screen's main action (Save, Allow, Continue with
@@ -257,8 +271,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     both in `fg`). Metric icon tiles are outlined in the category `fg`, with no fill.
     Rating input = ten outlined pips, the selected one filled. Bottom nav on the page background;
     the active tab is a filled icon + bold label, with no pill.
-  - **Icons:** Material Symbols Outlined (weight 400, FILL 0; FILL 1 only for the active tab), 27 in
-    use, listed with their color in the final file. Three custom glyphs: a hexagon gear for "edit pinned"
+  - **Icons:** Material Symbols Outlined (weight 400, FILL 0; FILL 1 only for the active tab), listed
+    with their color in `lauwell-icons.csv` (v15: `view_list` / `grid_view` added for the Tracker
+    toggle, `sync` dropped with the Synced badge; `add` stays for the Appointments header). Three custom glyphs: a hexagon gear for "edit pinned"
     (24 × 24, 1.5 stroke: a rounded hexagon with a radius-3 circle in the middle), and the **Tracker
     (target) and Records (folder) tab icons** (24 × 24, 1.6 stroke, 2.1 when active, round caps),
     which replace Material `monitoring` / `folder_open` in the later export
@@ -270,11 +285,13 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     Month / 3 months selector; stats row (daily average, best day, days at goal); per-day list with
     notes ("goal met", "watch not worn"); a source line ("Health Connect · Pixel Watch · synced 09:12").
   - **Screens designed:** sign-in, Health Connect grant, Today (without its symptom-check prompt and
-    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker hub, Steps detail,
-    Appointments (Care tab, later export).
+    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker list and widgets
+    views, Steps detail, Appointments (Care tab).
     **Not yet:** Today's symptom-check prompt and upcoming-appointments section, the rest of Care, Records, Labs
     (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
-    picker, empty and error states.
+    picker, empty and error states, appointment detail, large-screen layouts (UI-spec describes the
+    foldable inner screen — navigation rail, 2-column list, 3–4-column widgets, list-detail — but it
+    is not mocked).
 
 ## Milestones
 
@@ -341,7 +358,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [ ] Drop the `ExperimentalTextApi` opt-in in `Type.kt` once variable-font resources are stable in Compose
 - [x] Shared components drawn in the design (`core.ui.components`, 2026-10-15): `SectionHeader` /
       `Section` (label on the 2dp ink rule, optional category dot and trailing slot), `Panel` +
-      `PanelDivider`, `MetricIconTile`, `MetricRow` (Synced / + Add via `MetricSource`), `PinnedTile`
+      `PanelDivider`, `MetricIconTile`, `MetricRow` (Synced / + Add badges then; replaced by the
+      takeaway and sparkline, see Tracker views below), `PinnedTile`
       (goal bar), `QuickLogChip`, `FilledButton` / `StrokeButton` / `QuietButton`,
       `SegmentedSelector`, `PipRating`, `LauWellBottomSheet`, `CategoryLine`, `LauWellIcon`.
       Light/dark previews in `ComponentsPreview.kt`; compiled, not yet checked on a device
@@ -356,13 +374,28 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       `MetricRegistry.visible` → shared `metric/{id}` detail (placeholder: filing + empty value).
       Today = date, greeting and the avatar that opens Settings (Home and its link removed). Care
       and Records are placeholders. `MetricDefinition` gained `icon` and `sources` (Notion *Data
-      Sources*: Manual / Wearable; "+ Add" when manual, else "Synced"). New shared pieces:
+      Sources*: Manual / Wearable). New shared pieces:
       `ScreenHeader`, `TopBar`, `IconAction`, `ScreenColumn`. Not yet run on a device
   - [ ] Treatments & Appliances read-through rows on the hub: needs the `Nav. Screens` tags on
         `MetricDefinition` (comes with the data-map reconciliation)
   - [ ] Tracker search icon (in the design): add once there is a search to open
   - [ ] Today's greeting has no name (`Session` holds only the uid by design); decide whether to
         show the Google first name
+- [x] Tracker views (2026-10-16, design 15a/15b): list with 7-day sparklines (default) and 2-up
+      widgets, switched by an `IconToggle` in the header and stored as `TrackerView` in the app's
+      Preferences DataStore (`core.settings.DisplayPreferences`, first use of DataStore; backup already
+      excluded). `MetricDefinition.miniChart` (`MiniChartKind`: Bars, Line, Range, SeverityDots,
+      CycleStrip); `MiniChart` draws them with Compose Canvas, ported from the design's own drawing
+      rules — not Vico, which stays behind `ChartSpec` for detail charts. `MetricRow` rewritten
+      (takeaway + sparkline + value), new `MetricWidget`; Synced / + Add badges, `MetricSource`,
+      `ic_sync` and the `badge` shape removed. Until M3/M4 every metric shows "—", "No data yet" and
+      a placeholder week; previews use the design's sample week
+  - [ ] Takeaway lines ("60% of goal", "Up from 4 on Mon", "3 readings · in range"): a rule per
+        metric or chart kind, written with the first real data (M3)
+  - [ ] View toggle segments are 34 × 28dp as designed, under the 48dp touch target: revisit in the
+        accessibility pass (M6)
+  - [ ] Large screens (the inner screen of a foldable): navigation rail, 2-column list, 3–4-column
+        widgets, list-detail for the metric detail — design first (UI-spec: "not yet mocked")
 - [x] Restyle sign-in to the design (2026-10-16): six category bars + wordmark, filled
       "Continue with Google", privacy line; errors shown above the button. The "G" is Google's
       current gradient mark, rendered from the official Sign in with Google assets

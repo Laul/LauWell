@@ -1,5 +1,6 @@
 package com.laul.lauwell.core.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -18,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -128,6 +133,54 @@ fun PipRating(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             BasicText(text = lowLabel, style = LauWellTheme.typography.caption.copy(color = colors.ink2))
             BasicText(text = highLabel, style = LauWellTheme.typography.caption.copy(color = colors.ink2))
+        }
+    }
+}
+
+/** One segment of an [IconToggle]. */
+data class IconToggleOption(@DrawableRes val icon: Int, val label: String)
+
+/**
+ * A compact icon-only switch between views, e.g. Tracker's list | widgets: a `surface2` track, the
+ * selected segment raised on `surface` with an ink icon (a 1dp shadow in light mode only), the
+ * others in ink2. 34 × 28dp segments, as designed. [IconToggleOption.label] is read by TalkBack.
+ */
+@Composable
+fun IconToggle(
+    options: List<IconToggleOption>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LauWellTheme.colors
+    val lightMode = colors.bg.luminance() > 0.5f
+    Row(
+        modifier = modifier
+            .clip(LauWellTheme.shapes.toggleTrack)
+            .background(colors.surface2)
+            .padding(3.dp)
+            .selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        options.forEachIndexed { index, option ->
+            val selected = index == selectedIndex
+            val shape = LauWellTheme.shapes.control
+            Box(
+                modifier = Modifier
+                    .size(width = 34.dp, height = 28.dp)
+                    .then(if (selected && lightMode) Modifier.shadow(1.dp, shape) else Modifier)
+                    .clip(shape)
+                    .background(if (selected) colors.surface else Color.Transparent)
+                    .selectable(selected = selected, role = Role.Tab, onClick = { onSelect(index) }),
+                contentAlignment = Alignment.Center,
+            ) {
+                LauWellIcon(
+                    icon = option.icon,
+                    contentDescription = option.label,
+                    tint = if (selected) colors.ink else colors.ink2,
+                    size = 19.dp,
+                )
+            }
         }
     }
 }

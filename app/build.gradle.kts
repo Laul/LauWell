@@ -84,6 +84,8 @@ dependencies {
 
     implementation(libs.androidx.health.connect.client)
 
+    implementation(libs.androidx.datastore.preferences)
+
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)

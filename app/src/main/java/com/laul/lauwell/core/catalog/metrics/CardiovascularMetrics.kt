@@ -6,6 +6,7 @@ import com.laul.lauwell.core.catalog.ChartKind
 import com.laul.lauwell.core.catalog.DataSource
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
+import com.laul.lauwell.core.catalog.MiniChartKind
 import com.laul.lauwell.core.catalog.Quantity
 import com.laul.lauwell.core.catalog.StorageShape
 import com.laul.lauwell.core.catalog.SubCategory.VitalsCardiovascular
@@ -33,6 +34,7 @@ object CardiovascularMetrics {
         ),
         aggregation = Aggregation.MinAverageMax,
         chartKind = ChartKind.RangeBar,
+        miniChart = MiniChartKind.Line, // resting rate per day
     )
 
     val BloodPressure = MetricDefinition(
@@ -58,6 +60,7 @@ object CardiovascularMetrics {
         ),
         aggregation = Aggregation.Average,
         chartKind = ChartKind.RangeBar, // one bar from diastolic to systolic
+        miniChart = MiniChartKind.Range,
     )
 
     /** A recorded waveform stored as a file: no number to summarise or chart. */

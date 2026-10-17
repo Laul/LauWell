@@ -1,7 +1,8 @@
 # Feature modules and on/off toggles
 
 *Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
-2026-10-11 for the simplified data model and the four-tab navigation. Status: adopted (PLAN.md → M0).
+2026-10-11 for the simplified data model and the four-tab navigation; 2026-10-15 for the Tracker
+list/widgets views. Status: adopted (PLAN.md → M0).
 Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
@@ -103,6 +104,11 @@ Example: Lifestyle → Activity switched off.
   navigation*) — plus Settings. Each data point carries the tab(s) it shows on (`Nav. Screens`), and
   every tab lists only visible metrics. Today's quick-log row and the Tracker hub read from the same
   registry. Adding a metric never touches the nav host.
+- **Tracker views:** the hub shows the same visible metrics as either a list with 7-day sparklines
+  (default) or a 2-up widget grid, switched from its header (`docs/design/UI-spec.md`). The view is
+  a display preference (`TrackerView` in DataStore), separate from the switched-off set: it never
+  changes which metrics are visible. Each `MetricDefinition` declares its mini-chart type (bars,
+  line, range, severity dots, cycle strip) so a new metric gets a chart without new UI code.
 
 ## Deferred: switching off everything related to one condition
 

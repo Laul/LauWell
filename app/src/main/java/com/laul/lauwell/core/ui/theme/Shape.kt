@@ -15,8 +15,8 @@ data class LauWellShapes(
     val control: RoundedCornerShape = RoundedCornerShape(8.dp),
     /** The outlined icon tile at the start of a metric row. */
     val tile: RoundedCornerShape = RoundedCornerShape(8.dp),
-    /** The small "+ Add" badge on a manual metric row. */
-    val badge: RoundedCornerShape = RoundedCornerShape(6.dp),
+    /** The track of an icon toggle (Tracker's list | widgets switch); its segments use [control]. */
+    val toggleTrack: RoundedCornerShape = RoundedCornerShape(10.dp),
     /** Top corners of a bottom sheet. */
     val sheet: RoundedCornerShape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
     /** Progress tracks and the sheet handle. */
