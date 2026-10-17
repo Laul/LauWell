@@ -347,8 +347,12 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [ ] Tracker search icon (in the design): add once there is a search to open
   - [ ] Today's greeting has no name (`Session` holds only the uid by design); decide whether to
         show the Google first name
-- [ ] Restyle sign-in to the design (six category bars + wordmark, filled "Continue with Google",
-      privacy line). Use the official Sign in with Google mark
+- [x] Restyle sign-in to the design (2026-10-16): six category bars + wordmark, filled
+      "Continue with Google", privacy line; errors shown above the button. The "G" is Google's
+      current gradient mark, rendered from the official Sign in with Google assets
+      (`signin-assets.zip`, Android dark square) to `res/drawable-*dpi/ic_google_g.png`: a vector
+      drawable can't hold its conic gradient. Its use is governed by Google's branding guidelines,
+      not a licence file. Checked on device in light and dark, sheet opens, sign-in completes
 - [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
       model), then regenerate `docs/data-structure/`. In order:
   - [x] Clean the Notion rows (checked 2026-10-15): Blood Pressure under Cardiovascular, Steps under
