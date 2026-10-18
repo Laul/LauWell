@@ -130,8 +130,11 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     Wear Time (computed from consecutive changes), both Care.
   - Nav tags changed with it: Appliance Change is now Care only (was Tracker + Care), Pouch Emptying
     Tracker only (was Tracker + Care).
-  - **Color: open.** The design has six category hues and none for Ostomy. The design drew ostomy in
-    teal, which is Treatments & Appliances. Until decided, Ostomy cannot be drawn in its own color.
+  - **Color: amber, hue 80** (decided 2026-10-17). The widest gap in the six design hues is between
+    Vitals (28) and Lifestyle (150); 80 sits 52° from the red and 70° from the green, and reads apart
+    from both in fg and tint. Same OKLCH recipe as the others, values in *Visual design*. (The design
+    drew ostomy in teal, Treatments & Appliances; that predates the category.) Amber is also the
+    usual "warning" hue: if out-of-range states ever get a color, it must not be amber.
 - **Storage shapes:** category and sub-category are *facets on the metric definition*, not tables.
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
@@ -176,7 +179,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Where they show:** upcoming appointments in the **next 14 days** on Today and in their own
     section in Care (like a Tracker category), with a "Later (n)" line under the Care section opening
     the full list. Encounters show in Records → History.
-  - **Proposed, to confirm:** once an appointment's date has passed with no encounter, it shows in Care
+  - **To complete** (confirmed 2026-10-17): once an appointment's date has passed with no encounter, it shows in Care
     under "To complete" and as a light "How did it go?" prompt on Today for a few days; answering
     creates the encounter, prefilled from the appointment. Cancelled and missed appointments appear in
     History, greyed out.
@@ -185,10 +188,12 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   tapping one opens the record and its links. Sensor data appears as one daily summary per day
   ("Steps 8,412 · HR 58–142"), manual entries one by one. It needs the same few fields on every record:
   id, type, category, when, source, a one-line summary and its links.
-  - **Open: Firestore layout.** Recommended: one `users/{uid}/records` collection with a `type` field
+  - **Firestore layout** (decided 2026-10-17): one `users/{uid}/records` collection with a `type` field
     and a typed body, so History, link lookups and export are each one query (Kotlin keeps one typed
-    model per feature). The current convention, one collection per feature, makes History merge one
-    query per feature. Health Connect data stays in Room either way.
+    model per feature). Replaces one collection per feature, which would make History merge one query
+    per feature. Catalogue entities (medications, ostomy products) are records too, with their own
+    `type`. Health Connect data stays in Room; only its daily summaries are written here. The
+    security rules already cover everything under `users/{uid}`.
 - **Symptom terminology:** two vocabularies, not one. A coded reference terminology underneath
   (SNOMED CT subset; ICPC-2 to evaluate as a lighter base) for correctness and any export to a
   clinician, and a patient-facing
@@ -271,7 +276,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Color = data category.** Six hues (Vitals, Labs, Medical Records, Lifestyle, Symptoms,
     Treatments & Appliances), each with an `fg` (text, icons, bars) and a `tint`, per mode. A metric
     keeps its category color wherever it is shown (peristomal skin keeps its color in Tracker and
-    Care). Ostomy, the seventh category since 2026-10-17, has no hue yet (see *Ostomy category*). Neutrals:
+    Care). Ostomy, the seventh category since 2026-10-17, got the seventh hue (amber, 80; see *Ostomy
+    category*), not from the design. Neutrals:
     `bg, surface, surface2, ink, ink2, line, accent, onAccent, panel, panelLine`. Values below, copied
     from the token sheet. (The icon table in the same file uses slightly different hexes; the token sheet wins.)
 
@@ -304,7 +310,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     `#0C54A0`, `#006925`, `#8B2B5D`, `#006A74`. The design derives every category color in OKLCH:
     fg L 0.57 / chroma 0.20 (dark L 0.78 / 0.18), tint L 0.92 / 0.05 (dark L 0.27 / 0.06), stroke
     L 0.80 / 0.14 (dark L 0.45 / 0.14). Hues: Vitals 28, Labs 300, Medical Records 255, Lifestyle 150,
-    Symptoms 352, Treatments & Appliances 200.
+    Symptoms 352, Treatments & Appliances 200; Ostomy 80 (ours, same recipe): light fg `#B26200`,
+    tint `#F6E2C0`, stroke `#EDB345`; dark fg `#F2A700`, tint `#362200`, stroke `#7C4800`. The design's
+    values come out exactly when each sRGB channel is clipped, so Ostomy was computed that way.
   - **Shape and spacing:** panels 12dp; chips, controls and icon tiles 8dp; spacing scale
     4 / 8 / 12 / 16 / 20 / 24 / 32 dp, plus 14dp inside panels.
   - **Tokens the screens use beyond the token sheet** (read from the design's render code,
@@ -338,8 +346,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     **Not yet:** Today's symptom-check prompt and upcoming-appointments section, the rest of Care, Records, Labs
     (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
     picker, empty and error states, appointment detail, Care's upcoming-appointments section with
-    "Later (n)" and "To complete", encounter detail with its linked records, Records → History, a
-    hue for Ostomy, large-screen layouts (UI-spec describes the
+    "Later (n)" and "To complete", encounter detail with its linked records, Records → History, large-screen layouts (UI-spec describes the
     foldable inner screen — navigation rail, 2-column list, 3–4-column widgets, list-detail — but it
     is not mocked).
 
@@ -403,7 +410,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [x] Material Symbols as vector drawables (2026-10-15): the 25 glyphs in use + filled variants of
         the four tab icons, `res/drawable/ic_*.xml`, converted from Google's Material Symbols SVGs;
         the hexagon gear as `ic_edit_pinned`. Apache 2.0 text in `assets/licenses/`
-  - [ ] Map `Category.Labs` in `forCategory` when Labs joins the enum (the colors already exist)
+  - [ ] Map `Category.Labs` and `Category.Ostomy` in `forCategory` when they join the enum (the colors
+        already exist)
   - [ ] Show the font licences somewhere in Settings (open-source notices)
   - [ ] Drop the `ExperimentalTextApi` opt-in in `Type.kt` once variable-font resources are stable in Compose
 - [x] Shared components drawn in the design (`core.ui.components`, 2026-10-15): `SectionHeader` /
@@ -475,7 +483,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
         and update `CatalogMatchesDocsTest` in the same change as the regenerated CSVs
   - [x] ~~Settings: one **Ostomy** switch that hides both Ostomy groups~~ — dropped 2026-10-17: Ostomy is
         one category, so its ordinary category switch does it
-  - [ ] Pick a hue for Ostomy (design), then add it to `LauWellColors` and `forCategory`
+  - [x] Pick a hue for Ostomy (amber, 80) and add it to `LauWellColors` (2026-10-17); `forCategory`
+        maps it when Ostomy joins `Category`
   - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
   - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs and
         Ostomy to the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory` (`HeartRateVariability` already
@@ -495,12 +504,11 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       per-metric sync timestamp
 - [ ] Common record fields (Decisions → *Records → History*): id, type, category, when, source, a
       one-line summary and `links: [{to, relation}]`; the named links of *Relationships between
-      records* on the models that need them. Settle the Firestore layout first (one `records`
-      collection recommended, still open)
+      records* on the models that need them, stored in `users/{uid}/records` (decided)
 - [ ] Appointment and Encounter as two records (Decisions → *Appointments and encounters*):
       Encounter `basedOn` its appointment; Prescription (Medical Records → Documents, in Notion) linked
-      to its encounter and to the medications it prescribes. Confirm or change the proposed
-      "To complete" step
+      to its encounter and to the medications it prescribes. Past appointment with no encounter →
+      "To complete" in Care and a "How did it go?" prompt on Today (confirmed)
 - [ ] Today's two user lists, stored as ordered metric IDs in DataStore and filtered by `isVisible`:
       the quick-log set and the pinned set (defaults in Decisions → App navigation). Defaults only
       for now; the pinned editor is an M6 task. A metric can only be pinned if it has a
@@ -510,8 +518,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       "all files" view
 - [ ] Free-text note, attachable to any record and able to stand alone with a date (the escape hatch —
       without it people stop using the structured fields)
-- [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}` (or one `records` collection,
-      see the open question in *Records → History*), FHIR-inspired common fields,
+- [ ] Data conventions: one Firestore collection `users/{uid}/records/{docId}` with a `type` field
+      (Decisions → *Records → History*), FHIR-inspired common fields,
       one typed model per feature, repositories returning `Flow<AppResult<…>>`
 - [ ] Permissions declared per metric, requested only for visible metrics when first needed
       (partial grants allowed, no all-or-nothing)

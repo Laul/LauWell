@@ -22,8 +22,9 @@ data class CategoryColor(val fg: Color, val tint: Color, val stroke: Color)
  * PLAN.md). Not modeled on Material3's ColorScheme: the primary is near-black [ink]/[accent], not a hue.
  *
  * Category colors are derived in OKLCH from one hue per category (vitals 28, labs 300, records 255,
- * lifestyle 150, symptoms 352, T&A 200): fg L 0.57 / C 0.20, tint L 0.92 / C 0.05, stroke L 0.80 /
- * C 0.14; dark: fg L 0.78 / C 0.18, tint L 0.27 / C 0.06, stroke L 0.45 / C 0.14. Look them up with
+ * lifestyle 150, symptoms 352, T&A 200; ostomy 80 is ours, not the design's): fg L 0.57 / C 0.20, tint L 0.92 / C 0.05, stroke L 0.80 /
+ * C 0.14; dark: fg L 0.78 / C 0.18, tint L 0.27 / C 0.06, stroke L 0.45 / C 0.14, each sRGB channel
+ * clipped. Look them up with
  * [forCategory] rather than the fields.
  */
 @Immutable
@@ -58,8 +59,9 @@ data class LauWellColors(
     val lifestyle: CategoryColor,
     val symptoms: CategoryColor,
     val treatmentsAndAppliances: CategoryColor,
+    val ostomy: CategoryColor,
 ) {
-    /** The single category → color lookup. Labs gets its entry when it joins [Category]. */
+    /** The single category → color lookup. Labs and Ostomy get their entries when they join [Category]. */
     fun forCategory(category: Category): CategoryColor = when (category) {
         Category.Vitals -> vitals
         Category.MedicalRecords -> medicalRecords
@@ -88,6 +90,7 @@ val LightLauWellColors = LauWellColors(
     lifestyle = CategoryColor(fg = Color(0xFF00952A), tint = Color(0xFFCEEFD3), stroke = Color(0xFF75D78D)),
     symptoms = CategoryColor(fg = Color(0xFFC83184), tint = Color(0xFFFFD8E8), stroke = Color(0xFFFF96C7)),
     treatmentsAndAppliances = CategoryColor(fg = Color(0xFF0095A5), tint = Color(0xFFBFEFF2), stroke = Color(0xFF00D8E1)),
+    ostomy = CategoryColor(fg = Color(0xFFB26200), tint = Color(0xFFF6E2C0), stroke = Color(0xFFEDB345)),
 )
 
 val DarkLauWellColors = LauWellColors(
@@ -109,6 +112,7 @@ val DarkLauWellColors = LauWellColors(
     lifestyle = CategoryColor(fg = Color(0xFF4CD676), tint = Color(0xFF0C2E16), stroke = Color(0xFF006925)),
     symptoms = CategoryColor(fg = Color(0xFFFF81C3), tint = Color(0xFF3C1929), stroke = Color(0xFF8B2B5D)),
     treatmentsAndAppliances = CategoryColor(fg = Color(0xFF00D7E4), tint = Color(0xFF002F32), stroke = Color(0xFF006A74)),
+    ostomy = CategoryColor(fg = Color(0xFFF2A700), tint = Color(0xFF362200), stroke = Color(0xFF7C4800)),
 )
 
 val LocalLauWellColors = staticCompositionLocalOf { LightLauWellColors }
