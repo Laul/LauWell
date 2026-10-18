@@ -13,25 +13,26 @@ class MetricDefinitionTest {
         quantities: List<Quantity> = emptyList(),
         chartKind: ChartKind? = null,
         sources: Set<DataSource> = setOf(DataSource.Manual),
+        screens: Set<NavScreen> = setOf(NavScreen.Tracker),
     ) = MetricDefinition(
         MetricId("x"), "X", subCategory, shape,
-        icon = 0, sources = sources, quantities = quantities, chartKind = chartKind,
+        icon = 0, sources = sources, screens = screens, quantities = quantities, chartKind = chartKind,
     )
 
     @Test(expected = IllegalArgumentException::class)
     fun `a measurement needs a quantity`() {
-        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement)
+        metric(SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `quantity keys are unique`() {
-        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement, quantities = listOf(quantity("a"), quantity("a")))
+        metric(SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement, quantities = listOf(quantity("a"), quantity("a")))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `a chart needs an aggregation`() {
         metric(
-            SubCategory.VitalsMetabolic, StorageShape.Measurement,
+            SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement,
             quantities = listOf(quantity("a")),
             chartKind = ChartKind.Line,
         )
@@ -45,6 +46,11 @@ class MetricDefinitionTest {
     @Test(expected = IllegalArgumentException::class)
     fun `a metric needs a source`() {
         metric(SubCategory.SymptomsPain, StorageShape.Event, sources = emptySet())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `a metric needs a screen`() {
+        metric(SubCategory.SymptomsPain, StorageShape.Event, screens = emptySet())
     }
 
     @Test

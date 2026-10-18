@@ -19,7 +19,8 @@ value class MetricId(val value: String) {
  * Everything the app needs to know about one tracked data point, so that adding a tracker is an
  * entry in [MetricRegistry] and never a new screen (PLAN.md → Decisions).
  *
- * [label] matches the "Data" column of `docs/data-structure/health-data-model/Patient Data Categories.csv`.
+ * [label] is what the user reads, in sentence case; it matches the "Data" column of
+ * `docs/data-structure/health-data-model/Patient Data Categories.csv` ignoring case (the Notion names mix cases).
  */
 data class MetricDefinition(
     val id: MetricId,
@@ -30,6 +31,8 @@ data class MetricDefinition(
     @DrawableRes val icon: Int,
     /** Where its records come from: the "Data Sources" column of the Notion data model. */
     val sources: Set<DataSource>,
+    /** The tabs that show it: the "Nav. Screens" column. Today is not a tag, it reads from all of them. */
+    val screens: Set<NavScreen>,
     /** What one record holds. One entry for a single value, several for e.g. blood pressure. */
     val quantities: List<Quantity> = emptyList(),
     /** How records are summarised per day; null when a daily summary means nothing. */
@@ -51,6 +54,7 @@ data class MetricDefinition(
         }
         require(chartKind == null || aggregation != null) { "$id: a chart needs an aggregation" }
         require(sources.isNotEmpty()) { "$id: a metric needs at least one source" }
+        require(screens.isNotEmpty()) { "$id: a metric needs at least one screen" }
     }
 
     /** Can be logged by hand: offered in Quick log and on its detail screen. */
@@ -64,7 +68,13 @@ enum class DataSource {
 
     /** Read from Health Connect (watch, phone, connected devices). */
     Wearable,
+
+    /** Derived from other records, e.g. wear time from consecutive appliance changes. */
+    Computed,
 }
+
+/** A bottom tab a metric is shown on (PLAN.md → Decisions → App navigation). Stored once, shown on each. */
+enum class NavScreen { Tracker, Records, Care }
 
 /**
  * One numeric value inside a record.

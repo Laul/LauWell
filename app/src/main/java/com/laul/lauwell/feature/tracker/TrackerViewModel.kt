@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.laul.lauwell.core.catalog.Category
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricRegistry
+import com.laul.lauwell.core.catalog.NavScreen
 import com.laul.lauwell.core.catalog.ToggleRepository
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.TrackerView
@@ -18,15 +19,16 @@ import kotlinx.coroutines.launch
 data class TrackerGroup(val category: Category, val metrics: List<MetricDefinition>)
 
 /**
- * The categories the Tracker hub shows, in order (PLAN.md → App navigation → Tracker).
- * Treatments & Appliances read-through rows join once metrics carry their `Nav. Screens` tags.
+ * The order of category blocks on the Tracker hub (PLAN.md → App navigation → Tracker). Which
+ * metrics appear is decided by their `Nav. Screens` tag, not by this list; a tagged metric of a
+ * category missing here would be left out, so add its category when that happens.
  */
-internal val TrackerCategories = listOf(Category.Vitals, Category.Lifestyle, Category.Symptoms)
+internal val TrackerCategories = listOf(Category.Vitals, Category.Lifestyle, Category.Symptoms, Category.Ostomy)
 
-/** Groups the visible metrics for the hub; categories with nothing visible are left out. */
+/** Groups the visible metrics tagged for Tracker; categories with nothing to show are left out. */
 internal fun trackerGroups(visible: List<MetricDefinition>): List<TrackerGroup> =
     TrackerCategories.mapNotNull { category ->
-        visible.filter { it.category == category }
+        visible.filter { it.category == category && NavScreen.Tracker in it.screens }
             .takeIf { it.isNotEmpty() }
             ?.let { TrackerGroup(category, it) }
     }

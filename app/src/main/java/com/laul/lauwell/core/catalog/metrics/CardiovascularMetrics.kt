@@ -7,6 +7,7 @@ import com.laul.lauwell.core.catalog.DataSource
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MiniChartKind
+import com.laul.lauwell.core.catalog.NavScreen
 import com.laul.lauwell.core.catalog.Quantity
 import com.laul.lauwell.core.catalog.StorageShape
 import com.laul.lauwell.core.catalog.SubCategory.VitalsCardiovascular
@@ -24,6 +25,7 @@ object CardiovascularMetrics {
         shape = StorageShape.Measurement,
         icon = R.drawable.ic_favorite,
         sources = setOf(DataSource.Wearable),
+        screens = setOf(NavScreen.Tracker),
         quantities = listOf(
             Quantity(
                 key = "value",
@@ -44,6 +46,7 @@ object CardiovascularMetrics {
         shape = StorageShape.Measurement,
         icon = R.drawable.ic_blood_pressure,
         sources = setOf(DataSource.Wearable, DataSource.Manual),
+        screens = setOf(NavScreen.Tracker),
         quantities = listOf(
             Quantity(
                 key = "systolic",
@@ -71,6 +74,7 @@ object CardiovascularMetrics {
         shape = StorageShape.Document,
         icon = R.drawable.ic_ecg_heart,
         sources = setOf(DataSource.Wearable),
+        screens = setOf(NavScreen.Tracker),
     )
 
     val all: List<MetricDefinition> = listOf(HeartRate, BloodPressure, EcgTrace)

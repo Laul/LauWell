@@ -117,7 +117,7 @@ the change routine in Lifestyle, peristomal skin in Symptoms, products in Treatm
 The ideal behaviour is one switch that turns off *everything related to ostomy*, wherever it is
 filed.
 
-**Mostly resolved by the simplified data model (2026-10-11):** every ostomy data point now sits in
-Treatments & Appliances → Ostomy, so switching off that sub-category is the one switch. The
+**Resolved by the simplified data model:** Ostomy is its own category since 2026-10-17 (after a
+short stay under Treatments & Appliances → Ostomy), so switching off that category is the one switch. The
 cross-category tag (a "topic" on the metric definition plus a fourth `ToggleKey` variant) is only
 needed if another condition turns out to span categories; revisit then.

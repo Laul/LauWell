@@ -6,7 +6,7 @@ import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
  * Every metric the app knows about. Adding a tracker means adding its [MetricDefinition] to one
  * of the lists below — no new screen, no new navigation destination.
  *
- * Metrics land as their features are built; the full list of 81 data points is in
+ * Metrics land as their features are built; the full list of data points is in
  * `docs/data-structure/health-data-model/Patient Data Categories.csv`.
  */
 object MetricRegistry {

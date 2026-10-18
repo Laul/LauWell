@@ -45,10 +45,10 @@ class VisibilityTest {
 
     @Test
     fun `same label in two categories are different toggles`() {
-        val off = setOf(ToggleKey.OfSubCategory(SubCategory.SymptomsRespiratory))
-        assertFalse(ToggleKey.OfSubCategory(SubCategory.VitalsRespiratory) in off)
-        assertEquals("subcategory:vitals/respiratory", ToggleKey.OfSubCategory(SubCategory.VitalsRespiratory).storageKey)
-        assertEquals("subcategory:symptoms/respiratory", ToggleKey.OfSubCategory(SubCategory.SymptomsRespiratory).storageKey)
+        val off = setOf(ToggleKey.OfSubCategory(SubCategory.SymptomsCardiovascular))
+        assertFalse(ToggleKey.OfSubCategory(SubCategory.VitalsCardiovascular) in off)
+        assertEquals("subcategory:vitals/cardiovascular", ToggleKey.OfSubCategory(SubCategory.VitalsCardiovascular).storageKey)
+        assertEquals("subcategory:symptoms/cardiovascular", ToggleKey.OfSubCategory(SubCategory.SymptomsCardiovascular).storageKey)
     }
 
     @Test

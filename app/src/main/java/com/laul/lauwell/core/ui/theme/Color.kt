@@ -61,13 +61,15 @@ data class LauWellColors(
     val treatmentsAndAppliances: CategoryColor,
     val ostomy: CategoryColor,
 ) {
-    /** The single category → color lookup. Labs and Ostomy get their entries when they join [Category]. */
+    /** The single category → color lookup. */
     fun forCategory(category: Category): CategoryColor = when (category) {
         Category.Vitals -> vitals
+        Category.Labs -> labs
         Category.MedicalRecords -> medicalRecords
         Category.Lifestyle -> lifestyle
         Category.Symptoms -> symptoms
         Category.TreatmentsAndAppliances -> treatmentsAndAppliances
+        Category.Ostomy -> ostomy
     }
 }
 

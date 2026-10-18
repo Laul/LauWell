@@ -4,6 +4,7 @@ import com.laul.lauwell.core.catalog.Category
 import com.laul.lauwell.core.catalog.DataSource
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
+import com.laul.lauwell.core.catalog.NavScreen
 import com.laul.lauwell.core.catalog.StorageShape
 import com.laul.lauwell.core.catalog.SubCategory
 import org.junit.Assert.assertEquals
@@ -11,8 +12,8 @@ import org.junit.Test
 
 class TrackerGroupsTest {
 
-    private fun metric(id: String, subCategory: SubCategory) = MetricDefinition(
-        MetricId(id), id, subCategory, StorageShape.Event, icon = 0, sources = setOf(DataSource.Manual),
+    private fun metric(id: String, subCategory: SubCategory, vararg screens: NavScreen = arrayOf(NavScreen.Tracker)) = MetricDefinition(
+        MetricId(id), id, subCategory, StorageShape.Event, icon = 0, screens = screens.toSet(), sources = setOf(DataSource.Manual),
     )
 
     @Test
@@ -29,13 +30,15 @@ class TrackerGroupsTest {
     }
 
     @Test
-    fun `empty categories and categories outside the hub are left out`() {
-        val change = metric("appliance_change", SubCategory.TreatmentsOstomy)
-        val diagnosis = metric("diagnosis", SubCategory.RecordsConditions)
+    fun `only metrics tagged for Tracker are shown`() {
+        val change = metric("appliance_change", SubCategory.OstomyReplacement, NavScreen.Care)
+        val skin = metric("peristomal_skin", SubCategory.OstomyDailyRoutines, NavScreen.Tracker, NavScreen.Care)
+        val diagnosis = metric("diagnosis", SubCategory.RecordsMedicalHistory, NavScreen.Records)
         val pain = metric("pain", SubCategory.SymptomsPain)
 
-        val groups = trackerGroups(listOf(change, diagnosis, pain))
+        val groups = trackerGroups(listOf(change, skin, diagnosis, pain))
 
-        assertEquals(listOf(Category.Symptoms), groups.map { it.category })
+        assertEquals(listOf(Category.Symptoms, Category.Ostomy), groups.map { it.category })
+        assertEquals(listOf(skin), groups.last().metrics)
     }
 }

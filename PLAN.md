@@ -54,8 +54,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   stays in Lifestyle. 35 sub-categories form the second level, identified by category + name
   ("Respiratory" exists under both Vitals and Symptoms).
   → `docs/data-structure/health-data-model/Patient Data Categories.html` (+ `.csv`).
-- **Simplified data model** (decided 2026-10-11; source of truth for now is the Notion database
-  *Data Model [Simplified]*, until `docs/data-structure/` is regenerated from it). Prompted by the
+- **Simplified data model** (decided 2026-10-11; the Notion database *Data Model [Simplified]* is the
+  source of truth for rows, and `docs/data-structure/` is generated from a copy of it, regenerated
+  2026-10-17). Prompted by the
   interface design: many data points were far from current priorities, so the map was cut down and
   each point now says where it is shown.
   - **Seven categories:** Vitals, **Labs** (new — promoted out of Vitals → Laboratory, so lab work gets
@@ -91,10 +92,11 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Not finished, by choice:** Treatments & Appliances holds only the Appointment row since the
     ostomy rows became their own category. Medication
     (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies,
-    devices, supplies and trial periods stay as defined in the old map (`Patient Data Categories`)
+    devices, supplies and trial periods stay as defined in the old map (`Patient Data Categories-v03`)
     and get re-added later; this does not block the rest.
   - The Notion table has no *Shape* column. The seven shapes and the catalogue + occurrence rule
-    below still apply; shapes come from the old map until the two are merged.
+    below still apply; shapes live in `_src/rows.js` (carried over from the old map where the row
+    existed, assigned for the new ones: every lab analyte is a `Measurement`).
 - **Ostomy placement: signal vs. intervention** (*superseded 2026-10-17 by* Ostomy category *below;
   kept for the reasoning, which survives as its two sub-categories*) (decided 2026-10-15; revises the *Ostomy* bullet of
   *Simplified data model*, which put every ostomy row under Treatments & Appliances). Category follows
@@ -410,8 +412,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [x] Material Symbols as vector drawables (2026-10-15): the 25 glyphs in use + filled variants of
         the four tab icons, `res/drawable/ic_*.xml`, converted from Google's Material Symbols SVGs;
         the hexagon gear as `ic_edit_pinned`. Apache 2.0 text in `assets/licenses/`
-  - [ ] Map `Category.Labs` and `Category.Ostomy` in `forCategory` when they join the enum (the colors
-        already exist)
+  - [x] Map `Category.Labs` and `Category.Ostomy` in `forCategory` (2026-10-17)
   - [ ] Show the font licences somewhere in Settings (open-source notices)
   - [ ] Drop the `ExperimentalTextApi` opt-in in `Type.kt` once variable-font resources are stable in Compose
 - [x] Shared components drawn in the design (`core.ui.components`, 2026-10-15): `SectionHeader` /
@@ -434,8 +435,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       and Records are placeholders. `MetricDefinition` gained `icon` and `sources` (Notion *Data
       Sources*: Manual / Wearable). New shared pieces:
       `ScreenHeader`, `TopBar`, `IconAction`, `ScreenColumn`. Not yet run on a device
-  - [ ] Ostomy rows on the hub (output, emptying, skin rating): needs the Ostomy category and the
-        `Nav. Screens` tags on `MetricDefinition` (comes with the data-map reconciliation)
+  - [ ] Ostomy rows on the hub (output, emptying, skin rating): the category and the `Nav. Screens`
+        tag exist (2026-10-17); add their `MetricDefinition`s when the ostomy features are built
   - [ ] Tracker search icon (in the design): add once there is a search to open
   - [ ] Today's greeting has no name (`Session` holds only the uid by design); decide whether to
         show the Google first name
@@ -461,7 +462,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       (`signin-assets.zip`, Android dark square) to `res/drawable-*dpi/ic_google_g.png`: a vector
       drawable can't hold its conic gradient. Its use is governed by Google's branding guidelines,
       not a licence file. Checked on device in light and dark, sheet opens, sign-in completes
-- [ ] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
+- [x] Reconcile the data map with the simplified Notion data model (see Decisions → Simplified data
       model), then regenerate `docs/data-structure/`. In order:
   - [x] Clean the Notion rows (checked 2026-10-15): Blood Pressure under Cardiovascular, Steps under
         Activity, typos fixed, output-volume description matches its Vitals row
@@ -477,21 +478,23 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [x] Add a **Care** option to `Nav. Screens` and retag the Treatments & Appliances rows (done in
         Notion 2026-10-15; Tracker shows output volume / consistency / emptying, appliance change and
         skin rating)
-  - [ ] Apply *Ostomy category* (Decisions) in `_src/rows.js` and the generated CSVs, matching the
-        Notion table (2026-10-17): category Ostomy, sub-categories *Ostomy • Daily Routines* and
-        *Ostomy • Replacement*; drop `LifestyleOstomyRoutine` and `TreatmentsOstomy` from `SubCategory`
-        and update `CatalogMatchesDocsTest` in the same change as the regenerated CSVs
+  - [x] Apply *Ostomy category* in `_src/rows.js`, the CSVs and `SubCategory` (2026-10-17)
   - [x] ~~Settings: one **Ostomy** switch that hides both Ostomy groups~~ — dropped 2026-10-17: Ostomy is
         one category, so its ordinary category switch does it
   - [x] Pick a hue for Ostomy (amber, 80) and add it to `LauWellColors` (2026-10-17); `forCategory`
         maps it when Ostomy joins `Category`
-  - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
-  - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs and
-        Ostomy to the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory` (`HeartRateVariability` already
-        removed from the registry, 2026-10-15; ECG trace stays), and fix `CatalogMatchesDocsTest` in the same change
-        (the test compares code against the generated CSVs, so docs and code must move together)
-  - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete;
-        Notion now has 7 categories)
+  - [x] Regenerated from Notion (2026-10-17): 113 rows, 7 categories, 35 sub-categories, with a shape
+        (ours), `Nav. Screens` and `Data Sources` on every row; the page rewritten for seven categories
+        in the app's category colors. The five-category map is frozen as `-v03` (Categories html/csv
+        and the Model csv with its codings). Codings renamed to the Notion names; codings of dropped
+        rows survive only in the v03 Model csv. Code moved with it: `Category` (7, T&A label now
+        "Treatments & Appliances"), `SubCategory` (35, new set), `forCategory` maps Labs and Ostomy,
+        `MetricDefinition.screens` (`NavScreen`) and `DataSource.Computed`; the Tracker hub shows
+        metrics tagged Tracker, Ostomy block after Symptoms. `CatalogMatchesDocsTest` now also checks
+        screens and sources, and matches names ignoring case (Notion mixes "Heart Rate" and "Blood
+        glucose"; the app keeps sentence case)
+  - [ ] Back-port to Notion: *Ostomy Output Volume*'s description (rows.js no longer says it "sits in
+        Vitals"), and descriptions for NT-proBNP, Reticulocytes and hs-CRP (empty in Notion)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
       `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
       aggregation and chart kind **plus `category` and `subCategory` as facets** — so adding a tracker

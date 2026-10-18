@@ -1,64 +1,71 @@
 package com.laul.lauwell.core.catalog
 
+import com.laul.lauwell.core.catalog.Category.Labs
 import com.laul.lauwell.core.catalog.Category.Lifestyle
 import com.laul.lauwell.core.catalog.Category.MedicalRecords
+import com.laul.lauwell.core.catalog.Category.Ostomy
 import com.laul.lauwell.core.catalog.Category.Symptoms
 import com.laul.lauwell.core.catalog.Category.TreatmentsAndAppliances
 import com.laul.lauwell.core.catalog.Category.Vitals
 
 /**
  * The 35 sub-categories: the second level of the data hierarchy. Mirrors
- * `docs/data-structure/health-data-model/Patient Data Categories.csv`; `CatalogMatchesDocsTest` fails if they drift.
+ * `docs/data-structure/health-data-model/Patient Data Categories.csv` (labels as written in the Notion table);
+ * `CatalogMatchesDocsTest` fails if they drift.
  *
- * A label is only unique within its category ("Respiratory" exists under both Vitals and
+ * A label is only unique within its category ("Cardiovascular" exists under Vitals, Labs and
  * Symptoms), so identity is the [category] plus the [key]. [storageKey] combines both and is
  * stable: it ends up in stored settings and must never change once shipped.
  */
 enum class SubCategory(val category: Category, val key: String, val label: String) {
     // Vitals
+    VitalsBiochemistryMetabolic(Vitals, "biochemistry_metabolic", "Biochemistry - Metabolic"),
     VitalsCardiovascular(Vitals, "cardiovascular", "Cardiovascular"),
     VitalsRespiratory(Vitals, "respiratory", "Respiratory"),
-    VitalsMetabolic(Vitals, "metabolic", "Metabolic"),
-    VitalsBodyMeasures(Vitals, "body_measures", "Body measures"),
-    VitalsLaboratory(Vitals, "laboratory", "Laboratory"),
-    VitalsDigestiveOutput(Vitals, "digestive_output", "Digestive output"),
+    VitalsWomanHealth(Vitals, "woman_health", "Woman Health"),
+
+    // Labs
+    LabsBiochemistryElectrolytes(Labs, "biochemistry_electrolytes", "Biochemistry - Electrolytes"),
+    LabsBiochemistryEnzymes(Labs, "biochemistry_enzymes", "Biochemistry - Enzymes"),
+    LabsBiochemistryLiver(Labs, "biochemistry_liver", "Biochemistry - Liver"),
+    LabsBiochemistryMetabolic(Labs, "biochemistry_metabolic", "Biochemistry - Metabolic"),
+    LabsBiochemistryProtein(Labs, "biochemistry_protein", "Biochemistry - Protein"),
+    LabsBiochemistryRenal(Labs, "biochemistry_renal", "Biochemistry - Renal"),
+    LabsCardiovascular(Labs, "cardiovascular", "Cardiovascular"),
+    LabsCoagulation(Labs, "coagulation", "Coagulation"),
+    LabsEndocrinology(Labs, "endocrinology", "Endocrinology"),
+    LabsHematology(Labs, "hematology", "Hematology"),
+    LabsInflammation(Labs, "inflammation", "Inflammation"),
+    LabsIronStudies(Labs, "iron_studies", "Iron studies"),
+    LabsLipidProfile(Labs, "lipid_profile", "Lipid profile"),
+    LabsUrinalysis(Labs, "urinalysis", "Urinalysis"),
+    LabsVitamins(Labs, "vitamins", "Vitamins"),
 
     // Medical Records
-    RecordsConditions(MedicalRecords, "conditions", "Conditions"),
-    RecordsSensitivities(MedicalRecords, "sensitivities", "Sensitivities"),
-    RecordsProcedures(MedicalRecords, "procedures", "Procedures"),
-    RecordsPreventiveCare(MedicalRecords, "preventive_care", "Preventive care"),
-    RecordsCareAndVisits(MedicalRecords, "care_visits", "Care & visits"),
+    RecordsAppointment(MedicalRecords, "appointment", "Appointment"),
     RecordsDocuments(MedicalRecords, "documents", "Documents"),
-    RecordsIdentity(MedicalRecords, "identity", "Identity"),
-    RecordsAdministration(MedicalRecords, "administration", "Administration"),
+    RecordsMedicalHistory(MedicalRecords, "medical_history", "Medical History"),
+    RecordsPictures(MedicalRecords, "pictures", "Pictures"),
 
     // Lifestyle
-    LifestyleSleep(Lifestyle, "sleep", "Sleep"),
     LifestyleActivity(Lifestyle, "activity", "Activity"),
-    LifestyleNutritionAndIntake(Lifestyle, "nutrition_intake", "Nutrition & intake"),
-    LifestyleMindAndMood(Lifestyle, "mind_mood", "Mind & mood"),
-    LifestyleCycle(Lifestyle, "cycle", "Cycle"),
-    LifestyleOstomyRoutine(Lifestyle, "ostomy_routine", "Ostomy routine"),
-    LifestyleContext(Lifestyle, "context", "Context"),
+    LifestyleMindAndMood(Lifestyle, "mind_and_mood", "Mind and mood"),
+    LifestyleSleep(Lifestyle, "sleep", "Sleep"),
 
     // Symptoms
-    SymptomsGeneral(Symptoms, "general", "General"),
-    SymptomsSystemic(Symptoms, "systemic", "Systemic"),
-    SymptomsCardiac(Symptoms, "cardiac", "Cardiac"),
-    SymptomsRespiratory(Symptoms, "respiratory", "Respiratory"),
-    SymptomsNeurological(Symptoms, "neurological", "Neurological"),
+    SymptomsCardiovascular(Symptoms, "cardiovascular", "Cardiovascular"),
     SymptomsDigestive(Symptoms, "digestive", "Digestive"),
+    SymptomsGeneral(Symptoms, "general", "General"),
+    SymptomsNeurological(Symptoms, "neurological", "Neurological"),
     SymptomsPain(Symptoms, "pain", "Pain"),
-    SymptomsSkinAndStoma(Symptoms, "skin_stoma", "Skin & stoma"),
+    SymptomsSystemic(Symptoms, "systemic", "Systemic"),
 
-    // Treatments & appliances
-    TreatmentsMedication(TreatmentsAndAppliances, "medication", "Medication"),
-    TreatmentsTherapies(TreatmentsAndAppliances, "therapies", "Therapies"),
-    TreatmentsOstomy(TreatmentsAndAppliances, "ostomy", "Ostomy"),
-    TreatmentsDevices(TreatmentsAndAppliances, "devices", "Devices"),
-    TreatmentsSupplies(TreatmentsAndAppliances, "supplies", "Supplies"),
-    TreatmentsExperiments(TreatmentsAndAppliances, "experiments", "Experiments"),
+    // Treatments & Appliances
+    TreatmentsAppointment(TreatmentsAndAppliances, "appointment", "Appointment"),
+
+    // Ostomy
+    OstomyDailyRoutines(Ostomy, "daily_routines", "Ostomy • Daily Routines"),
+    OstomyReplacement(Ostomy, "replacement", "Ostomy • Replacement"),
     ;
 
     val storageKey: String get() = "${category.key}/$key"

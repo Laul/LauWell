@@ -35,16 +35,22 @@ class CatalogMatchesDocsTest {
 
     @Test
     fun `every registered metric is a data point, filed where the data map files it`() {
-        val byName = dataPoints.associateBy { it.getValue("Data") }
+        val byName = dataPoints.associateBy { it.getValue("Data").lowercase() }
         MetricRegistry.all.forEach { metric ->
-            val row = byName[metric.label]
+            val row = byName[metric.label.lowercase()]
             assertNotNull("${metric.id}: no data point named \"${metric.label}\"", row)
             row!!
             assertEquals("${metric.id} category", row.getValue("Category"), metric.category.label)
             assertEquals("${metric.id} sub-category", row.getValue("Sub-category"), metric.subCategory.label)
             assertEquals("${metric.id} shape", row.getValue("Shape"), metric.shape.label)
+            assertEquals("${metric.id} screens", row.list("Nav. Screens"), metric.screens.map { it.name }.toSet())
+            assertEquals("${metric.id} sources", row.list("Data Sources"), metric.sources.map { it.name }.toSet())
         }
     }
+
+    /** A list column, written by the generator as "A, B". */
+    private fun Map<String, String>.list(column: String): Set<String> =
+        getValue(column).split(", ").filter { it.isNotEmpty() }.toSet()
 
     private fun readCsv(name: String): List<Map<String, String>> {
         val file = File(dataDir, name)

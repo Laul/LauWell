@@ -1,17 +1,17 @@
 # Data structure
 
-> **Status (2026-10-11):** the model was simplified in Notion (*Data Model [Simplified]*): six
-> categories including Labs, far fewer data points, and a `Nav. Screens` column. The files below still
-> describe the **earlier** five-category, 81-point map and are kept as the reference for what was cut
-> and for storage shapes and codings, until they are regenerated. Where they disagree, PLAN.md →
-> Decisions → *Simplified data model* wins. Clean-up and regeneration steps: PLAN.md → M2.
+> **Status (2026-10-17):** regenerated from the Notion table *Data Model [Simplified]*: seven categories
+> (Labs and Ostomy added), 35 sub-categories, 113 data points, each with a shape, its `Nav. Screens` tag
+> and its data sources. The earlier five-category, 81-point map is kept as the `-v03` snapshot: it is
+> the reference for rows not yet re-added (medication, therapies, devices, supplies…) and for their codings.
 
 The reference for how LauWell's health data is organised.
 
 | File | What it is |
 |---|---|
-| `Patient Data Categories.html` | **Current reference.** Five patient-facing categories, their boundary tests, 35 sub-categories, the data map (81 points) and the shape-to-category bridge. |
-| `Patient Data Categories.csv` | The same 81 rows, for import into Notion or a spreadsheet. |
+| `Patient Data Categories.html` | **Current reference.** Seven patient-facing categories, their boundary tests, 35 sub-categories, the data map (113 points, with screens and sources) and the shape-to-category bridge. |
+| `Patient Data Categories.csv` | The same 113 rows, for import into Notion or a spreadsheet. Read by `CatalogMatchesDocsTest`. |
+| `Patient Data Categories-v03.*`, `Patient Data Model-v03.csv` | Snapshot of the five-category, 81-point map (2026-10-12) and its codings, before the simplification. Not generated. |
 | `Patient Data Codings.csv` | Standard terminology codes (LOINC, later SNOMED CT) for the same data points. First pass, in review — see *Codings* below. |
 | `Health Data • Inventory-v01/v02` | Earlier passes, kept as snapshots of the thinking. v01 is the raw inventory by data shape and capture method; v02 maps data points onto a 37-category vocabulary that proved too fine-grained. Superseded. |
 
@@ -31,7 +31,8 @@ One source, two outputs, so the page and the spreadsheet cannot disagree. The bu
 validates every row (known category, known shape, non-empty sub-category, no duplicate
 names) and refuses to write if anything fails.
 
-- `_src/rows.js` — the 81 data points: `[name, category, sub-category, shape, description]`
+- `_src/rows.js` — the 113 data points: `[name, category, sub-category, shape, nav screens, data sources, description]`,
+  copied from the Notion table (which stays the source of truth for rows); shapes are ours, since Notion has none
 - `_src/template.html` — the page, with a `/*__DATA__*/` placeholder for the rows
 - `_src/codings.js` — the codings, one line per code, plus default-status rules for uncoded points
 - `_src/build.js` — the generator (plain Node, no dependencies); also validates the codings
@@ -41,8 +42,8 @@ names) and refuses to write if anything fails.
 
 `_src/codings.js` holds the standard-terminology codes; `build.js` joins it to `rows.js` and writes two files:
 
-- `Patient Data Model.csv` - **the combined sheet**: one row per data point (81), with category, sub-category,
-  shape and description from `rows.js` plus the primary code, UCUM unit, any other codings, a `Verified` summary
+- `Patient Data Model.csv` - **the combined sheet**: one row per data point (113), with category, sub-category,
+  shape, screens, sources and description from `rows.js` plus the primary code, UCUM unit, any other codings, a `Verified` summary
   (`yes` / `partial` / `no`) and the coding note. This is the file to import into Notion.
 - `Patient Data Codings.csv` - the detail view: one row per coding (a panel and its components, or a variant,
   each get a row). Use it when wiring `MetricDefinition.codings`.

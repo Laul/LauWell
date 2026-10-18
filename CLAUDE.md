@@ -12,13 +12,13 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
-- `docs/data-structure/` — the data model reference. **Being reconciled** with the simplified model in
-  Notion (*Data Model [Simplified]*: seven categories incl. Labs and Ostomy, a `Nav. Screens` column): until it is
-  regenerated, PLAN.md → Decisions → *Simplified data model* wins where the two disagree.
+- `docs/data-structure/` — the data model reference, generated from the Notion table *Data Model
+  [Simplified]* (seven categories incl. Labs and Ostomy, a `Nav. Screens` column), which stays the source
+  of truth for rows: change Notion first, then `_src/rows.js`, then rebuild.
   - `health-data-model/` — patient data categories, the data map (every data point → category /
     sub-category / storage shape), and the terminology codings (LOINC / SNOMED CT / UCUM).
     `Patient Data Categories` is the current reference; `Patient Data Model.csv` is the combined
-    sheet (categories + codings). Generated from `_src/` by `node _src/build.js`; the `.csv` files
+    sheet (categories + codings); the `-v03` files are the earlier five-category map. Generated from `_src/` by `node _src/build.js`; the `.csv` files
     are the diffable copies. Earlier inventories are kept beside them as snapshots.
   - `health_data_standards/` — source material for standardization, e.g. the MUHC laboratory
     reference ranges list.

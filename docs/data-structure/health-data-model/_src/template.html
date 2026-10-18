@@ -8,7 +8,7 @@
     --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
     --line:#DCE0D9; --line-strong:#C3C9C0;
     --accent:#2C6A57; --accent-soft:#E2EDE7;
-    --c1:#2D6CA8; --c2:#45636F; --c3:#47873F; --c4:#A7561A; --c5:#7A4BA8;
+    --c1:#D4312A; --c2:#8C51D9; --c3:#0073E9; --c4:#00952A; --c5:#C83184; --c6:#0095A5; --c7:#B26200;
     --warn:#A7561A; --ok:#2C6A57;
   }
   @media (prefers-color-scheme: dark){
@@ -17,7 +17,7 @@
       --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
       --line:#2A322E; --line-strong:#3A443F;
       --accent:#74C2A4; --accent-soft:#1D2D27;
-      --c1:#84B6E2; --c2:#9BB4C0; --c3:#93CC87; --c4:#E0A469; --c5:#BDA0E0;
+      --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
       --warn:#E0A661; --ok:#74C2A4;
     }
   }
@@ -26,7 +26,7 @@
     --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
     --line:#2A322E; --line-strong:#3A443F;
     --accent:#74C2A4; --accent-soft:#1D2D27;
-    --c1:#84B6E2; --c2:#9BB4C0; --c3:#93CC87; --c4:#E0A469; --c5:#BDA0E0;
+    --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
     --warn:#E0A661; --ok:#74C2A4;
   }
 
@@ -105,12 +105,13 @@
     font-family:"IBM Plex Mono",ui-monospace,monospace}
   td.m.no{color:var(--line-strong);font-weight:400}
 
-  #maptable table{min-width:960px}
+  #maptable table{min-width:1120px}
   #maptable tbody tr:hover{background:var(--accent-soft)}
   td.dname{font-weight:600;color:var(--ink);white-space:nowrap}
   td.dsub{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
   td.dshape{white-space:nowrap}
   td.ddesc{color:var(--ink-2);font-size:13px;line-height:1.5;min-width:300px}
+  td.dtags{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-2);white-space:nowrap}
   .pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
     font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
     border:1px solid var(--line-strong);border-radius:99px;padding:2px 9px;color:var(--ink-2)}
@@ -172,15 +173,15 @@
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">LauWell · data structure · October 2026 · v3 · drafted with Claude</div>
+    <div class="eyebrow">LauWell · data structure · October 2026 · v4 · drafted with Claude</div>
     <h1>Patient Data Categories</h1>
-    <p class="lede">Five categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes. Written to be the navigation layer of the app and the starting point for the entity model underneath it.</p>
+    <p class="lede">Seven categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes, and a tag for the screens that show it. The rows mirror the Notion table <i>Data Model [Simplified]</i>; the earlier five-category map (v03) is kept beside this page.</p>
   </header>
 
   <div class="axis">
     <h3>The dividing axis</h3>
     <p><b>Is this value read against a clinical normal range, or against a goal you set yourself?</b> A blood pressure of 160/100 is abnormal to any clinician; nobody reads 4,000 steps as pathological. Clinical band → <b>Vitals</b>. Personal goal → <b>Lifestyle</b>.</p>
-    <p>This replaces the earlier mix of a shape-based rule for Vitals and a topic-based rule for Lifestyle. One question now decides both, and it rules correctly on the cases that broke the alternatives — mood and the menstrual cycle are daily logs without a clinical band, so they sit in Lifestyle without needing an exception.</p>
+    <p>One question decides both, and it handles mood without an exception: a daily log with no clinical band, so Lifestyle. Two categories now sit beside the axis rather than on it: <b>Labs</b>, split by where the number comes from, and <b>Ostomy</b>, split by subject so that everything about the stoma is in one place.</p>
   </div>
 
   <div class="glance">
@@ -189,121 +190,130 @@
       <p class="gtest">A measured value a clinician would read against a normal range.</p>
     </div>
     <div class="gcard" style="--cc:var(--c2)">
-      <div class="gnum">02 · Records</div><h3>Medical Records</h3>
-      <p class="gtest">Standing facts about me, and the record of my care.</p>
+      <div class="gnum">02 · Labs</div><h3>Labs</h3>
+      <p class="gtest">A result from a laboratory report, read against the range printed on it.</p>
     </div>
     <div class="gcard" style="--cc:var(--c3)">
-      <div class="gnum">03 · Lifestyle</div><h3>Lifestyle</h3>
-      <p class="gtest">My daily log, measured against my own goals.</p>
+      <div class="gnum">03 · Records</div><h3>Medical Records</h3>
+      <p class="gtest">Standing facts about me, my documents, and the record of my care.</p>
     </div>
     <div class="gcard" style="--cc:var(--c4)">
-      <div class="gnum">04 · Symptoms</div><h3>Symptoms</h3>
-      <p class="gtest">Something I feel, that I report myself.</p>
+      <div class="gnum">04 · Lifestyle</div><h3>Lifestyle</h3>
+      <p class="gtest">My daily log, measured against my own goals.</p>
     </div>
     <div class="gcard" style="--cc:var(--c5)">
-      <div class="gnum">05 · Treatments</div><h3>Treatments &amp; appliances</h3>
-      <p class="gtest">What I'm taking or using, and the products behind it.</p>
+      <div class="gnum">05 · Symptoms</div><h3>Symptoms</h3>
+      <p class="gtest">Something I feel, that I report myself.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c6)">
+      <div class="gnum">06 · Treatments</div><h3>Treatments &amp; Appliances</h3>
+      <p class="gtest">What I'm taking or using, and the care I have planned.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c7)">
+      <div class="gnum">07 · Ostomy</div><h3>Ostomy</h3>
+      <p class="gtest">Everything about my stoma: its output, its skin, the appliance on it.</p>
     </div>
   </div>
 
-  <h2>The five, in detail</h2>
-  <p class="sub">Example lists are illustrative. The authoritative row set is the data map further down.</p>
+  <h2>The seven, in detail</h2>
+  <p class="sub">Sub-category lists are generated from the data map further down, which is the authoritative row set.</p>
 
   <section class="cat" style="--cc:var(--c1)">
     <h3>Vitals <em>clinical measurement</em></h3>
     <p class="test">A measured value with a unit and a timestamp, read against a clinical normal range.</p>
-    <p>The strongest category in the set, because it describes a <i>shape</i> plus one interpretive test rather than a topic. Anything shaped like value + unit + timestamp, whose number a clinician would call normal or abnormal, is a Vital — so a sensor you connect in 2028 lands here with no new category and no new screen.</p>
+    <p>The strongest category in the set, because it describes a <i>shape</i> plus one interpretive test rather than a topic. Anything shaped like value + unit + timestamp, whose number a clinician would call normal or abnormal, is a Vital — so a sensor you connect in 2028 lands here with no new category and no new screen. Shown in Tracker.</p>
     <span class="lbl">Sub-categories</span>
-    <div class="items">
-      <span class="item">Cardiovascular</span><span class="item">Respiratory</span>
-      <span class="item">Metabolic</span><span class="item">Body measures</span>
-      <span class="item">Laboratory</span><span class="item">Digestive output</span>
-    </div>
+    <div class="items" data-cat="Vitals"></div>
     <dl class="edge">
-      <dt>Lab results</dt>
-      <dd>By the rule these are Vitals — value, unit, timestamp, reference range — and the only difference from a home reading is who took the sample. <b>One measurement entity with a <code>source</code> attribute</b>, not a separate category. "Labs" can still be a visible section; it's a view over Vitals filtered by source.</dd>
-      <dt>Stoma output volume sits here, not in Lifestyle</dt>
-      <dd>Volume has a genuine clinical threshold — sustained high output risks dehydration — so the axis puts it in Vitals even though the rest of the ostomy routine is in Lifestyle. <b>The volume is a measurement, the change routine is a log.</b></dd>
+      <dt>Lab results moved out</dt>
+      <dd>By the rule a lab result is a Vital, and it keeps the same storage shape. It now has its own category because it arrives differently — dozens of analytes at once, every few months, on a report — and lives on a different screen (Records). <b>A home glucose reading is Vitals; a fasting glucose from the lab is Labs.</b></dd>
+      <dt>The menstrual cycle sits here, as an exception</dt>
+      <dd>Filed under <i>Woman Health</i> so that cycle data has one home next to the body's other signals. Strictly, the axis would put it in Lifestyle (a daily log with no clinical band); the simplified model chose the grouping over the rule.</dd>
     </dl>
   </section>
 
   <section class="cat" style="--cc:var(--c2)">
-    <h3>Medical Records <em>standing fact + care record</em></h3>
-    <p class="test">A fact with a start date rather than a timestamp, or the record of an encounter with the health system.</p>
-    <p>Renamed from "Medical history", which was working against you — it signalled <i>the past</i>, so a patient wouldn't look there for their current diagnosis, and the active diagnosis list is one of the two things anyone needs in a consultation. Appointments, visits and providers now live here rather than in a sixth category: a visit is a record of something that happened, with a date, a person and usually a document, which is the same shape as everything else here.</p>
-    <span class="lbl">Sub-categories</span>
-    <div class="items">
-      <span class="item">Conditions</span><span class="item">Sensitivities</span>
-      <span class="item">Procedures</span><span class="item">Preventive care</span>
-      <span class="item">Care &amp; visits</span><span class="item">Documents</span>
-      <span class="item">Identity</span><span class="item">Administration</span>
-    </div>
+    <h3>Labs <em>lab result</em></h3>
+    <p class="test">A value from a laboratory report, read against the reference range printed on that report.</p>
+    <p>One row per analyte, grouped by panel — hematology, lipid profile, iron studies — the way a report lays them out. The seed list is <code>docs/data-structure/health_data_labs/common_lab_tests.csv</code>. Storage is the ordinary <b>Measurement</b> with <code>source = lab</code>, plus the reference range the lab printed, because ranges differ between labs and methods. Shown in Records.</p>
+    <span class="lbl">Sub-categories (panels)</span>
+    <div class="items" data-cat="Labs"></div>
     <dl class="edge">
-      <dt>A future appointment is not a record</dt>
-      <dd>Everything else here describes something settled; a scheduled visit describes something pending. Filing it here is fine, but <b>upcoming appointments must also surface on Home</b> — nobody opens an archive to find out what they're doing on Thursday.</dd>
-      <dt>Status, not deletion</dt>
-      <dd>A resolved condition stays visible as resolved rather than disappearing. The fact that something ended is itself clinical information.</dd>
+      <dt>Keep the lab's range, not a generic one</dt>
+      <dd>A result is only "high" relative to the range on its own report. <b>Store the printed range with each result</b>; a generic range is a fallback for display, never the reference.</dd>
     </dl>
   </section>
 
   <section class="cat" style="--cc:var(--c3)">
-    <h3>Lifestyle <em>daily log</em></h3>
-    <p class="test">Something I logged about my day, measured against a goal I set rather than a clinical range.</p>
-    <p>This is where the modifiable variables live — the levers you can actually pull — which makes it the input side of nearly every correlation the app will run. It also holds the ostomy routine: changes, wear time, emptying, accessories and leaks are daily facts about how the day went, which is what this category is for.</p>
+    <h3>Medical Records <em>standing fact + care record</em></h3>
+    <p class="test">A fact with a start date rather than a timestamp, a document, or the record of an encounter with the health system.</p>
+    <p>Not called "Medical history", because that signals <i>the past</i> — and the active diagnosis list is one of the two things anyone needs in a consultation. Documents, pictures, the medical history and the record of each visit live here. Shown in Records.</p>
     <span class="lbl">Sub-categories</span>
-    <div class="items">
-      <span class="item">Sleep</span><span class="item">Activity</span>
-      <span class="item">Nutrition &amp; intake</span><span class="item">Mind &amp; mood</span>
-      <span class="item">Cycle</span><span class="item">Ostomy routine</span>
-      <span class="item">Context</span>
-    </div>
+    <div class="items" data-cat="Medical Records"></div>
     <dl class="edge">
-      <dt>Mood and cycle fit without an exception</dt>
-      <dd>Under an agency-based rule both would have been forced into Vitals, because you choose neither. Under the reference-range rule they're plainly Lifestyle: daily logs, no clinical band. That's the main reason this axis won.</dd>
-      <dt>Ostomy routine here, ostomy product in Treatments</dt>
-      <dd>The change event is a log entry; the appliance is a catalogue item with attributes. <b>The product must stay a separate entity</b> — that separation, not the filing, is what decides whether you can ever compare configurations.</dd>
+      <dt>An appointment and an encounter are two records</dt>
+      <dd>The appointment is the plan (date, place, who, questions to ask) and lives in Treatments &amp; Appliances, shown in Care. The encounter — <i>Note (Encounter)</i> — is what happened, and lives here. <b>An encounter points to the appointment it is based on, when there is one</b>: an emergency visit has no appointment, and a cancelled appointment never becomes an encounter.</dd>
+      <dt>Status, not deletion</dt>
+      <dd>A resolved diagnosis stays visible as resolved rather than disappearing. The fact that something ended is itself clinical information.</dd>
     </dl>
   </section>
 
   <section class="cat" style="--cc:var(--c4)">
-    <h3>Symptoms <em>self-report</em></h3>
-    <p class="test">Something I feel and rate myself — no instrument involved.</p>
-    <p>The separation from Vitals is <b>who produced the value</b>: a device or a lab, versus you. That settles the awkward cases — a pain score is a number with a timestamp exactly like a blood pressure, but you generated it, so it's a Symptom. Sub-categories here follow body systems, which is what patients and clinicians both expect, with one general bucket for the records that aren't tied to a system.</p>
+    <h3>Lifestyle <em>daily log</em></h3>
+    <p class="test">Something I logged about my day, measured against a goal I set rather than a clinical range.</p>
+    <p>This is where the modifiable variables live — the levers you can actually pull — which makes it the input side of nearly every correlation the app will run. Shown in Tracker.</p>
     <span class="lbl">Sub-categories</span>
-    <div class="items">
-      <span class="item">General</span><span class="item">Systemic</span>
-      <span class="item">Cardiac</span><span class="item">Respiratory</span>
-      <span class="item">Neurological</span><span class="item">Digestive</span>
-      <span class="item">Pain</span><span class="item">Skin &amp; stoma</span>
-    </div>
+    <div class="items" data-cat="Lifestyle"></div>
     <dl class="edge">
-      <dt>The taxonomy problem</dt>
-      <dd>Clinical symptom vocabularies (SNOMED CT, ICD-11) are complete, rigorously classified, and hostile to browse. <b>The answer is two vocabularies:</b> a coded reference terminology underneath for correctness and any export to a clinician, and a patient-facing layer on top — everyday names, synonyms so "tummy ache" finds the right code, a body map, and a personal shortlist of the eight or ten symptoms you actually track. The sub-categories here are that patient-facing layer; they are not the terminology.</dd>
-      <dt>Two shapes live here</dt>
-      <dd>A symptom logged now is a measurement; a flare is an interval with a start, an end and a severity curve. Both read as Symptoms to the patient but they're different records.</dd>
+      <dt>Cut down on purpose</dt>
+      <dd>Nutrition, hydration, caffeine and alcohol, mindfulness, travel and weather were dropped from the simplified model as far from current priorities. They are in the v03 map, ready to come back as rows when needed.</dd>
     </dl>
   </section>
 
   <section class="cat" style="--cc:var(--c5)">
-    <h3>Treatments &amp; appliances <em>intervention + catalogue</em></h3>
-    <p class="test">What I'm taking or using, and the product that delivers it.</p>
-    <p>With the ostomy routine in Lifestyle, this category settles into a cleaner job: it holds the <b>things</b> — drugs, appliances, accessories, devices — and the intervention records that govern them, while the day-to-day acts of using them are logged as Lifestyle.</p>
+    <h3>Symptoms <em>self-report</em></h3>
+    <p class="test">Something I feel and rate myself — no instrument involved.</p>
+    <p>The separation from Vitals is <b>who produced the value</b>: a device or a lab, versus you. A pain score is a number with a timestamp exactly like a blood pressure, but you generated it, so it's a Symptom. Sub-categories follow body systems, with one general bucket for records not tied to a system. Shown in Tracker.</p>
     <span class="lbl">Sub-categories</span>
-    <div class="items">
-      <span class="item">Medication</span><span class="item">Therapies</span>
-      <span class="item">Ostomy</span><span class="item">Devices</span>
-      <span class="item">Supplies</span><span class="item">Experiments</span>
-    </div>
+    <div class="items" data-cat="Symptoms"></div>
     <dl class="edge">
+      <dt>The taxonomy problem</dt>
+      <dd>Clinical symptom vocabularies (SNOMED CT, ICD-11) are complete, rigorously classified, and hostile to browse. <b>The answer is two vocabularies:</b> a coded reference terminology underneath for correctness and any export to a clinician, and a patient-facing layer on top — everyday names, synonyms so "tummy ache" finds the right code, a body map, and a personal shortlist of the symptoms you actually track. The sub-categories here are that patient-facing layer; they are not the terminology.</dd>
+      <dt>Two shapes live here</dt>
+      <dd>A rating logged now is a measurement; a headache or a palpitation is an event with an onset and a duration. Both read as Symptoms to the patient but they're different records.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c6)">
+    <h3>Treatments &amp; Appliances <em>intervention + catalogue</em></h3>
+    <p class="test">What I'm taking or using, the product behind it, and the care I have planned.</p>
+    <p>Holds the <b>things</b> — drugs, devices, supplies — and the intervention records that govern them, plus appointments, the forward-looking plan of care. Shown in Care.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Treatments &amp; Appliances"></div>
+    <dl class="edge">
+      <dt>Unfinished, by choice</dt>
+      <dd>Only the Appointment row is in the simplified model so far. Medication (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies, devices, supplies and trial periods stay as defined in the v03 map and come back as rows when their screens are built.</dd>
       <dt>Product and act must stay separate entities</dt>
-      <dd>The single most consequential decision in the set. Product attributes — convexity, flange size, barrier chemistry, brand, reference — belong to a catalogue entity; the Lifestyle change event references it. Only then can you ask <b>"did the 25mm convex barrier give me longer wear time and better skin than the flat one"</b>. If product is a free-text field on the event, that question is permanently out of reach.</dd>
-      <dt>Experiments is a sub-category, not an afterthought</dt>
-      <dd>Trial periods are what make comparison possible. Mark <b>labelled intervals</b> — "on Coloplast X, convex, 30mm from 12 March" — rather than comparing all-time averages, which get confounded by season, diet and stoma maturation.</dd>
+      <dd>The single most consequential decision in the set. Product attributes — convexity, flange size, barrier chemistry, brand, reference — belong to a catalogue entity; the appliance-change event points at it. Only then can you ask <b>"did the 25mm convex barrier give me longer wear time and better skin than the flat one"</b>. If product is a free-text field on the event, that question is permanently out of reach.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c7)">
+    <h3>Ostomy <em>one subject, two rhythms</em></h3>
+    <p class="test">Anything about the stoma: its output, the skin around it, and the appliance on it.</p>
+    <p>Ostomy data used to be spread over Vitals, Lifestyle, Symptoms and Treatments. Gathered into one category, <b>one switch hides all of it</b> for someone without a stoma, and a stoma-nurse export reads a single category. Inside it, the split between signals and interventions survives as two sub-categories.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Ostomy"></div>
+    <dl class="edge">
+      <dt>Daily routines are signals, replacement is an intervention</dt>
+      <dd>Output, emptying and skin are read day to day and show in Tracker; the appliance change and the wear time it produces show in Care. Peristomal skin is shown in both, stored once.</dd>
+      <dt>A leak is a reason, not an event</dt>
+      <dd>A leak forces an appliance change, so it is recorded as that change's reason. <b>Wear time is derived</b> from consecutive changes and is the headline outcome for comparing products.</dd>
     </dl>
   </section>
 
   <h2>Data map</h2>
-  <p class="sub">Every data point the app is expected to hold, at the level a patient would recognise it. <b>Category</b> is the navigation home, <b>sub-category</b> the second level inside it, and <b>shape</b> the storage form — which is what makes this row set directly translatable into tables. Filter by either to see one slice.</p>
+  <p class="sub">Every data point the app is expected to hold, at the level a patient would recognise it. <b>Category</b> is the data's home, <b>sub-category</b> the second level inside it, <b>shape</b> the storage form, <b>screens</b> the tabs that show it (Today reads from all of them) and <b>sources</b> where values come from. Filter to see one slice.</p>
 
   <div class="wide">
     <div class="structure" id="structure"></div>
@@ -315,11 +325,13 @@
     <div class="toolrow" style="margin-top:-4px">
       <span class="glbl">Shape</span>
       <div style="display:flex;flex-wrap:wrap;gap:5px" id="shapefilters"></div>
+      <span class="glbl">Screen</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="screenfilters"></div>
     </div>
     <div class="tablewrap" id="maptable">
       <table>
         <thead>
-          <tr><th>Data</th><th>Category</th><th>Sub-category</th><th>Shape</th><th>What it is</th></tr>
+          <tr><th>Data</th><th>Category</th><th>Sub-category</th><th>Shape</th><th>Screens</th><th>Sources</th><th>What it is</th></tr>
         </thead>
         <tbody id="rows"></tbody>
       </table>
@@ -327,18 +339,18 @@
   </div>
 
   <h2>Categories are not entities</h2>
-  <p class="sub">Five navigation categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart. This is the bridge between this document and the ER diagram.</p>
+  <p class="sub">Seven categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart.</p>
 
   <div class="tablewrap" id="shapematrix"></div>
 
   <h2>Where the model stands</h2>
-  <p class="sub">Two tensions resolved in this revision, two still open.</p>
+  <p class="sub">Two changes settled in this revision, three things still open.</p>
 
   <div class="finding" style="--cc:var(--ok)">
     <div class="fnum">01</div>
     <div class="fbody">
-      <h4>Vitals and Lifestyle now share one axis</h4>
-      <p>Previously Vitals was defined by shape and Lifestyle by topic, so sleep, steps and hydration qualified as both. The reference-range test settles it with one question and handles mood and the cycle without exceptions.</p>
+      <h4>Labs and Ostomy get their own homes</h4>
+      <p>Labs left Vitals because results arrive as reports and are read in Records; Ostomy gathered rows from four categories so that one switch and one export cover the stoma. Both keep the storage shapes they had.</p>
       <span class="verdict done">Resolved</span>
     </div>
   </div>
@@ -346,40 +358,47 @@
   <div class="finding" style="--cc:var(--ok)">
     <div class="fnum">02</div>
     <div class="fbody">
-      <h4>"Records" stops hiding the active data, and absorbs encounters</h4>
-      <p>The rename removes the signal that this is where old things live, and folding appointments, visits and providers in avoids a sixth category for what is structurally the same shape. Five holds.</p>
+      <h4>Category is not screen</h4>
+      <p>Every row now says which tabs show it. A row is stored once and may appear on several tabs — peristomal skin in Tracker and Care — keeping its category colour on both. Adding a data point to a screen is a tag, not a new destination.</p>
       <span class="verdict done">Resolved</span>
     </div>
   </div>
 
-  <div class="finding" style="--cc:var(--c5)">
+  <div class="finding" style="--cc:var(--c6)">
     <div class="fnum">03</div>
     <div class="fbody">
-      <h4>One category, two entities — and the model must say so</h4>
-      <p>Treatments holds a catalogue and a log; Symptoms holds a symptom type and its occurrences; Medication holds the drug and the dose. In every case a reference table says <i>what kinds of things exist</i> and a log records <i>what happened</i>.</p>
-      <p>The shape column makes this visible: wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table. It's the same pattern four times over, which is the extensibility the navigation was aiming for.</p>
-      <span class="verdict">Core modelling decision</span>
+      <h4>The catalogue rows are missing</h4>
+      <p>Wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table: the ostomy product and its changes, the medication and its doses. The simplified model has the events but none of the catalogues yet — the shape matrix shows an empty Catalogue row. They come back with Treatments &amp; Appliances.</p>
+      <span class="verdict">Core modelling decision, still to re-add</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c5)">
+    <div class="fnum">04</div>
+    <div class="fbody">
+      <h4>Sub-category names leak across categories</h4>
+      <p>In Notion the sub-category list is one flat select shared by every category, so lab panel names reach other categories: home blood glucose is filed as Vitals → "Biochemistry - Metabolic". "Cardiovascular" exists under Vitals, Labs and Symptoms, which is fine — identity is category plus name — but the Vitals glucose row wants a Vitals name.</p>
+      <span class="verdict">Open in Notion</span>
     </div>
   </div>
 
   <div class="finding" style="--cc:var(--c4)">
-    <div class="fnum">04</div>
+    <div class="fnum">05</div>
     <div class="fbody">
-      <h4>Nothing in the five is an output</h4>
-      <p>All five describe data going in. Trends, correlations, adherence rates and the appointment export are a layer over the five rather than a sixth sibling — correct, but it means the categories alone don't say what the app is <i>for</i>.</p>
-      <p>Only two rows in the whole map carry the <b>Derived</b> shape today. That's a fair reflection of a schema, and a reminder that the value sits in joins — Treatments against Symptoms, Lifestyle against Vitals — which need to be first-class rather than inferred at query time.</p>
+      <h4>Nothing here is an output</h4>
+      <p>Every category describes data going in. Trends, correlations, adherence rates, the History timeline and the stoma-nurse export are a layer over the categories — and only two rows carry the <b>Derived</b> shape. The value sits in joins (Ostomy against Symptoms, Lifestyle against Vitals), which need to be first-class rather than inferred at query time.</p>
       <span class="verdict">Design the joins deliberately</span>
     </div>
   </div>
 
-  <h2>Still outside the five</h2>
+  <h2>Still outside the seven</h2>
   <p class="sub">Four things that deliberately aren't categories, and what they are instead.</p>
 
   <div class="finding" style="--cc:var(--accent)">
     <div class="fnum">01</div>
     <div class="fbody">
-      <h4>Documents — an attachment, not a category</h4>
-      <p>Lab PDFs, imaging, letters, product specs, stoma photos. They attach to records in all five categories, which is why <b>Document</b> appears as a shape rather than a home. Make it an attachment entity that hangs off any record, plus one "all files" view, and allow unattached files too.</p>
+      <h4>Attachments — any record can carry one</h4>
+      <p>Lab PDFs, imaging, letters, product specs, stoma photos. Records → Documents and Pictures hold the ones filed on their own, but a file can also hang off any record in any category, which is why <b>Document</b> is a shape as well. One "all files" view, and unattached files allowed.</p>
     </div>
   </div>
 
@@ -387,15 +406,15 @@
     <div class="fnum">02</div>
     <div class="fbody">
       <h4>Emergency view — derived, not stored</h4>
-      <p>Blood type, active conditions, current medications, allergies, contacts. Every element already lives in Records and Treatments; what's missing is the assembly. It must be reachable without unlocking the app — any design where finding a blood type takes two taps has failed at the only moment it mattered.</p>
+      <p>Blood type, active conditions, current medications, allergies, contacts. Every element lives in a category already; what's missing is the assembly. It must be reachable without unlocking the app — any design where finding a blood type takes two taps has failed at the only moment it mattered.</p>
     </div>
   </div>
 
   <div class="finding" style="--cc:var(--accent)">
     <div class="fnum">03</div>
     <div class="fbody">
-      <h4>Provenance — fields on every record</h4>
-      <p>Which device, which lab, entered by hand or synced, edited since. When two sources disagree about the same measurement you need a rule, and when you show a clinician a number they will ask where it came from.</p>
+      <h4>Provenance and links — fields on every record</h4>
+      <p>Which device, which lab, entered by hand or synced, edited since — and which other records it belongs with (a reading taken during an encounter, a photo about a skin rating). When two sources disagree you need a rule, and when you show a clinician a number they will ask where it came from.</p>
     </div>
   </div>
 
@@ -409,18 +428,19 @@
 
   <div class="close">
     <h3>Where this leaves things</h3>
-    <p>Five categories, thirty-five sub-categories, seven storage shapes, and a named home for every data point the app is expected to hold. Nothing in the set requires a patient to learn a vocabulary, and nothing in the shape column requires a developer to guess at a table.</p>
+    <p><span id="n-cats"></span> categories, <span id="n-subs"></span> sub-categories, <span id="n-rows"></span> data points, seven storage shapes, and a screen tag on every row. Nothing in the set requires a patient to learn a vocabulary, and nothing in the shape column requires a developer to guess at a table.</p>
     <p>The thing to protect from here is the <b>Catalogue plus Event</b> pattern. It looks like an implementation detail and it is actually the feature — the difference between an app that records that you changed a pouch and one that can tell you which pouch works better for you.</p>
-    <p>Underneath, Vitals, Lifestyle and the measured part of Symptoms are all the same storage shape. Category and sub-category are <b>facets on the data type</b>, not separate tables, so if an assignment turns out wrong in six months it's a config row rather than a migration.</p>
+    <p>Category and sub-category are <b>facets on the data type</b>, not separate tables, so if an assignment turns out wrong in six months it's a config row rather than a migration.</p>
   </div>
 </div>
 
 <script>
 const CATS = {
-  "Vitals":"--c1", "Medical Records":"--c2", "Lifestyle":"--c3",
-  "Symptoms":"--c4", "Treatments & appliances":"--c5"
+  "Vitals":"--c1", "Labs":"--c2", "Medical Records":"--c3", "Lifestyle":"--c4",
+  "Symptoms":"--c5", "Treatments & Appliances":"--c6", "Ostomy":"--c7"
 };
 const SHAPES = ["Measurement","Event","Interval","Standing fact","Catalogue","Document","Derived"];
+const SCREENS = ["Tracker","Records","Care"];
 const SHAPE_DESC = {
   "Measurement":"value · unit · timestamp",
   "Event":"timestamp · optional duration",
@@ -432,14 +452,29 @@ const SHAPE_DESC = {
 };
 
 const DATA = /*__DATA__*/;
-const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], desc:r[4] }));
+const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], screens:r[4], sources:r[5], desc:r[6] }));
+const subsOf = c => [...new Set(rows.filter(r => r.cat === c).map(r => r.sub))];
+
+/* sub-category chips in each category section */
+document.querySelectorAll(".items[data-cat]").forEach(host => {
+  subsOf(host.dataset.cat).forEach(s => {
+    const span = document.createElement("span");
+    span.className = "item"; span.textContent = s;
+    host.appendChild(span);
+  });
+});
+
+/* counts in the closing note */
+document.getElementById("n-cats").textContent = Object.keys(CATS).length;
+document.getElementById("n-subs").textContent = Object.keys(CATS).reduce((n, c) => n + subsOf(c).length, 0);
+document.getElementById("n-rows").textContent = rows.length;
 
 /* sub-category structure */
 (function(){
   document.getElementById("structure").innerHTML = Object.keys(CATS).map(c => {
     const subs = {};
     rows.filter(r => r.cat === c).forEach(r => subs[r.sub] = (subs[r.sub] || 0) + 1);
-    return '<div class="sgroup" style="--cc:var(' + CATS[c] + ')"><h4>' + c + '</h4><ul>' +
+    return '<div class="sgroup" style="--cc:var(' + CATS[c] + ')"><h4>' + c.replace("&", "&amp;") + '</h4><ul>' +
       Object.entries(subs).sort((a,b) => b[1] - a[1])
         .map(s => '<li>' + s[0] + '<span>' + s[1] + '</span></li>').join("") +
       '</ul></div>';
@@ -449,7 +484,7 @@ const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], desc:r[
 /* shape x category matrix, generated from the rows */
 (function(){
   const cats = Object.keys(CATS);
-  const short = c => c === "Treatments & appliances" ? "Treatments" : c.replace("Medical ", "");
+  const short = c => c === "Treatments & Appliances" ? "Treatments" : c.replace("Medical ", "");
   const head = '<thead><tr><th>Shape</th>' +
     cats.map(c => '<th>' + short(c) + '</th>').join("") + '<th>Total</th></tr></thead>';
   const body = '<tbody>' + SHAPES.map(s => {
@@ -465,7 +500,7 @@ const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], desc:r[
 })();
 
 /* map table */
-const state = { q:"", cat:new Set(), shape:new Set() };
+const state = { q:"", cat:new Set(), shape:new Set(), screen:new Set() };
 function chip(host, label, field, colorVar){
   const b = document.createElement("button");
   b.type = "button"; b.className = "fchip"; b.textContent = label;
@@ -481,19 +516,21 @@ function chip(host, label, field, colorVar){
 }
 Object.keys(CATS).forEach(c => chip(document.getElementById("filters"), c, "cat", CATS[c]));
 SHAPES.forEach(s => chip(document.getElementById("shapefilters"), s, "shape", null));
+SCREENS.forEach(s => chip(document.getElementById("screenfilters"), s, "screen", null));
 
 function render(){
   const q = state.q.trim().toLowerCase();
   const out = rows.filter(r =>
     (!state.cat.size || state.cat.has(r.cat)) &&
     (!state.shape.size || state.shape.has(r.shape)) &&
-    (!q || (r.name + " " + r.cat + " " + r.sub + " " + r.shape + " " + r.desc).toLowerCase().includes(q))
+    (!state.screen.size || r.screens.some(s => state.screen.has(s))) &&
+    (!q || (r.name + " " + r.cat + " " + r.sub + " " + r.shape + " " + r.screens.join(" ") + " " + r.desc).toLowerCase().includes(q))
   );
   const tb = document.getElementById("rows");
   tb.innerHTML = out.map(() =>
     '<tr><td class="dname"></td><td><span class="pill"></span></td>' +
     '<td class="dsub"></td><td class="dshape"><span class="shp"></span></td>' +
-    '<td class="ddesc"></td></tr>'
+    '<td class="dtags"></td><td class="dtags"></td><td class="ddesc"></td></tr>'
   ).join("");
   [...tb.children].forEach((tr, i) => {
     const r = out[i];
@@ -503,7 +540,9 @@ function render(){
     pill.style.setProperty("--cc", "var(" + CATS[r.cat] + ")");
     tr.children[2].textContent = r.sub;
     tr.children[3].firstChild.textContent = r.shape;
-    tr.children[4].textContent = r.desc;
+    tr.children[4].textContent = r.screens.join(", ");
+    tr.children[5].textContent = r.sources.join(", ");
+    tr.children[6].textContent = r.desc;
   });
   document.getElementById("count").textContent = out.length + " of " + rows.length;
 }
