@@ -13,8 +13,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   the **switched-off** set (empty = everything visible, new metrics appear on their own), and one
   `isVisible` function is the only place that reads it. Hiding never deletes data. Permissions and
   syncs are declared per metric and run only for visible ones. MVP: everything on, no selection
-  screen after sign-in; the Settings toggles are backlog. Switching off everything related to one
-  condition across categories (e.g. ostomy) is deferred.
+  screen after sign-in; the Settings toggles are backlog. Ostomy is its own category since
+  2026-10-17, so its category switch hides all of it; a switch per condition across categories stays
+  deferred until another condition needs one.
 - **Backend:** Firebase — Firebase Auth (Google sign-in), Cloud Firestore (data), Cloud Storage (photos).
   Custom, FHIR-inspired schema (LOINC codes where trivial). History: Medplum/FHIR rejected (provider-oriented,
   overkill for one user) → Supabase rejected (free tier pauses after 7 days) → Firebase.
@@ -57,19 +58,21 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   *Data Model [Simplified]*, until `docs/data-structure/` is regenerated from it). Prompted by the
   interface design: many data points were far from current priorities, so the map was cut down and
   each point now says where it is shown.
-  - **Six categories:** Vitals, **Labs** (new — promoted out of Vitals → Laboratory, so lab work gets
-    its own home), Medical Records, Lifestyle, Symptoms, Treatments & Appliances.
+  - **Seven categories:** Vitals, **Labs** (new — promoted out of Vitals → Laboratory, so lab work gets
+    its own home), Medical Records, Lifestyle, Symptoms, Treatments & Appliances, and **Ostomy** (added
+    in Notion 2026-10-17, see *Ostomy category* below).
   - **`Nav. Screens` column:** each data point is tagged with the tab(s) that show it. A point is
     stored once and may be shown on several tabs (e.g. peristomal skin rating: Treatments & Appliances,
     tagged Care + Tracker). Today is not a tag: it reads from the same registry. The column offers
     Tracker, Records and **Care** (Care added and the Treatments & Appliances rows retagged in Notion,
     2026-10-15).
-  - **Tab ↔ category:** Tracker = Vitals, Lifestyle (activity, sleep, mood, stress, cycle), Symptoms;
-    Records = Labs, Medical Records; Care = Treatments & Appliances (the whole ostomy module).
+  - **Tab ↔ category:** Tracker = Vitals, Lifestyle (activity, sleep, mood, stress, cycle), Symptoms,
+    and the Ostomy signals; Records = Labs, Medical Records; Care = Treatments & Appliances
+    (medication, appointments) and the Ostomy interventions. The `Nav. Screens` tag of each row decides.
   - **Labs:** one row per analyte (sub-category = panel: hematology, lipid profile, iron studies …),
     seeded from `docs/data-structure/health_data_labs/common_lab_tests.csv`. Same `Measurement` shape
     with `source = lab`; the reference range printed on each report is kept.
-  - **Ostomy** (superseded 2026-10-15 by *Ostomy placement* below: output rows are Vitals → Ostomy) now sits entirely under Treatments & Appliances → Ostomy (output volume and
+  - **Ostomy** (superseded 2026-10-15 by *Ostomy placement*, then 2026-10-17 by *Ostomy category* below) now sits entirely under Treatments & Appliances → Ostomy (output volume and
     consistency, appliance change with its reason, pouch emptying, accessories used, peristomal skin).
     It used to be spread over Vitals, Lifestyle and Symptoms. A leak is a *reason* on an appliance
     change rather than its own event. This largely settles the "one switch per condition across
@@ -83,15 +86,17 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     quality rating, travel and weather context; from Symptoms — flare, suspected trigger,
     breathlessness, dizziness, skin condition.
   - **Moved:** menstrual cycle from Lifestyle to Vitals (sub-category Woman Health, shown in Tracker);
-    visit / encounter is now *Note (Encounter)*, attached to an appointment; an appointment is one
-    record that is upcoming or past (see App navigation).
-  - **Not finished, by choice:** Treatments & Appliances holds only the six ostomy rows. Medication
+    visit / encounter is now *Note (Encounter)*, attached to an appointment (Appointment and Encounter
+    are two records since 2026-10-17, see *Appointments and encounters*).
+  - **Not finished, by choice:** Treatments & Appliances holds only the Appointment row since the
+    ostomy rows became their own category. Medication
     (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies,
     devices, supplies and trial periods stay as defined in the old map (`Patient Data Categories`)
     and get re-added later; this does not block the rest.
   - The Notion table has no *Shape* column. The seven shapes and the catalogue + occurrence rule
     below still apply; shapes come from the old map until the two are merged.
-- **Ostomy placement: signal vs. intervention** (decided 2026-10-15; revises the *Ostomy* bullet of
+- **Ostomy placement: signal vs. intervention** (*superseded 2026-10-17 by* Ostomy category *below;
+  kept for the reasoning, which survives as its two sub-categories*) (decided 2026-10-15; revises the *Ostomy* bullet of
   *Simplified data model*, which put every ostomy row under Treatments & Appliances). Category follows
   what the data means; the screen follows when it is captured. The Notion table *Data Model [Simplified]*
   stays the source of truth for the rows.
@@ -116,6 +121,17 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Export:** a stoma-nurse export reads every row whose sub-category is Ostomy, across both categories.
   - **Why:** Vitals keeps one rule (*clinical normal range?*), thresholds and group cards work for output
     as for Cardiovascular, and the change routine stays one phase.
+- **Ostomy category** (decided 2026-10-17, made in the Notion table). Ostomy is a seventh category, so
+  everything about the stoma sits together, one category switch hides all of it, and a stoma-nurse
+  export reads one category. The signal / intervention split survives as two sub-categories:
+  - **Ostomy • Daily Routines:** Output Volume, Output Consistency, Pouch Emptying (Tracker);
+    Peristomal Skin Rating (Tracker + Care); Accessories used (Care).
+  - **Ostomy • Replacement:** Appliance Change (+ reason; a leak is a reason, not its own event) and
+    Wear Time (computed from consecutive changes), both Care.
+  - Nav tags changed with it: Appliance Change is now Care only (was Tracker + Care), Pouch Emptying
+    Tracker only (was Tracker + Care).
+  - **Color: open.** The design has six category hues and none for Ostomy. The design drew ostomy in
+    teal, which is Treatments & Appliances. Until decided, Ostomy cannot be drawn in its own color.
 - **Storage shapes:** category and sub-category are *facets on the metric definition*, not tables.
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
@@ -142,6 +158,37 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   catalogue entity and are **never free text on the event**. This is what makes "did the 25 mm convex
   barrier give longer wear time and better skin than the flat one" answerable; without it that
   question is permanently out of reach, and it is the one thing no existing ostomy app does.
+- **Relationships between records** (decided 2026-10-17). Records point at each other, two ways:
+  - **Named fields for links that define a record**, which logic and statistics rely on: a dose → its
+    medication, an appliance change → its ostomy product, a medication → its prescription, a
+    prescription → the encounter that issued it, an encounter → the appointment it is based on.
+  - **Generic links for context**, on every record: `links: [{to, relation}]`, e.g. a BP reading
+    *recorded during* an encounter, a photo *about* a skin rating, a note *about* a symptom. Shown
+    generically ("Linked to: Consultation, 12 Oct"); Firestore finds every record linked to X with one
+    `array-contains` query. Links are stored on the record that points, never copied both ways.
+- **Appointments and encounters** (decided 2026-10-17). Two records, as FHIR does:
+  - **Appointment** = the plan (Notion: *Appointment*, Treatments & Appliances, Care): date and time,
+    place, who with, reason, preparation, questions to ask. Status: upcoming → done / cancelled / missed.
+  - **Encounter** = what happened (Notion: *Note (Encounter)*, Medical Records, Records): the problem
+    discussed, decisions and care plan, and through links the documents, readings and prescriptions that
+    came out of it. `basedOn` → its appointment, optional: an emergency visit, a walk-in or a phone call
+    is an encounter with no appointment, and a cancelled appointment never becomes an encounter.
+  - **Where they show:** upcoming appointments in the **next 14 days** on Today and in their own
+    section in Care (like a Tracker category), with a "Later (n)" line under the Care section opening
+    the full list. Encounters show in Records → History.
+  - **Proposed, to confirm:** once an appointment's date has passed with no encounter, it shows in Care
+    under "To complete" and as a light "How did it go?" prompt on Today for a few days; answering
+    creates the encounter, prefilled from the appointment. Cancelled and missed appointments appear in
+    History, greyed out.
+- **Records → History** (decided 2026-10-17): one timeline of everything — entries, appointments,
+  encounters, doses taken — newest first, filterable by category, each item in its category color,
+  tapping one opens the record and its links. Sensor data appears as one daily summary per day
+  ("Steps 8,412 · HR 58–142"), manual entries one by one. It needs the same few fields on every record:
+  id, type, category, when, source, a one-line summary and its links.
+  - **Open: Firestore layout.** Recommended: one `users/{uid}/records` collection with a `type` field
+    and a typed body, so History, link lookups and export are each one query (Kotlin keeps one typed
+    model per feature). The current convention, one collection per feature, makes History merge one
+    query per feature. Health Connect data stays in Room either way.
 - **Symptom terminology:** two vocabularies, not one. A coded reference terminology underneath
   (SNOMED CT subset; ICPC-2 to evaluate as a lighter base) for correctness and any export to a
   clinician, and a patient-facing
@@ -174,7 +221,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     is a later option.
   - **Tracker** — Vitals, Symptoms, Activity, Sleep, Mood and stress, Menstrual cycle, each with its own flow (hub → metric
     detail → history and charts), Samsung Health style. The hub is grouped by category (Vitals,
-    Lifestyle, Symptoms, then Treatments & Appliances for read-through rows), with a list | widgets
+    Lifestyle, Symptoms, Ostomy), with a list | widgets
     toggle and a search icon in the header. **Two views** (Tracker 15a/15b, adopted 2026-10-15,
     `docs/design/UI-spec.md`): a **list** (default) — one row per metric with a one-line takeaway, a
     7-day sparkline and the latest value — or **widgets**, 2-up tiles with value, a 34dp mini chart
@@ -186,20 +233,21 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     range bars (blood pressure), severity dots (brain fog), 28-day strip (menstrual cycle); latest
     day in full color, earlier days lighter, a missing day a faint placeholder, never zero. Open in
     the design: grouping, sorting and filtering within Tracker beyond category. Symptoms and Periods are event logs and may need a different detail
-    screen; revisit if they strain the shared one. Ostomy output volume, consistency and pouch emptying
-    are Vitals → Ostomy rows (Vitals color, although the design drew output in teal); appliance change
-    and peristomal skin rating (not drawn yet) appear as read-through rows from Treatments &
-    Appliances (stored once).
+    screen; revisit if they strain the shared one. Ostomy output volume, consistency, pouch emptying
+    and peristomal skin rating are Ostomy rows tagged Tracker (see *Ostomy category*); the skin rating
+    is also shown in Care, stored once.
   - **Care** (working name; "Treatments & Appliances" as the screen title) — medications and the whole
     ostomy module: product catalogue, comparison, changes, issues and entries; and **appointments**
     (decided 2026-10-16, following the later design export, which draws an Appointments screen under
     Care: a timeline of upcoming and past visits, each tagged in its category color — stoma nurse in
-    T&A, blood test in Labs, consultation and notes in Medical Records, physio in Lifestyle). The
-    appointment data stays in Medical Records (its color, its storage); only the screen moved. How
-    Care holds both the T&A content and Appointments is not designed yet.
-  - **Records** — labs, clinical documents, pictures, the encounter notes behind past appointments,
-    medical history (diagnosis, surgery, hospitalization, immunisation), insurance. An appointment is
-    one record with a status (upcoming / done); upcoming ones also show on Today. *Not designed yet.*
+    T&A, blood test in Labs, consultation and notes in Medical Records, physio in Lifestyle).
+    Confirmed 2026-10-17: Care is "the care I'm receiving", so appointments belong there. Care shows
+    the next 14 days of appointments as their own section, with "Later (n)" for the rest (see
+    *Appointments and encounters*). How Care holds medication, ostomy and appointments together is
+    not designed yet.
+  - **Records** — labs, clinical documents, pictures, prescriptions, encounters (what happened at past
+    appointments), medical history (diagnosis, surgery, hospitalization, immunisation), insurance, and
+    **History**, the timeline of every record (see *Records → History*). *Not designed yet.*
   - A new tracker is still a registry entry, never a new destination; Today's chips, the pinned tiles
     and the Tracker hub read from the same registry.
 - **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
@@ -222,8 +270,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     headline 28/700, title 18/600, body 16/400, label 11.5/600, metric 20/500, metric-xl 60/500.
   - **Color = data category.** Six hues (Vitals, Labs, Medical Records, Lifestyle, Symptoms,
     Treatments & Appliances), each with an `fg` (text, icons, bars) and a `tint`, per mode. A metric
-    keeps its category color wherever it is shown (peristomal skin stays teal in Tracker; ostomy output,
-    now Vitals → Ostomy, takes the Vitals color even though the design drew it teal). Neutrals:
+    keeps its category color wherever it is shown (peristomal skin keeps its color in Tracker and
+    Care). Ostomy, the seventh category since 2026-10-17, has no hue yet (see *Ostomy category*). Neutrals:
     `bg, surface, surface2, ink, ink2, line, accent, onAccent, panel, panelLine`. Values below, copied
     from the token sheet. (The icon table in the same file uses slightly different hexes; the token sheet wins.)
 
@@ -289,7 +337,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     views, Steps detail, Appointments (Care tab).
     **Not yet:** Today's symptom-check prompt and upcoming-appointments section, the rest of Care, Records, Labs
     (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
-    picker, empty and error states, appointment detail, large-screen layouts (UI-spec describes the
+    picker, empty and error states, appointment detail, Care's upcoming-appointments section with
+    "Later (n)" and "To complete", encounter detail with its linked records, Records → History, a
+    hue for Ostomy, large-screen layouts (UI-spec describes the
     foldable inner screen — navigation rail, 2-column list, 3–4-column widgets, list-detail — but it
     is not mocked).
 
@@ -376,8 +426,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       and Records are placeholders. `MetricDefinition` gained `icon` and `sources` (Notion *Data
       Sources*: Manual / Wearable). New shared pieces:
       `ScreenHeader`, `TopBar`, `IconAction`, `ScreenColumn`. Not yet run on a device
-  - [ ] Treatments & Appliances read-through rows on the hub: needs the `Nav. Screens` tags on
-        `MetricDefinition` (comes with the data-map reconciliation)
+  - [ ] Ostomy rows on the hub (output, emptying, skin rating): needs the Ostomy category and the
+        `Nav. Screens` tags on `MetricDefinition` (comes with the data-map reconciliation)
   - [ ] Tracker search icon (in the design): add once there is a search to open
   - [ ] Today's greeting has no name (`Session` holds only the uid by design); decide whether to
         show the Google first name
@@ -389,7 +439,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       rules — not Vico, which stays behind `ChartSpec` for detail charts. `MetricRow` rewritten
       (takeaway + sparkline + value), new `MetricWidget`; Synced / + Add badges, `MetricSource`,
       `ic_sync` and the `badge` shape removed. Until M3/M4 every metric shows "—", "No data yet" and
-      a placeholder week; previews use the design's sample week
+      a placeholder week; previews use the design's sample week. Checked on device (2026-10-17): both
+      views in light and dark, the toggle, the choice kept across launches
   - [ ] Takeaway lines ("60% of goal", "Up from 4 on Mon", "3 readings · in range"): a rule per
         metric or chart kind, written with the first real data (M3)
   - [ ] View toggle segments are 34 × 28dp as designed, under the 48dp touch target: revisit in the
@@ -406,28 +457,32 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       model), then regenerate `docs/data-structure/`. In order:
   - [x] Clean the Notion rows (checked 2026-10-15): Blood Pressure under Cardiovascular, Steps under
         Activity, typos fixed, output-volume description matches its Vitals row
-  - [ ] Appointments moved to the Care tab (2026-10-16): retag their `Nav. Screens` in Notion
-        (Care, plus Today for upcoming ones) before the code takes the tags
+  - [x] Appointments in the Care tab (checked 2026-10-17): the *Appointment* row is tagged Care, filed
+        under Treatments & Appliances → Appointment; *Note (Encounter)* stays Medical Records → Appointment,
+        tagged Records. Today is not a tag: it reads upcoming appointments from the registry
   - [ ] Still open in Notion: the sub-category list is one flat select shared by all categories, so
         lab panel names leak into other categories — *Blood glucose* is filed as Vitals →
         "Biochemistry - Metabolic" (should be Vitals → Metabolic or similar); "Cardiovascular" now
-        exists under Vitals, Labs and Symptoms (fine, identity is category + name). *Ostomy Wear Time*
-        has no Data Sources value (it is derived)
+        exists under Vitals, Labs and Symptoms (fine, identity is category + name). *Ostomy Output
+        Volume*'s description still says it "sits in Vitals". (*Ostomy Wear Time* now has Data Sources =
+        Computed: fixed)
   - [x] Add a **Care** option to `Nav. Screens` and retag the Treatments & Appliances rows (done in
         Notion 2026-10-15; Tracker shows output volume / consistency / emptying, appliance change and
         skin rating)
-  - [ ] Apply *Ostomy placement* (Decisions) in `_src/rows.js` and the generated CSVs, matching the Notion
-        table (already updated 2026-10-15: Pouch Emptying in Vitals -> Ostomy, Wear Time row added, skin
-        description rewritten). Nav tags kept as they are (decided 2026-10-15): Output Volume = Tracker only,
-        Appliance Change = Tracker + Care. Keep sub-category `Ostomy` under both categories,
-        and update `SubCategory` and `CatalogMatchesDocsTest` in the same change as the regenerated CSVs.
-  - [ ] Settings: one **Ostomy** switch that hides both Ostomy groups, with per-category rows underneath
+  - [ ] Apply *Ostomy category* (Decisions) in `_src/rows.js` and the generated CSVs, matching the
+        Notion table (2026-10-17): category Ostomy, sub-categories *Ostomy • Daily Routines* and
+        *Ostomy • Replacement*; drop `LifestyleOstomyRoutine` and `TreatmentsOstomy` from `SubCategory`
+        and update `CatalogMatchesDocsTest` in the same change as the regenerated CSVs
+  - [x] ~~Settings: one **Ostomy** switch that hides both Ostomy groups~~ — dropped 2026-10-17: Ostomy is
+        one category, so its ordinary category switch does it
+  - [ ] Pick a hue for Ostomy (design), then add it to `LauWellColors` and `forCategory`
   - [ ] Add a Shape column (or carry shapes over from the old map) so no row is without one
-  - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs to
-        the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory` (`HeartRateVariability` already
+  - [ ] Update `_src/rows.js` and `codings.js`, add `Nav. Screens` to the build, rebuild; add Labs and
+        Ostomy to the `Category` enum (and to `LauWellColors.forCategory`), revise `SubCategory` (`HeartRateVariability` already
         removed from the registry, 2026-10-15; ECG trace stays), and fix `CatalogMatchesDocsTest` in the same change
         (the test compares code against the generated CSVs, so docs and code must move together)
-  - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete)
+  - [ ] Update the counts quoted in docs (5 categories / 35 sub-categories / 81 data points are obsolete;
+        Notion now has 7 categories)
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
       `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
       aggregation and chart kind **plus `category` and `subCategory` as facets** — so adding a tracker
@@ -438,6 +493,14 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       and a stated rule for when two sources report the same metric. Steps detail shows the
       originating app or device and the last sync time, so keep Health Connect's data origin and a
       per-metric sync timestamp
+- [ ] Common record fields (Decisions → *Records → History*): id, type, category, when, source, a
+      one-line summary and `links: [{to, relation}]`; the named links of *Relationships between
+      records* on the models that need them. Settle the Firestore layout first (one `records`
+      collection recommended, still open)
+- [ ] Appointment and Encounter as two records (Decisions → *Appointments and encounters*):
+      Encounter `basedOn` its appointment; Prescription (Medical Records → Documents, in Notion) linked
+      to its encounter and to the medications it prescribes. Confirm or change the proposed
+      "To complete" step
 - [ ] Today's two user lists, stored as ordered metric IDs in DataStore and filtered by `isVisible`:
       the quick-log set and the pinned set (defaults in Decisions → App navigation). Defaults only
       for now; the pinned editor is an M6 task. A metric can only be pinned if it has a
@@ -447,7 +510,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       "all files" view
 - [ ] Free-text note, attachable to any record and able to stand alone with a date (the escape hatch —
       without it people stop using the structured fields)
-- [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}`, FHIR-inspired common fields,
+- [ ] Data conventions: Firestore paths `users/{uid}/{feature}/{docId}` (or one `records` collection,
+      see the open question in *Records → History*), FHIR-inspired common fields,
       one typed model per feature, repositories returning `Flow<AppResult<…>>`
 - [ ] Permissions declared per metric, requested only for visible metrics when first needed
       (partial grants allowed, no all-or-nothing)
@@ -501,8 +565,8 @@ simplest possible input before blood pressure's two values.
 - M6 — Dashboard and UX: the Today screen (quick log, pinned grid, medications, symptom-check prompt,
   upcoming appointments; see Decisions → App navigation), design Care and Records (incl. Labs) in
   the locked system, accessibility pass (palette and type scale are done: Decisions → Visual design).
-  Upcoming appointments surface on Today as well as in Care → Appointments, though they are filed
-  under Medical Records — nobody opens an archive to find out what they are doing on Thursday
+  Upcoming appointments (next 14 days) surface on Today as well as in Care; past visits become
+  encounters in Records → History — nobody opens an archive to find out what they are doing on Thursday
   - [ ] Design, then build, Today's symptom-check prompt and upcoming-appointments section (below
         Medications), missing from the final design file
   - [ ] Design, then build, the pinned editor (opened from the icon in the Pinned header): pick up to
@@ -510,8 +574,8 @@ simplest possible input before blood pressure's two values.
 - Medications on Today ("2/3 taken", tap the circle when a dose is taken) need the medication
   schedule and dose log from M5; until then the section is hidden or shows placeholder data
 - Backlog: Settings toggles over the switched-off set (DataStore-backed; Settings is their home, no
-  picker after sign-in); one switch per condition across categories (e.g. all ostomy data, likely a
-  tag on `MetricDefinition` + a fourth `ToggleKey`); emergency view assembled from Medical Records + Treatments (blood type, active conditions,
+  picker after sign-in); one switch per condition across categories (ostomy no longer needs it, being
+  one category; likely a tag on `MetricDefinition` + a fourth `ToggleKey` if another condition does); emergency view assembled from Medical Records + Treatments (blood type, active conditions,
   current medications, allergies, contacts) and reachable without unlocking the app; symptom
   terminology import (SNOMED CT subset or ICPC-2, plus synonym layer — evaluate ICPC-2 first); factor-to-outcome analysis with a minimum-evidence
   gate; Life's Essential 8 survey, lab results (same `Measurement` entity, `source = lab`, with the

@@ -13,7 +13,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
 - `docs/data-structure/` — the data model reference. **Being reconciled** with the simplified model in
-  Notion (*Data Model [Simplified]*: six categories incl. Labs, a `Nav. Screens` column): until it is
+  Notion (*Data Model [Simplified]*: seven categories incl. Labs and Ostomy, a `Nav. Screens` column): until it is
   regenerated, PLAN.md → Decisions → *Simplified data model* wins where the two disagree.
   - `health-data-model/` — patient data categories, the data map (every data point → category /
     sub-category / storage shape), and the terminology codings (LOINC / SNOMED CT / UCUM).
@@ -46,9 +46,9 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
   Adding a tracker should be a registry entry, not a new navigation destination.
 - Navigation: four bottom tabs — **Today** (quick-log row, pinned metrics, medications due,
-  symptom check, upcoming appointments), **Tracker** (vitals,
-  symptoms, activity, sleep, mood, cycle), **Care** (treatments, appliances, the ostomy module,
-  appointments) and **Records** (labs, documents, history); "Care" is a working name. Details and rationale:
+  symptom check, appointments in the next 14 days), **Tracker** (vitals,
+  symptoms, activity, sleep, mood, cycle, ostomy output), **Care** (treatments, appliances, the ostomy module,
+  appointments) and **Records** (labs, documents, encounters, the History timeline); "Care" is a working name. Details and rationale:
   PLAN.md → Decisions → *App navigation*.
 - Logging: quick entry lives on Today as a row of shortcuts opening a bottom sheet. No floating
   action button. Tracker shows a list with 7-day sparklines (default) or 2-up widgets, a stored
