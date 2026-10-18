@@ -493,8 +493,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
         metrics tagged Tracker, Ostomy block after Symptoms. `CatalogMatchesDocsTest` now also checks
         screens and sources, and matches names ignoring case (Notion mixes "Heart Rate" and "Blood
         glucose"; the app keeps sentence case)
-  - [ ] Back-port to Notion: *Ostomy Output Volume*'s description (rows.js no longer says it "sits in
-        Vitals"), and descriptions for NT-proBNP, Reticulocytes and hs-CRP (empty in Notion)
+  - [x] Descriptions for NT-proBNP, Reticulocytes and hs-CRP written in Notion and copied (2026-10-17).
+        *Ostomy Output Volume*'s "sits in Vitals" wording is intentional and stays as Notion has it
 - [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
       `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
       aggregation and chart kind **plus `category` and `subCategory` as facets** — so adding a tracker

@@ -3,8 +3,6 @@
 // Mirrors the Notion table *Data Model [Simplified]* (LauWell App • Home → Table of Content → Data Model),
 // copied 2026-10-17: name, category, sub-category, `Nav. Screens`, `Data Sources` and description as written
 // there. Notion has no Shape column, so shapes are ours (carried over from v03 where the row existed).
-// Deviations from Notion, to fix there: *Ostomy Output Volume*'s description no longer says it sits in Vitals.
-// Three lab rows have no description in Notion yet (NT-proBNP, Reticulocytes, hs-CRP).
 const T = 'Tracker', R = 'Records', C = 'Care';
 const M = 'Manual', W = 'Wearable', X = 'Computed';
 const lab = (name, sub, desc) => [name, 'Labs', sub, 'Measurement', [R], [M], desc || ''];
@@ -41,7 +39,7 @@ const DATA = [
   lab("eGFR","Biochemistry - Renal","Estimated kidney filtration rate, calculated from creatinine, age and sex. The main overall measure of kidney function."),
   lab("Urea (BUN)","Biochemistry - Renal","Waste product of protein breakdown, cleared by the kidneys. Reflects kidney function and hydration."),
   lab("Uric acid","Biochemistry - Renal","End product of purine metabolism. High levels relate to gout and kidney stones."),
-  lab("NT-proBNP","Cardiovascular"),
+  lab("NT-proBNP","Cardiovascular","Hormone fragment released by the heart when its walls are stretched. Used to detect and monitor heart failure."),
   lab("Troponin (hs)","Cardiovascular","Heart muscle protein released with cardiac injury. The key blood test for a heart attack."),
   lab("aPTT","Coagulation","Clotting time for the intrinsic pathway. Used to monitor heparin and to look for clotting factor problems."),
   lab("D-dimer","Coagulation","Fragment released when a clot breaks down. Used mainly to rule out blood clots when the result is normal."),
@@ -68,10 +66,10 @@ const DATA = [
   lab("Platelets (PLT)","Hematology","Cell fragments that form clots. Low counts raise bleeding risk; high counts can occur with inflammation or iron deficiency."),
   lab("Red Blood Cell count (RBC)","Hematology","Number of red blood cells per volume of blood. They carry oxygen, so low counts point to anemia."),
   lab("Red Cell Distribution Width (RDW)","Hematology","Variation in red blood cell size. Raised values suggest mixed cell populations, as seen in iron or B12 deficiency."),
-  lab("Reticulocytes","Hematology"),
+  lab("Reticulocytes","Hematology","Young red blood cells just released from the marrow. Show whether the marrow is keeping up, e.g. after bleeding or during anemia treatment."),
   lab("White Blood Cell count (WBC)","Hematology","Total white blood cell count. Rises with infection or inflammation and falls with some medications or marrow problems."),
   lab("C-reactive protein (CRP)","Inflammation","Protein made by the liver in response to inflammation. Rises and falls quickly, so useful for tracking infection or flares."),
-  lab("High-sensitivity CRP (hs-CRP)","Inflammation"),
+  lab("High-sensitivity CRP (hs-CRP)","Inflammation","CRP measured with a more sensitive method, to read the low levels that reflect cardiovascular risk rather than acute infection."),
   lab("Ferritin","Iron studies","Main iron storage protein. The most sensitive blood marker of iron stores, though it also rises with inflammation."),
   lab("Serum iron","Iron studies","Iron circulating in blood at the moment of the test. Fluctuates through the day, so read with ferritin and transferrin saturation."),
   lab("Transferrin saturation","Iron studies","Share of the iron-carrying protein that is loaded with iron. Shows how much iron is available to the body."),
@@ -123,7 +121,7 @@ const DATA = [
 
   ["Ostomy Accessories used","Ostomy","Ostomy • Daily Routines","Event",[C],[M],"Barrier ring, paste, powder, adhesive remover - what went on alongside the appliance."],
   ["Ostomy Output Consistency","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"A Bristol-style ordinal scale for stoma or bowel output, logged alongside volume."],
-  ["Ostomy Output Volume","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"Millilitres over a period. Sustained high output is a clinical dehydration risk, so it is read against a threshold."],
+  ["Ostomy Output Volume","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"Millilitres over a period. Sits in Vitals rather than Lifestyle because sustained high output is a clinical dehydration risk."],
   ["Ostomy Pouch Emptying","Ostomy","Ostomy • Daily Routines","Event",[T],[M],"Frequency and timing across the day."],
   ["Peristomal Skin Rating","Ostomy","Ostomy • Daily Routines","Measurement",[T,C],[M],"Skin quality rating around the stoma. Irritation, burning or soreness around the stoma, as you experience it rather than as it is scored."],
   ["Ostomy Appliance Change (+ reason)","Ostomy","Ostomy • Replacement","Event",[C],[M],"When the pouch was changed, which product was used, and whether it was scheduled or forced by a leak."],
