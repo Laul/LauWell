@@ -4,6 +4,7 @@
 "Blood Pressure","Vitals","Cardiovascular","Measurement","Tracker","Wearable, Manual","Systolic and diastolic from a cuff, usually logged together with the pulse. Orthostatic pairs matter for some conditions."
 "ECG Trace","Vitals","Cardiovascular","Document","Tracker","Wearable","A recorded waveform plus the rhythm classification derived from it. Stored as a file, not a number."
 "Heart Rate","Vitals","Cardiovascular","Measurement","Tracker","Wearable","Beats per minute at rest, in activity or overnight. The most commonly synced measure and the one most apps lead with."
+"Resting Heart Rate","Vitals","Cardiovascular","Measurement","Tracker","Wearable","Beats per minute at full rest, one value per day, usually estimated by a wearable overnight or on waking. A slow-moving baseline that shifts with fitness, illness, stress and recovery."
 "Respiratory Rate","Vitals","Respiratory","Measurement","Tracker","Wearable, Manual","Breaths per minute, generally derived overnight by a wearable rather than measured directly."
 "Menstrual Cycle","Vitals","Woman Health","Interval","Tracker","Manual","Phase and flow. Not behaviour, but a daily log without a clinical band, so the axis places it here."
 "Bicarbonate (CO2 total)","Labs","Biochemistry - Electrolytes","Measurement","Records","Manual","Total CO2 in blood, mostly bicarbonate. The main buffer for acid-base balance."

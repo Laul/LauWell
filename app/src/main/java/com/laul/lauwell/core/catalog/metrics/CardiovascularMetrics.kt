@@ -39,9 +39,34 @@ object CardiovascularMetrics {
         ),
         aggregation = Aggregation.MinAverageMax,
         chartKind = ChartKind.RangeBar,
-        miniChart = MiniChartKind.Line, // resting rate per day
-        // Resting rate as its own record when the writing app provides one (to check for Garmin, M3).
-        healthConnectTypes = setOf(HeartRateRecord::class, RestingHeartRateRecord::class),
+        miniChart = MiniChartKind.Range, // lowest to highest per day
+        healthConnectTypes = setOf(HeartRateRecord::class),
+    )
+
+    /**
+     * One rate per day at full rest, as the writing app estimates it. Its own record in Health Connect;
+     * whether Garmin writes it, or it has to be derived from the night's samples, is to check (M3).
+     */
+    val RestingHeartRate = MetricDefinition(
+        id = MetricId("resting_heart_rate"),
+        label = "Resting heart rate",
+        subCategory = VitalsCardiovascular,
+        shape = StorageShape.Measurement,
+        icon = R.drawable.ic_favorite,
+        sources = setOf(DataSource.Wearable),
+        screens = setOf(NavScreen.Tracker),
+        quantities = listOf(
+            Quantity(
+                key = "value",
+                label = "Resting heart rate",
+                unit = "bpm",
+                normalRange = 60.0..100.0, // adult at rest
+            ),
+        ),
+        aggregation = Aggregation.Average, // one a day, unless two apps write it
+        chartKind = ChartKind.Line,
+        miniChart = MiniChartKind.Line,
+        healthConnectTypes = setOf(RestingHeartRateRecord::class),
     )
 
     val BloodPressure = MetricDefinition(
@@ -83,5 +108,5 @@ object CardiovascularMetrics {
         screens = setOf(NavScreen.Tracker),
     )
 
-    val all: List<MetricDefinition> = listOf(HeartRate, BloodPressure, EcgTrace)
+    val all: List<MetricDefinition> = listOf(HeartRate, RestingHeartRate, BloodPressure, EcgTrace)
 }

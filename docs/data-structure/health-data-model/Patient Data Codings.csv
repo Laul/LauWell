@@ -8,6 +8,7 @@
 "ECG Trace","Vitals","Cardiovascular","Document","","none","","","","","",""
 "Heart Rate","Vitals","Cardiovascular","Measurement","primary","exact","LOINC","8867-4","Heart rate","/min","yes","Also the FHIR vital-signs code."
 "Heart Rate","Vitals","Cardiovascular","Measurement","variant","exact","LOINC","40443-4","Heart rate --resting","/min","yes","Resting heart rate: same metric, different code. Keep as a variant, not a separate data point."
+"Resting Heart Rate","Vitals","Cardiovascular","Measurement","","none","","","","","",""
 "Respiratory Rate","Vitals","Respiratory","Measurement","primary","exact","LOINC","9279-1","Respiratory rate","/min","yes",""
 "Menstrual Cycle","Vitals","Woman Health","Interval","","none","","","","","",""
 "Bicarbonate (CO2 total)","Labs","Biochemistry - Electrolytes","Measurement","","per-analyte","","","","","",""

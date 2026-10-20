@@ -9,7 +9,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   shared `core.*` packages. Data is shown or hidden at runtime, not at build time.
   → Notion: *Modular Architecture*; `docs/architecture/feature-modules-and-toggles.md`.
 - **Toggles:** no separate "feature" concept. The data hierarchy itself is the toggle unit:
-  category → sub-category → metric (7 / 35 / 113 since 2026-10-17, see *Simplified data model*; 5 / 35 / 81 before it), and any level can be switched off. The app stores
+  category → sub-category → metric (7 / 35 / 114 since 2026-10-19, see *Simplified data model*; 5 / 35 / 81 before it), and any level can be switched off. The app stores
   the **switched-off** set (empty = everything visible, new metrics appear on their own), and one
   `isVisible` function is the only place that reads it. Hiding never deletes data. Permissions and
   syncs are declared per metric and run only for visible ones. MVP: everything on, no selection
@@ -161,7 +161,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
   `CatalogueItem` (a thing with attributes), `Document` (a file with a date), `Derived` (computed —
-  e.g. wear time from consecutive appliance changes). The map of 113 data points to shapes lives in the
+  e.g. wear time from consecutive appliance changes). The map of 114 data points to shapes lives in the
   same doc, and its shape×category matrix is generated from the rows so the two cannot drift.
 - **Terminology codes** (decided 2026-10-09; options and verdicts in the Notion *Data Model* page §2):
   standards give a metric its identity, not navigation. Each metric definition can carry codes (FHIR
@@ -547,7 +547,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - [ ] The edit icon in the Pinned header waits for the pinned editor (M6); a tile doesn't open the
         metric yet (the detail route lives in the Tracker graph)
 - [x] Permissions declared per metric (2026-10-18): `MetricDefinition.healthConnectTypes` (heart
-      rate: `HeartRateRecord` + `RestingHeartRateRecord`; blood pressure: `BloodPressureRecord`; ECG
+      rate: `HeartRateRecord`; resting heart rate: `RestingHeartRateRecord`, its own metric since
+      2026-10-19; blood pressure: `BloodPressureRecord`; ECG
       has no Health Connect type), `readPermissions(metrics)` for the visible ones, and the manifest
       declaring every one of them (`HealthConnectPermissionsTest` keeps manifest and registry equal).
       Requesting them, partial grants allowed, is M3's grant screen, which also needs the
@@ -571,11 +572,15 @@ until 2026-10-18, see Decisions → *Read first*).
       design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
       today outlined, missing day as a dashed empty slot
 - [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
-- [ ] Heart rate: Tracker hub row (resting rate per day as the line mini chart), the detail screen
+- [ ] Heart rate: Tracker hub row (daily low–high range as the mini chart), the detail screen
       (weekly range bar + daily average + normal band, stats row, per-day list, source line naming
-      the apps and devices), and the Resting HR pinned tile on Today. Open: whether Garmin writes a
-      `RestingHeartRateRecord` to Health Connect or the resting rate has to be derived; Resting HR is
-      not its own row in the Notion data model yet
+      the apps and devices)
+- [ ] Resting heart rate (own Notion row and metric `resting_heart_rate` since 2026-10-19, in the
+      default pinned set): Tracker row (line mini chart), detail screen (line + normal band), the
+      pinned tile on Today. Open: whether Garmin writes a `RestingHeartRateRecord` to Health Connect
+      or the resting rate has to be derived from the night's samples
+  - [x] Data map (2026-10-19): row added to `_src/rows.js` and rebuilt (114 data points); counts
+        updated in the README, the architecture doc and here
 - [ ] Health Connect grant screen as designed: one row per requested metric (category, "read only",
       toggle), "Allow N permissions" / "Not now", and the privacy line ("Sensor data stays on this
       phone. Only daily summaries are saved to your account."). Also: onboarding when Health Connect

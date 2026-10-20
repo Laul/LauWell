@@ -20,16 +20,22 @@ class HealthConnectPermissionsTest {
     }
 
     @Test
-    fun `heart rate asks for its samples and the resting rate`() {
+    fun `heart rate and resting heart rate each ask for their own record`() {
         assertEquals(
-            setOf("android.permission.health.READ_HEART_RATE", "android.permission.health.READ_RESTING_HEART_RATE"),
+            setOf("android.permission.health.READ_HEART_RATE"),
             readPermissions(listOf(CardiovascularMetrics.HeartRate)),
+        )
+        assertEquals(
+            setOf("android.permission.health.READ_RESTING_HEART_RATE"),
+            readPermissions(listOf(CardiovascularMetrics.RestingHeartRate)),
         )
     }
 
     @Test
     fun `a switched-off metric asks for nothing`() {
         val visible = MetricRegistry.visible(setOf(ToggleKey.OfMetric(CardiovascularMetrics.HeartRate.id)))
-        assertTrue(readPermissions(visible).none { it.contains("HEART_RATE") })
+        val permissions = readPermissions(visible)
+        assertTrue("android.permission.health.READ_HEART_RATE" !in permissions)
+        assertTrue("android.permission.health.READ_RESTING_HEART_RATE" in permissions)
     }
 }

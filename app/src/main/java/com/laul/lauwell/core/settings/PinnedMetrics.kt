@@ -18,7 +18,7 @@ const val MaxPinned = 6
  * tile appears on its own once the metric lands. A metric ID is the snake_case of its Notion name.
  */
 val DefaultPinned: List<MetricId> = listOf(
-    "steps", "heart_rate", "sleep_duration", "fatigue", "blood_pressure", "ostomy_output_volume",
+    "steps", "resting_heart_rate", "sleep_duration", "fatigue", "blood_pressure", "ostomy_output_volume",
 ).map(::MetricId)
 
 /**

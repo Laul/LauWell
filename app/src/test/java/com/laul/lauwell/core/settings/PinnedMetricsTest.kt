@@ -14,7 +14,7 @@ class PinnedMetricsTest {
     fun `the defaults show what the registry has, in their order`() {
         // Steps, sleep, fatigue and ostomy output land with their features.
         assertEquals(
-            listOf(CardiovascularMetrics.HeartRate, CardiovascularMetrics.BloodPressure),
+            listOf(CardiovascularMetrics.RestingHeartRate, CardiovascularMetrics.BloodPressure),
             pinnedTiles(DefaultPinned, visible),
         )
     }

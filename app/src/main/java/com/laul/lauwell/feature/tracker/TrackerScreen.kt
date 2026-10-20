@@ -192,8 +192,17 @@ private val MetricDefinition.displayUnit: String?
 
 private val SampleSummaries: Map<String, MetricSummary> = mapOf(
     "heart_rate" to MetricSummary(
+        value = "72",
+        takeaway = "52–148 today",
+        chart = MiniChartData.Range(
+            listOf(54.0..139.0, 52.0..121.0, 55.0..152.0, 51.0..117.0, 53.0..144.0, 56.0..128.0, 52.0..148.0),
+            min = 40.0,
+            max = 160.0,
+        ),
+    ),
+    "resting_heart_rate" to MetricSummary(
         value = "64",
-        takeaway = "Resting · avg 64",
+        takeaway = "Avg 64 · in range",
         chart = MiniChartData.Line(listOf(66.0, 63.0, 65.0, 62.0, 64.0, 67.0, 64.0), min = 56.0, max = 72.0),
     ),
     "blood_pressure" to MetricSummary(

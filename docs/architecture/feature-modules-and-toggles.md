@@ -39,7 +39,7 @@ own screens. Two later decisions made that the wrong shape (PLAN.md → Decision
 |---|---|---|---|
 | Category | 7 (was 5; Labs added 2026-10-11, Ostomy 2026-10-17) | Vitals | `Category` enum |
 | Sub-category | 35 | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
-| Data point | 113 (was 81) | Heart rate | `MetricDefinition` |
+| Data point | 114 (was 81) | Heart rate | `MetricDefinition` |
 
 Counts and names follow the simplified data model (PLAN.md → Decisions → *Simplified data model*),
 regenerated 2026-10-17; the enums in code match it (`CatalogMatchesDocsTest`).

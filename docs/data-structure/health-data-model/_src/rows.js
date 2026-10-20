@@ -12,6 +12,7 @@ const DATA = [
   ["Blood Pressure","Vitals","Cardiovascular","Measurement",[T],[W,M],"Systolic and diastolic from a cuff, usually logged together with the pulse. Orthostatic pairs matter for some conditions."],
   ["ECG Trace","Vitals","Cardiovascular","Document",[T],[W],"A recorded waveform plus the rhythm classification derived from it. Stored as a file, not a number."],
   ["Heart Rate","Vitals","Cardiovascular","Measurement",[T],[W],"Beats per minute at rest, in activity or overnight. The most commonly synced measure and the one most apps lead with."],
+  ["Resting Heart Rate","Vitals","Cardiovascular","Measurement",[T],[W],"Beats per minute at full rest, one value per day, usually estimated by a wearable overnight or on waking. A slow-moving baseline that shifts with fitness, illness, stress and recovery."],
   ["Respiratory Rate","Vitals","Respiratory","Measurement",[T],[W,M],"Breaths per minute, generally derived overnight by a wearable rather than measured directly."],
   ["Menstrual Cycle","Vitals","Woman Health","Interval",[T],[M],"Phase and flow. Not behaviour, but a daily log without a clinical band, so the axis places it here."],
 
