@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LauWell's own glyph for "edit pinned": a rounded hexagon with a radius-3 circle (PLAN.md → Visual design → Icons). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12,2.75L20,7.375L20,16.625L12,21.25L4,16.625L4,7.375Z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.5"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M15,12A3,3 0,1 1,9,12A3,3 0,1 1,15,12Z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.5" />
+</vector>

@@ -1,0 +1,705 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Health App Teardown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F4F5F2; --surface:#FCFCFB; --surface-2:#EDEFEA;
+    --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
+    --line:#DCE0D9; --line-strong:#C3C9C0;
+    --accent:#2C6A57; --accent-soft:#E2EDE7;
+    --yes:#2C6A57; --part:#A76313; --no:#B4BAB4;
+    --c-platform:#2D6CA8; --c-hub:#6B5A96; --c-tracker:#A76313;
+    --c-records:#47606B; --c-niche:#96395A; --c-chronic:#6B3FC4;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+      --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+      --line:#2A322E; --line-strong:#3A443F;
+      --accent:#74C2A4; --accent-soft:#1D2D27;
+      --yes:#74C2A4; --part:#E0A661; --no:#4A534E;
+      --c-platform:#84B6E2; --c-hub:#AC99D6; --c-tracker:#E0A661;
+      --c-records:#92A8B2; --c-niche:#DE8EA7; --c-chronic:#B196E8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+    --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+    --line:#2A322E; --line-strong:#3A443F;
+    --accent:#74C2A4; --accent-soft:#1D2D27;
+    --yes:#74C2A4; --part:#E0A661; --no:#4A534E;
+    --c-platform:#84B6E2; --c-hub:#AC99D6; --c-tracker:#E0A661;
+    --c-records:#92A8B2; --c-niche:#DE8EA7; --c-chronic:#B196E8;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:44px 76px}
+
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+    font-size:clamp(28px,5vw,40px);line-height:1.12;margin:.5rem 0 0;
+    letter-spacing:-.015em;text-wrap:balance}
+  .lede{margin:14px 0 0;color:var(--ink-2);font-size:16px;max-width:68ch}
+
+  h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:21px;
+    margin:56px 0 4px;letter-spacing:-.01em}
+  .sub{margin:0 0 18px;color:var(--ink-3);font-size:13.5px;max-width:74ch}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3)}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .mk{font-weight:600}
+  .mk.y{color:var(--yes)} .mk.p{color:var(--part)} .mk.n{color:var(--no)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);background:var(--surface);border-radius:3px}
+  table{border-collapse:collapse;width:100%;min-width:900px}
+  th,td{text-align:left;padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line)}
+  thead th{background:var(--surface-2);border-bottom:1px solid var(--line-strong);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-2);font-weight:500;vertical-align:bottom;line-height:1.3}
+  tbody th{font-weight:600;font-size:13.5px;color:var(--ink);white-space:nowrap;
+    position:sticky;left:0;background:var(--surface);border-right:1px solid var(--line)}
+  tbody tr:hover th,tbody tr:hover td{background:var(--accent-soft)}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  td.m{text-align:center;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;font-weight:600}
+  tbody th a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong)}
+  tbody th a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+  .cards{display:flex;flex-direction:column;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .card{background:var(--surface);padding:22px 20px 24px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:start}
+  .cardmain{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .card h3{margin:0;font-family:"IBM Plex Serif",Georgia,serif;font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .arch{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.09em;
+    text-transform:uppercase;display:inline-flex;align-items:center;gap:6px;color:var(--ink-3)}
+  .arch::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--dot,var(--ink-3))}
+  .a-platform{--dot:var(--c-platform)} .a-hub{--dot:var(--c-hub)}
+  .a-tracker{--dot:var(--c-tracker)} .a-records{--dot:var(--c-records)} .a-niche{--dot:var(--c-niche)}
+  .a-chronic{--dot:var(--c-chronic)}
+  .meta{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);
+    padding-bottom:11px;border-bottom:1px solid var(--line)}
+  .field{display:flex;flex-direction:column;gap:2px;margin:0}
+  .field dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-3)}
+  .field dd{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+  .field dd b{color:var(--ink);font-weight:600}
+  .pro dt{color:var(--yes)} .con dt{color:var(--part)}
+  .steal{padding-top:12px;border-top:1px solid var(--line)}
+  .steal dt{color:var(--accent)}
+  .steal dd{color:var(--ink);font-size:13.5px}
+
+  .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .links a{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.04em;
+    color:var(--accent);text-decoration:none;border:1px solid var(--line-strong);
+    border-radius:99px;padding:2px 9px;transition:background .12s,border-color .12s;
+  }
+  .links a:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  /* --- schematic phone mocks --- */
+  .gallery{display:flex;gap:12px;flex-wrap:wrap}
+  .frame{width:146px}
+  .phone{border:1px solid var(--line-strong);border-radius:13px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .pbar{height:13px;display:flex;align-items:center;justify-content:center;gap:3px}
+  .notch{width:26px;height:4px;border-radius:99px;opacity:.28}
+  .pbody{height:214px;padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+  .pnav{height:24px;display:flex;align-items:center;justify-content:space-around;padding:0 6px}
+  .pnav i{display:block;width:15px;height:5px;border-radius:99px;opacity:.3}
+  .pnav i.on{opacity:1;width:19px}
+  .fcap{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+    margin-top:7px;text-align:center;line-height:1.35}
+  .galnote{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;
+    color:var(--ink-3);margin-top:10px;max-width:304px;line-height:1.5}
+
+  .caveat{margin-top:40px;padding:16px 18px;border:1px solid var(--line);border-left:3px solid var(--part);
+    border-radius:3px;background:var(--surface);color:var(--ink-2);font-size:13.5px;max-width:78ch}
+  .caveat b{color:var(--ink)}
+
+  @media (max-width:860px){
+    .card{grid-template-columns:1fr}
+    .gallery{order:-1}
+  }
+  @media (max-width:640px){
+    .wrap{padding-block:30px 56px}
+    tbody th{position:static}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">LauWell · competitive teardown · September 2026 · drafted with Claude</div>
+    <h1>Health App Teardown</h1>
+    <p class="lede">Eleven apps across six archetypes, compared on what they hold, how they're structured, and what each one gets right or wrong about navigation. Read the matrix for coverage, the cards for structure, lessons and a look at each app's visual language.</p>
+  </header>
+
+  <h2>Capability matrix</h2>
+  <p class="sub">What each app actually holds. The rightmost columns are the ones that matter for a hub: whether you can add a tracker without shipping a screen, and whether the app can correlate across categories rather than inside one.</p>
+
+  <div class="legend">
+    <span><span class="mk y">●</span> full</span>
+    <span><span class="mk p">◐</span> partial or limited</span>
+    <span><span class="mk n">○</span> absent</span>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>App</th>
+          <th>Wearable<br>sync</th>
+          <th>Clinical<br>records</th>
+          <th>Meds</th>
+          <th>Symptoms</th>
+          <th>Cross-domain<br>correlation</th>
+          <th>User-defined<br>trackers</th>
+          <th>Supplies /<br>products</th>
+          <th>Custom<br>dashboard</th>
+          <th>Data<br>export</th>
+          <th>Android</th>
+        </tr>
+      </thead>
+      <tbody id="matrix"></tbody>
+    </table>
+  </div>
+
+  <h2>Profiles</h2>
+  <p class="sub">Structure, visual approach, and the single thing worth taking from each. The two panels beside every app are schematic reconstructions of its home screen and its second surface — real palette, header treatment, nav pattern and card rhythm. Samsung Health, Guava, Human Health, Bearable, Exist, Heads Up and OstoBuddy were redrawn after looking at the live apps and store galleries directly, which corrected several earlier guesses; Apple, Google Health, Fasten and Nomie are still reconstructed from documentation. They are diagrams, not screenshots — the links on each card open the real galleries.</p>
+  <div class="cards" id="cards"></div>
+
+  <div class="caveat">
+    <b>Confidence note.</b> Seven of the eleven were checked against the live product or store gallery, which corrected real errors: Bearable is light-themed with an indigo header, not dark; Guava has four destinations, not three; and OstoBuddy already carries structured cross-brand product references, so the catalogue gap is narrower than first stated. Four remain reconstructions from documentation. Apple Health's structure comes from iOS 27.2 beta coverage this month and may shift before release. Google Health launched in May 2026, is US-only, and its internal navigation is thinly documented — its panels are the least certain here. Fasten's interface is inferred from its self-hosted nature. Nomie's site is now only a shutdown notice, so its panels come from the open-source version. Treat the matrix as directional, not audited.
+  </div>
+</div>
+
+<script>
+const Y='●', P='◐', N='○';
+
+const APPS = [
+  {
+    name:"Apple Health", arch:"Platform aggregator", cls:"a-platform",
+    meta:"iOS only · free · iOS 27.2 redesign, Sept 2026",
+    m:[Y,Y,Y,Y,P,N,N,Y,Y,N],
+    structure:"Three tabs: <b>Insights</b> (daily AI summary, For You), <b>Longevity</b> (seven body systems, each with a Needs Attention / Fair / Good rating and a Health Age score), <b>Browse</b> (the old app — quick-log shortcuts, pinned sections, category grid, clinical records).",
+    ui:"Restrained, system-native, heavy on typography and whitespace. Cards on a light grey ground, category colour used as a strict per-domain code rather than decoration. Status expressed in words as well as numbers.",
+    pro:"The redesign is the clearest statement in the industry that a browsable category grid cannot be the front door. Broadest data-type vocabulary of anything on the market.",
+    con:"Fixed schema — you cannot add a data type that Apple hasn't defined. Longevity is score-led, which fits wellness better than chronic-condition management. iOS only.",
+    steal:"The three-layer split, customizable Quick Log shortcuts inside Browse, and the decision to demote the category grid rather than delete it.",
+    viz:[
+      {cap:"Insights", bg:"#F2F2F7", surf:"#FFFFFF", ink:"#1C1C1E", accent:"#FF3B30",
+       multi:["#FF3B30","#34C759","#007AFF","#FF9500"], nav:"tabs", navN:3, navOn:0,
+       blocks:["title","bigcard","card:2"]},
+      {cap:"Longevity", bg:"#F2F2F7", surf:"#FFFFFF", ink:"#1C1C1E", accent:"#34C759",
+       multi:["#34C759","#FF9500","#FF3B30","#007AFF","#34C759"], nav:"tabs", navN:3, navOn:1,
+       blocks:["title","pillrow:5"]}
+    ]
+  },
+  {
+    name:"Google Health", arch:"Platform aggregator", cls:"a-platform",
+    meta:"Android · free · launched May 2026, US only",
+    m:[Y,Y,P,P,P,N,N,P,Y,Y],
+    structure:"Aggregation layer over Health Connect and Apple Health, plus medical records for US users and hundreds of apps via Google Health APIs. Pairs with Google Health Coach for recommendations.",
+    ui:"Material 3: generous corner radii, tonal surfaces in soft blue and green, large touch targets, a pill-shaped navigation bar. Insight-and-coaching led rather than data-browsing led.",
+    pro:"Health Connect is the integration substrate you get for free on Android — Garmin, scales, CGMs and the rest arrive through one API instead of a dozen. Explicit commitment that the data isn't used for ads.",
+    con:"US only, so its record retrieval is unavailable in Quebec. Young product. Coach framing pushes toward generic wellness advice.",
+    steal:"Integrate through Health Connect, not per-vendor SDKs. Treat Google Health as a peer that reads your data, not a competitor.",
+    viz:[
+      {cap:"Home", bg:"#F7FAF8", surf:"#E3EFE8", ink:"#17201B", accent:"#1A73E8",
+       multi:["#1A73E8","#1E8E3E","#E8710A"], nav:"pill", navN:3, navOn:0, radius:14,
+       blocks:["title","card:2","bigcard"]},
+      {cap:"Coach", bg:"#F7FAF8", surf:"#E8EEF7", ink:"#17201B", accent:"#1E8E3E",
+       nav:"pill", navN:3, navOn:2, radius:14,
+       blocks:["title","text:3","card:1"]}
+    ]
+  },
+  {
+    name:"Samsung Health", arch:"Platform aggregator", cls:"a-platform",
+    meta:"Android · free · One UI 9 redesign, June 2026",
+    m:[Y,N,P,P,N,N,N,Y,P,Y],
+    structure:"Customizable widget dashboard as home — widgets can be resized and rearranged — plus a top shortcut bar of six fixed silos: Activity, Sleep, Vitals, Mindfulness, Nutrition, Dashboard.",
+    ui:"Each section sits on its own pale gradient wash — lavender for Activity, sand for Sleep, blue for Vitals — with white data cards floating on it and the occasional full-bleed colour card or illustration (a penguin for sleep coaching, a bicycle for a ride). A row of six small icon chips sits above everything. Reviewers criticised colour used decoratively, with little relationship between hue and data type.",
+    pro:"The resizable, rearrangeable widget dashboard is the best shipped version of the Home concept — closest thing to what a tile-based entry point should feel like.",
+    con:"<b>The six silos block cross-category comparison</b> — reviewers found you can only compare metrics within a category, never across them. Unsupported features stay visible by default, cluttering the dashboard for anyone whose hardware doesn't cover everything.",
+    steal:"Copy the widget mechanics. Treat the silo bar as the cautionary tale: it is exactly the topic-menu structure that makes correlation impossible.",
+    viz:[
+      {cap:"Home — daily brief", bg:"#EFE9F8", grad:"#F6E9DC", surf:"#FFFFFF", ink:"#1B1533", accent:"#C8553D",
+       multi:["#7A5AF8","#F2617A","#2BB3A3","#F5A524"], nav:"tabs", navN:4, navOn:0, radius:12,
+       blocks:["chips:6","text:3","hero","card:1"]},
+      {cap:"Vitals silo", bg:"#E6EFFA", grad:"#F3EFFA", surf:"#FFFFFF", ink:"#1B1533", accent:"#3B7FD4",
+       multi:["#3B7FD4","#E8453C","#2BB3A3"], nav:"tabs", navN:4, navOn:1, radius:12,
+       blocks:["chips:6","bigcard","card:2"]}
+    ]
+  },
+  {
+    name:"Guava Health", arch:"Personal health hub", cls:"a-hub",
+    meta:"iOS + Android · freemium · closest concept match",
+    m:[Y,Y,Y,Y,Y,P,N,Y,P,Y],
+    structure:"<b>Four</b> destinations, not three as often described: <b>Home</b> (a TODAY view with a 12am–11:59pm day bar, a quick-entry chip row — Add Entry, Meds, Symptoms, Mood, Cycle — and module cards beneath), <b>Insights</b>, <b>Profile</b> (current status: active meds, conditions, allergies, vaccinations, biomarkers) and <b>Records</b> (searchable timeline grouped by visit, categorized by type). Body map, comparison tools, AI assistant over all data.",
+    ui:"Clean consumer-medical: near-white ground, one green accent carrying the logo, the active-tab underline and every action link. Module cards pair a plain heading and one line of explanation with a soft illustration on the right, each ending in '+ Start logging'. A floating AI button sits bottom-right. Reads as a patient app, not a fitness app.",
+    pro:"The Records-versus-Profile split is the sharpest idea here: history and current status are different jobs and get different surfaces. Portal sync plus AI extraction from uploaded PDFs.",
+    con:"No concept of consumables, appliances or product attributes. Record networks are US-centric. Subscription, and your data lives on their servers.",
+    steal:"Split the archive from the current-status reference sheet. One is a timeline you search, the other is a page you read before an appointment.",
+    viz:[
+      {cap:"Home — TODAY", bg:"#F7F9F8", surf:"#FFFFFF", ink:"#14211C", accent:"#2E9E78",
+       multi:["#3B82C4","#8B5CF6","#C4577F"], nav:"tabs", navN:4, navOn:0, radius:9,
+       blocks:["title","chips:5","iconrows:3"]},
+      {cap:"Records timeline", bg:"#F7F9F8", surf:"#FFFFFF", ink:"#14211C", accent:"#2E9E78",
+       nav:"tabs", navN:4, navOn:3, radius:9,
+       blocks:["search","timeline:4"]}
+    ]
+  },
+  {
+    name:"Human Health", arch:"Chronic-condition hub", cls:"a-chronic",
+    meta:"iOS + Android · free core, HumanPlus US$4.99–6.99/mo · Human Operations Pty Ltd",
+    m:[N,P,Y,Y,P,Y,N,P,P,Y],
+    structure:"Five-item bottom bar with a central <b>+</b> as the log action. <b>Home</b> is insight-led: a greeting with a completion ring, a 'your morning treatment is due' prompt, then a written <b>New insight</b> card, a Top insights tile row and journal entries. <b>Daily check-in</b> logs each symptom with the input primitive that suits it — a continuous slider for fatigue, a 1–5 pip scale for energy, chips for mood. <b>Treatment plan</b> is a week strip showing percent completed, then time-of-day bands (Morning, Afternoon, As needed) holding medication cards you tick off. <b>Insights</b> open per condition: a titled sheet with Week/Month/3M/6M tabs, a trend line, a calendar heat strip and narrative Pattern Detected cards.",
+    ui:"Soft lilac-to-white gradients washing the top of every screen, white cards with generous rounding, a pastel colour band per time-of-day section, one purple primary carrying the FAB and active states. Warm and deliberately low-clinical — it reads like a wellbeing app carrying medical-grade structure.",
+    pro:"Three things we argued for are already shipped here: logging as a central action rather than a destination, conditions as filtered insight views rather than tabs, and a regimen organised by time-of-day with a daily completion percentage. Insights are written as sentences ('your wheezing spikes after fragmented sleep') and ask <i>was this helpful?</i>, putting a human in the loop on the correlation engine. The symptom library is large and you can add your own; the core is genuinely free with no hard paywall.",
+    con:"No wearable or smartwatch sync at all, and no automated lab import — labs and scans are manual uploads behind HumanPlus. Users describe the correlation tools as shallow: patterns run per-symptom rather than as true factor-versus-outcome across domains, so 'did meditation change my anxiety' is hard to answer. No skipped-versus-taken distinction on medication, which quietly breaks adherence tracking. Android sits at 4.1 against iOS 4.6, with login complaints.",
+    steal:"The time-of-day treatment bands with a completion percentage — that's your regimen pillar, solved. And per-tracker input primitives: slider for continuous, pips for ordinal, chips for categorical, chosen per symptom rather than one control for everything.",
+    viz:[
+      {cap:"Home — insights", bg:"#F7F4FD", surf:"#FFFFFF", ink:"#241C3A", accent:"#7B3FE4", head:"#C9B6F2",
+       multi:["#7B3FE4","#C4577F","#3B82C4"], nav:"tabs", navN:5, navOn:0, radius:13,
+       blocks:["headband","card:1","text:3","sparkrow:3"]},
+      {cap:"Daily check-in", bg:"#F7F4FD", surf:"#FFFFFF", ink:"#241C3A", accent:"#7B3FE4",
+       multi:["#22A06B","#F5A524","#7B3FE4"], nav:"tabs", navN:5, navOn:2, radius:13,
+       blocks:["title","piprow:3","chips:5"]},
+      {cap:"Treatment plan", bg:"#F7F4FD", surf:"#FFFFFF", ink:"#241C3A", accent:"#7B3FE4",
+       multi:["#F5A524","#3B82C4","#22A06B"], nav:"tabs", navN:5, navOn:1, radius:13,
+       blocks:["title","daystrip","checkrow:3"]}
+    ]
+  },
+  {
+    name:"Bearable", arch:"Symptom & factor tracker", cls:"a-tracker",
+    meta:"iOS + Android · freemium",
+    m:[P,N,Y,Y,Y,Y,N,P,Y,Y],
+    structure:"Daily-log centred. Data typed explicitly as <b>Factors</b> (diet, treatments, activities, weather) versus <b>Health Outcomes</b> (symptoms, mood, sleep). The Factor Effect Report ranks factors by best and worst impact on each outcome.",
+    ui:"Light, not dark: a pale blue-white ground under an indigo header carrying the date and a scrollable week strip. The day is one stack of white cards — Mood, Symptom score, Factors, Sleep, Meds/Supplements, Food diary — each with a circular colour-coded icon, a bold label, a coloured count, and a grey line summarising what was logged. Three-item bottom bar: Home, Insights, More.",
+    pro:"Your intervention-versus-outcome idea, already shipped and generalised. Won't show a correlation until there are three entries with the factor and three without, and lets you inspect lags from same-day out to seven days. Its own docs tell users to be sceptical of results.",
+    con:"Not a records hub — no documents, no lab ingestion, shallow device integration. Analysis is association-only.",
+    steal:"The factor/outcome typing at the data-model level, the minimum-evidence gate before showing a correlation, and the lag window selector.",
+    viz:[
+      {cap:"Daily log", bg:"#EEF2FB", surf:"#FFFFFF", ink:"#16204A", accent:"#3B4FE0", head:"#3B4FE0",
+       multi:["#F2994A","#E8453C","#5B5BD6","#8B5CF6","#3B82F6","#22A06B"],
+       nav:"tabs", navN:3, navOn:0, radius:9,
+       blocks:["headband","daystrip","iconrows:5"]},
+      {cap:"Factor effect", bg:"#EEF2FB", surf:"#FFFFFF", ink:"#16204A", accent:"#3B4FE0",
+       multi:["#22A06B","#E8453C"], nav:"tabs", navN:3, navOn:1, radius:9,
+       blocks:["title","divbars:6"]}
+    ]
+  },
+  {
+    name:"Exist", arch:"Correlation engine", cls:"a-tracker",
+    meta:"iOS + Android + web · US$6.99/mo",
+    m:[Y,N,N,P,Y,Y,N,P,Y,Y],
+    structure:"Aggregates Garmin, Oura, Withings, Fitbit, Apple Health, plus productivity and lifestyle sources, and sits manual entries directly alongside synced ones. Custom trackers are typed: quantity, duration, 1–9 scale, percentage, time of day, or tag.",
+    ui:"Warm off-white ground with line-art illustration in the marketing, but the product itself is a dense multi-column board: written insight sentences at the top left ('X is your most used app on Thursday'), then dozens of small widgets — coloured progress rings, tiny bar histograms, a mood donut, area charts — packed three columns wide at small type sizes. Calm in voice, busy in layout.",
+    pro:"Proves a single general correlation engine can run over mixed automatic and manual data. That custom-type taxonomy is essentially the tracker registry you'd need — six primitives cover almost everything.",
+    con:"Life-tracking rather than medical; no records, no medication model, no clinical vocabulary.",
+    steal:"The six custom data primitives. Define a tracker by its type, not by its topic, and the UI writes itself.",
+    viz:[
+      {cap:"Today", bg:"#F2EFEA", surf:"#FFFFFF", ink:"#26231D", accent:"#2FB57C",
+       multi:["#2FB57C","#3B82F6","#F5A524","#8B5CF6"], nav:"tabs", navN:3, navOn:0, radius:5,
+       blocks:["text:3","sparkrow:3","card:2"]},
+      {cap:"Correlations", bg:"#F2EFEA", surf:"#FFFFFF", ink:"#26231D", accent:"#2FB57C",
+       multi:["#2FB57C","#E8615C"], nav:"tabs", navN:3, navOn:2, radius:5,
+       blocks:["text:2","divbars:5"]}
+    ]
+  },
+  {
+    name:"Fasten Health", arch:"Records vault", cls:"a-records",
+    meta:"Self-hosted · open source · free",
+    m:[P,Y,P,N,N,N,N,P,Y,Y],
+    structure:"Open-source, self-hostable record aggregator pulling from insurers, hospital networks, clinics and labs over FHIR with SMART-on-FHIR OAuth. Multi-user for families. Customizable dashboards and device integration are on the roadmap rather than shipped.",
+    ui:"Utilitarian self-hosted web app: left sidebar, dense data tables, blue-grey chrome. Built like an admin console because that is what it is — a tool, not a product.",
+    pro:"Solves the hardest and least interesting problem in the whole space: getting clinical records out of provider systems. Open source and offline-capable, so the data stays yours.",
+    con:"Provider network is US-centric, which limits it in Quebec. It is a vault, not a tracker — no symptoms, no analysis.",
+    steal:"Don't write record ingestion yourself. Consider FHIR resource shapes as your internal schema for clinical data even if you import manually — it makes any future integration a mapping rather than a migration.",
+    viz:[
+      {cap:"Dashboard", bg:"#F4F6F8", surf:"#FFFFFF", ink:"#1E2A33", accent:"#2C6FA8",
+       nav:"sidebar", radius:4,
+       blocks:["title","card:2","table:4"]},
+      {cap:"Record list", bg:"#F4F6F8", surf:"#FFFFFF", ink:"#1E2A33", accent:"#2C6FA8",
+       nav:"sidebar", radius:4,
+       blocks:["search","table:7"]}
+    ]
+  },
+  {
+    name:"Heads Up Health", arch:"Labs & biomarkers", cls:"a-records",
+    meta:"iOS + Android + web · subscription · pivoting to practitioners",
+    m:[Y,Y,P,P,P,P,N,Y,Y,Y],
+    structure:"Dashboard-first aggregation of lab results and wearable data, with a Longevity Dashboard view. Increasingly positioned as a clinical intelligence platform for practices rather than a consumer app.",
+    ui:"Electric indigo-to-blue gradients on white, tight geometric sans, analytics-forward and data-dense. The public site now speaks about clinics, patients and clients rather than users, and the biological-age framing dominates — the clearest visual signal of the pivot.",
+    pro:"Lab biomarker trending across years with reference ranges is the thing it does best, and most consumer apps do badly or not at all.",
+    con:"Drifting toward B2B, so consumer priorities may not be maintained. Subscription, cloud-hosted.",
+    steal:"Treat a lab analyte as a first-class time series with its reference range attached, not as a number inside a PDF.",
+    viz:[
+      {cap:"Dashboard", bg:"#F5F6FF", surf:"#FFFFFF", ink:"#141A33", accent:"#3B3BE8",
+       multi:["#3B3BE8","#2FB5C4","#E8A33D"], nav:"tabs", navN:4, navOn:0, radius:6,
+       blocks:["title","bigcard","card:2"]},
+      {cap:"Biomarkers", bg:"#F5F6FF", surf:"#FFFFFF", ink:"#141A33", accent:"#3B3BE8",
+       multi:["#3B3BE8","#E8A33D","#E8453C"], nav:"tabs", navN:4, navOn:1, radius:6,
+       blocks:["title","rangerow:5"]}
+    ]
+  },
+  {
+    name:"Nomie", arch:"Extensible logger", cls:"a-niche",
+    meta:"Open source · local-first · shut down Feb 2023",
+    m:[N,N,P,P,P,Y,P,Y,Y,Y],
+    structure:"Everything is user-defined. Trackers are configuration, not code — you build your own buttons and log with one tap. Notes, trackers, locations and people as primitives.",
+    ui:"Stripped to the bone: a grid of user-made tracker buttons filling the screen, minimal chrome, dark ground. Designed so a log takes under two seconds. Nomie.app is now nothing but a shutdown notice and an export reminder — the panels here are reconstructed from the open-source version, and the site itself points visitors at Bearable.",
+    pro:"The purest expression of the extensibility model you're after: adding a tracker costs a config entry, never a screen. Local-first and open source, so the archive is still worth reading.",
+    con:"It died. The creator cited around US$500 of revenue in 2022 and said it was never financially viable. Total flexibility also means no clinical structure — it can't tell a medication from a mood.",
+    steal:"Tracker-as-config and one-tap entry. The cautionary half: flexibility alone isn't a product, and a hub needs opinionated types for the medical parts.",
+    viz:[
+      {cap:"Tracker buttons", bg:"#16181D", surf:"#23272F", ink:"#EDEFF2", accent:"#4BA3F5",
+       multi:["#4BA3F5","#F5A524","#3FBF9E","#E8615C"], nav:"tabs", navN:3, navOn:0, radius:8,
+       blocks:["title","btns:9"]},
+      {cap:"Timeline", bg:"#16181D", surf:"#23272F", ink:"#EDEFF2", accent:"#4BA3F5",
+       nav:"tabs", navN:3, navOn:1, radius:8,
+       blocks:["title","timeline:5"]}
+    ]
+  },
+  {
+    name:"Ostomy apps", arch:"Condition-specific", cls:"a-niche",
+    meta:"OstoBuddy · My Ostomy Journey · MyOstomyLife · Ostomy 101",
+    m:[N,N,N,P,N,N,P,N,P,Y],
+    structure:"Countdown-plus-inventory pattern. OstoBuddy's home is a greeting, a week-day strip, then the headline number — <b>Next Standard Change, 20 hours</b>, with the date — over a white sheet holding <b>Supplies Summary</b> ('2 supplies running low'), then Today's Output rated Normal. Convatec's My Ostomy Journey logs fluids, food tolerance and changes, plus product discovery. Ostomy 101 carries a pouch and accessory directory with manufacturer samples.",
+    ui:"OstoBuddy leads with a saturated royal-blue header and puts the single most time-critical number — hours until the next change — in large white type, before any list. Supply rows are richly structured: full product name, a spec line reading <i>Convex H-A maxi transp, 25mm</i>, a yellow brand pill, a green reference-code pill, and a red count badge when stock is low. The manufacturer apps are softer and more reassurance-led, with brand teal and illustration.",
+    pro:"Two things are already solved here and worth copying wholesale: a countdown as the hero rather than a chart, and supply rows that carry brand, reference code and physical attributes as separate fields with a low-stock badge.",
+    con:"<b>Correction to my earlier read:</b> OstoBuddy is independent and does carry cross-brand product references with attributes, so the catalogue problem is less unsolved than I claimed — it's the manufacturer apps (Convatec, Coloplast) that are single-brand marketing surfaces. What none of them do is <b>connect those attributes to outcomes</b>. The data to compare a 25mm convex barrier against a flat one is being captured and then never analysed.",
+    steal:"The countdown-as-hero and the structured supply row, fields and all. The real gap is narrower than I first said but just as valuable: attributes are recorded, outcomes are recorded, and nobody joins them.",
+    viz:[
+      {cap:"Home — next change", bg:"#F4F7FF", surf:"#FFFFFF", ink:"#0E1B3D", accent:"#1656F5", head:"#1656F5",
+       nav:"tabs", navN:4, navOn:0, radius:12,
+       blocks:["headband","daystrip","countdown","supplyrow:2"]},
+      {cap:"Supplies summary", bg:"#F4F7FF", surf:"#FFFFFF", ink:"#0E1B3D", accent:"#1656F5",
+       multi:["#1656F5","#E8A33D","#E8453C"], nav:"tabs", navN:4, navOn:2, radius:12,
+       blocks:["title","supplyrow:3"]}
+    ]
+  }
+];
+
+const LINKS = {
+  "Apple Health":[["apple.com/health","https://www.apple.com/health/"],["iOS 27 changes","https://www.macrumors.com/guide/ios-27-apple-health-app-new-features/"]],
+  "Google Health":[["store.google.com","https://store.google.com/magazine/google-health-app"],["help centre","https://support.google.com/googlehealth/answer/14237011"]],
+  "Samsung Health":[["samsung.com","https://www.samsung.com/us/apps/samsung-health/"],["Play Store","https://play.google.com/store/apps/details?id=com.sec.android.app.shealth"]],
+  "Guava Health":[["guavahealth.com","https://guavahealth.com/"],["Play Store","https://play.google.com/store/apps/details?id=com.guavahealth.app"]],
+  "Human Health":[["human.health","https://www.human.health/"],["Play Store","https://play.google.com/store/apps/details?id=health.human.app"],["App Store","https://apps.apple.com/us/app/human-health-chronic-illness/id1628460004"],["features","https://www.human.health/features"]],
+  "Bearable":[["bearable.app","https://bearable.app/"],["Factor Effect docs","https://bearable.app/support/howto/the-factor-effect-report/"]],
+  "Exist":[["exist.io","https://exist.io/"]],
+  "Fasten Health":[["GitHub","https://github.com/fastenhealth/fasten-onprem"],["intro post","https://blog.fastenhealth.com/introducing-fasten-health"]],
+  "Heads Up Health":[["headsuphealth.com","https://headsuphealth.com/"],["Play Store","https://play.google.com/store/apps/details?id=health.headsup.p"]],
+  "Nomie":[["nomie.app","https://nomie.app/"],["GitHub","https://github.com/leokhoa/nomie"]],
+  "Ostomy apps":[["OstoBuddy","https://ostobuddy.com/"],["OstoBuddy on Play","https://play.google.com/store/apps/details?id=com.ostobuddy.pro"],["MyOstomyLife","https://play.google.com/store/apps/details?id=com.coloplast.myostomy"],["Convatec me+","https://www.convatec.com/ostomy-care/meplus-patient-support/"],["UOAA list","https://www.ostomy.org/apps-for-ostomates/"]]
+};
+
+/* ---------- schematic renderer ---------- */
+const alpha = (hex, a) => {
+  const h = hex.replace("#","");
+  const n = parseInt(h.length === 3 ? h.split("").map(c=>c+c).join("") : h, 16);
+  return "rgba(" + ((n>>16)&255) + "," + ((n>>8)&255) + "," + (n&255) + "," + a + ")";
+};
+const pick = (f,i) => (f.multi && f.multi.length) ? f.multi[i % f.multi.length] : f.accent;
+
+function bar(f, w, h, col, op){
+  return '<div style="width:' + w + ';height:' + h + 'px;border-radius:99px;background:' +
+    (col || alpha(f.ink, op == null ? .68 : op)) + '"></div>';
+}
+function box(f, h, extra){
+  return '<div style="height:' + h + 'px;border-radius:' + (f.radius||8) + 'px;background:' + f.surf +
+    ';padding:6px;display:flex;flex-direction:column;gap:4px;justify-content:center;overflow:hidden">' +
+    (extra || "") + '</div>';
+}
+function spark(f, col){
+  return '<svg viewBox="0 0 100 22" preserveAspectRatio="none" style="width:100%;height:22px;display:block">' +
+    '<polyline points="0,17 14,11 28,14 42,5 56,9 70,3 84,8 100,4" fill="none" stroke="' +
+    (col || f.accent) + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+function block(f, spec){
+  const [kind, nRaw] = spec.split(":");
+  const n = parseInt(nRaw || "1", 10);
+  let out = "";
+  switch (kind) {
+    case "title":
+      return '<div style="display:flex;flex-direction:column;gap:4px;padding:2px 2px 4px">' +
+        bar(f,"62%",9) + bar(f,"34%",5,null,.32) + '</div>';
+    case "hero":
+      return '<div style="height:52px;border-radius:' + (f.radius||8) + 'px;background:' +
+        alpha(f.accent,.16) + ';display:flex;align-items:center;gap:6px;padding:8px">' +
+        '<div style="width:24px;height:24px;border-radius:99px;background:' + f.accent + '"></div>' +
+        '<div style="flex:1;display:flex;flex-direction:column;gap:4px">' +
+        bar(f,"70%",7) + bar(f,"45%",5,null,.3) + '</div></div>';
+    case "bigcard":
+      return box(f, 62, bar(f,"48%",6,null,.4) + spark(f));
+    case "card":
+      for (let i=0;i<n;i++)
+        out += box(f, 30, '<div style="display:flex;align-items:center;gap:5px">' +
+          '<div style="width:9px;height:9px;border-radius:3px;background:' + pick(f,i) + '"></div>' +
+          bar(f,"52%",6) + '</div>' + bar(f,"30%",4,null,.3));
+      return out;
+    case "chips":
+      out = '<div style="display:flex;gap:4px;overflow:hidden">';
+      for (let i=0;i<n;i++)
+        out += '<div style="flex:0 0 auto;height:15px;width:' + (20+(i%3)*8) + 'px;border-radius:99px;background:' +
+          (i===0 ? f.accent : alpha(f.ink,.1)) + '"></div>';
+      return out + '</div>';
+    case "mixgrid":
+      return '<div style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:40px;gap:5px">' +
+        '<div style="grid-column:1/3;border-radius:' + (f.radius||8) + 'px;background:' + alpha(pick(f,0),.9) + '"></div>' +
+        '<div style="border-radius:' + (f.radius||8) + 'px;background:' + alpha(pick(f,1),.85) + '"></div>' +
+        '<div style="border-radius:' + (f.radius||8) + 'px;background:' + alpha(pick(f,2),.85) + '"></div>' +
+        '<div style="grid-column:1/3;border-radius:' + (f.radius||8) + 'px;background:' + alpha(pick(f,3),.8) + '"></div>' +
+        '</div>';
+    case "pillrow":
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:' +
+          (f.radius||8) + 'px;background:' + f.surf + '">' +
+          bar(f,"46%",6) +
+          '<div style="margin-left:auto;height:12px;width:26px;border-radius:99px;background:' +
+          alpha(pick(f,i),.85) + '"></div></div>';
+      return out;
+    case "checkrow":
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:' +
+          (f.radius||8) + 'px;background:' + f.surf + '">' +
+          '<div style="width:12px;height:12px;border-radius:99px;border:2px solid ' + f.accent + '"></div>' +
+          bar(f,"55%",6) + '</div>';
+      return out;
+    case "piprow":
+      for (let i=0;i<n;i++){
+        let pips = "";
+        for (let j=0;j<5;j++)
+          pips += '<div style="width:9px;height:9px;border-radius:99px;background:' +
+            (j <= i+1 ? pick(f,i) : alpha(f.ink,.18)) + '"></div>';
+        out += '<div style="display:flex;align-items:center;gap:4px">' + bar(f,"34%",6) +
+          '<div style="margin-left:auto;display:flex;gap:3px">' + pips + '</div></div>';
+      }
+      return out;
+    case "divbars":
+      for (let i=0;i<n;i++){
+        const good = i % 2 === 0;
+        const w = 12 + ((i*13) % 30);
+        out += '<div style="display:flex;align-items:center;gap:4px;height:13px">' +
+          bar(f,"30%",5,null,.45) +
+          '<div style="flex:1;display:flex;justify-content:center"><div style="width:100%;display:flex;justify-content:center">' +
+          '<div style="width:50%;display:flex;justify-content:flex-end">' +
+          (good ? "" : '<div style="height:9px;width:' + w + '%;border-radius:2px;background:' + alpha(pick(f,1),.85) + '"></div>') +
+          '</div><div style="width:50%">' +
+          (good ? '<div style="height:9px;width:' + w + '%;border-radius:2px;background:' + alpha(pick(f,0),.85) + '"></div>' : "") +
+          '</div></div></div></div>';
+      }
+      return out;
+    case "rangerow":
+      for (let i=0;i<n;i++){
+        const pos = 18 + ((i*23) % 62);
+        out += '<div style="display:flex;flex-direction:column;gap:3px">' + bar(f,"42%",5,null,.45) +
+          '<div style="position:relative;height:7px;border-radius:99px;background:' + alpha(f.ink,.14) + '">' +
+          '<div style="position:absolute;left:25%;width:50%;top:0;bottom:0;border-radius:99px;background:' + alpha(pick(f,0),.35) + '"></div>' +
+          '<div style="position:absolute;left:' + pos + '%;top:-2px;width:5px;height:11px;border-radius:2px;background:' + pick(f,i) + '"></div>' +
+          '</div></div>';
+      }
+      return out;
+    case "stockrow":
+      for (let i=0;i<n;i++){
+        const lvl = [82,54,26,68,12][i % 5];
+        out += '<div style="display:flex;align-items:center;gap:6px">' + bar(f,"38%",5,null,.5) +
+          '<div style="flex:1;height:7px;border-radius:99px;background:' + alpha(f.ink,.1) + ';overflow:hidden">' +
+          '<div style="width:' + lvl + '%;height:100%;background:' + (lvl < 30 ? pick(f,2) : lvl < 60 ? pick(f,1) : pick(f,0)) + '"></div>' +
+          '</div></div>';
+      }
+      return out;
+    case "sparkrow":
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;align-items:center;gap:6px">' + bar(f,"30%",5,null,.45) +
+          '<div style="flex:1">' + spark(f, pick(f,i)) + '</div></div>';
+      return out;
+    case "text":
+      out = '<div style="display:flex;flex-direction:column;gap:5px;padding:2px">';
+      for (let i=0;i<n;i++) out += bar(f, (94 - (i%3)*16) + "%", 5, null, .3);
+      return out + '</div>';
+    case "search":
+      return '<div style="height:20px;border-radius:99px;background:' + alpha(f.ink,.08) +
+        ';display:flex;align-items:center;padding:0 8px">' + bar(f,"46%",5,null,.28) + '</div>';
+    case "timeline":
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;gap:7px;align-items:flex-start">' +
+          '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:2px">' +
+          '<div style="width:7px;height:7px;border-radius:99px;background:' + pick(f,i) + '"></div>' +
+          (i < n-1 ? '<div style="width:1px;height:16px;background:' + alpha(f.ink,.18) + '"></div>' : "") +
+          '</div><div style="flex:1;display:flex;flex-direction:column;gap:3px">' +
+          bar(f,"64%",6) + bar(f,"38%",4,null,.28) + '</div></div>';
+      return out;
+    case "table":
+      out = '<div style="display:flex;flex-direction:column">';
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;gap:6px;align-items:center;padding:5px 2px;border-bottom:1px solid ' +
+          alpha(f.ink,.1) + '">' + bar(f,"34%",5,null,.5) + bar(f,"22%",5,null,.25) +
+          '<div style="margin-left:auto">' + bar(f,"18px",5,null,.25) + '</div></div>';
+      return out + '</div>';
+    case "btns":
+      out = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
+      for (let i=0;i<n;i++)
+        out += '<div style="aspect-ratio:1;border-radius:' + (f.radius||8) + 'px;background:' + f.surf +
+          ';display:flex;align-items:center;justify-content:center">' +
+          '<div style="width:12px;height:12px;border-radius:4px;background:' + alpha(pick(f,i),.9) + '"></div></div>';
+      return out + '</div>';
+    case "headband":
+      return '<div style="margin:-8px -8px 0;padding:8px;background:' + (f.head || f.accent) +
+        ';display:flex;align-items:center;gap:6px">' +
+        '<div style="width:16px;height:16px;border-radius:99px;background:' + alpha("#FFFFFF",.85) + '"></div>' +
+        '<div style="flex:1;display:flex;flex-direction:column;gap:3px">' +
+        bar(f,"58%",6,alpha("#FFFFFF",.95)) + bar(f,"32%",4,alpha("#FFFFFF",.55)) + '</div>' +
+        '<div style="width:14px;height:14px;border-radius:99px;background:' + alpha("#FFFFFF",.8) + '"></div></div>';
+    case "daystrip": {
+      const onBand = !!f.head;
+      out = '<div style="' + (onBand ? 'margin:0 -8px;padding:4px 8px 8px;background:' + f.head + ';' : '') +
+        'display:flex;justify-content:space-between">';
+      for (let i=0;i<5;i++){
+        const sel = i === 2;
+        out += '<div style="display:flex;flex-direction:column;align-items:center;gap:3px">' +
+          bar(f,"7px",4, onBand ? alpha("#FFFFFF",.6) : alpha(f.ink,.35)) +
+          '<div style="width:16px;height:16px;border-radius:99px;background:' +
+          (sel ? (onBand ? "#12131A" : f.accent) : "transparent") +
+          ';border:1px solid ' + (i===3 ? (onBand ? alpha("#FFFFFF",.6) : alpha(f.ink,.3)) : "transparent") +
+          ';display:flex;align-items:center;justify-content:center">' +
+          '<div style="width:7px;height:4px;border-radius:99px;background:' +
+          (sel ? "#FFFFFF" : (onBand ? alpha("#FFFFFF",.75) : alpha(f.ink,.5))) + '"></div></div></div>';
+      }
+      return out + '</div>';
+    }
+    case "countdown":
+      return '<div style="margin:0 -8px;padding:6px 8px 12px;background:' + (f.head || f.accent) +
+        ';display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:0 0 14px 14px">' +
+        bar(f,"44%",4,alpha("#FFFFFF",.6)) +
+        '<div style="height:14px;width:52%;border-radius:3px;background:' + alpha("#FFFFFF",.95) + '"></div>' +
+        bar(f,"34%",4,alpha("#FFFFFF",.5)) + '</div>';
+    case "iconrows":
+      for (let i=0;i<n;i++)
+        out += '<div style="display:flex;align-items:center;gap:7px;padding:6px;border-radius:' +
+          (f.radius||8) + 'px;background:' + f.surf + '">' +
+          '<div style="width:15px;height:15px;border-radius:99px;flex:0 0 auto;background:' +
+          alpha(pick(f,i),.22) + ';border:2px solid ' + pick(f,i) + '"></div>' +
+          '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">' +
+          '<div style="display:flex;align-items:center;gap:4px">' + bar(f,"46%",6) +
+          '<div style="width:7px;height:6px;border-radius:2px;background:' + pick(f,i) + '"></div></div>' +
+          bar(f,"78%",4,null,.26) + '</div></div>';
+      return out;
+    case "supplyrow":
+      for (let i=0;i<n;i++){
+        const low = i % 2 === 1;
+        out += '<div style="padding:6px;border-radius:' + (f.radius||8) + 'px;background:' + f.surf +
+          ';display:flex;flex-direction:column;gap:4px">' +
+          '<div style="display:flex;align-items:center;gap:4px">' + bar(f,"62%",6) +
+          '<div style="margin-left:auto;width:15px;height:10px;border-radius:99px;background:' +
+          (low ? "#E8453C" : alpha(f.ink,.2)) + '"></div></div>' +
+          bar(f,"52%",4,null,.26) +
+          '<div style="display:flex;gap:4px">' +
+          '<div style="height:9px;width:26px;border-radius:99px;background:#F6D77A"></div>' +
+          '<div style="height:9px;width:20px;border-radius:99px;background:#A8E0C0"></div>' +
+          '</div></div>';
+      }
+      return out;
+    default:
+      return "";
+  }
+}
+
+function phone(f){
+  const ground = f.grad
+    ? "linear-gradient(160deg," + f.bg + " 0%," + f.grad + " 100%)"
+    : f.bg;
+  let nav = "";
+  if (f.nav === "tabs" || f.nav === "pill") {
+    let items = "";
+    for (let i=0;i<(f.navN||3);i++)
+      items += '<i class="' + (i === f.navOn ? "on" : "") + '" style="background:' +
+        (i === f.navOn ? f.accent : f.ink) + '"></i>';
+    nav = '<div class="pnav" style="border-top:1px solid ' + alpha(f.ink,.1) +
+      (f.nav === "pill" ? ";margin:0 8px 6px;border-top:none;border-radius:99px;background:" + alpha(f.ink,.06) : "") +
+      '">' + items + '</div>';
+  } else if (f.nav === "sidebar") {
+    nav = "";
+  }
+  const sidebar = f.nav === "sidebar";
+  const body = '<div class="pbody" style="' + (sidebar ? "padding-left:6px;" : "") + '">' +
+    f.blocks.map(b => block(f,b)).join("") + '</div>';
+  const inner = sidebar
+    ? '<div style="display:flex;height:227px">' +
+        '<div style="width:26px;background:' + alpha(f.ink,.07) + ';padding:8px 5px;display:flex;flex-direction:column;gap:6px">' +
+        '<div style="height:8px;border-radius:2px;background:' + f.accent + '"></div>' +
+        '<div style="height:6px;border-radius:2px;background:' + alpha(f.ink,.2) + '"></div>' +
+        '<div style="height:6px;border-radius:2px;background:' + alpha(f.ink,.2) + '"></div>' +
+        '<div style="height:6px;border-radius:2px;background:' + alpha(f.ink,.2) + '"></div>' +
+        '</div><div style="flex:1;min-width:0">' + body + '</div></div>'
+    : body + nav;
+
+  return '<div class="frame"><div class="phone" style="background:' + ground + '">' +
+    '<div class="pbar"><div class="notch" style="background:' + f.ink + '"></div></div>' +
+    inner + '</div><div class="fcap">' + f.cap + '</div></div>';
+}
+
+function linkRow(name){
+  return '<div class="links">' + (LINKS[name] || []).map(l =>
+    '<a href="' + l[1] + '" target="_blank" rel="noopener noreferrer">' + l[0] + ' &#8599;</a>'
+  ).join("") + '</div>';
+}
+
+/* ---------- render ---------- */
+const mb = document.getElementById("matrix");
+APPS.forEach(a => {
+  const tr = document.createElement("tr");
+  const th = document.createElement("th");
+  const primary = (LINKS[a.name] || [])[0];
+  if (primary) {
+    const link = document.createElement("a");
+    link.href = primary[1]; link.target = "_blank"; link.rel = "noopener noreferrer";
+    link.textContent = a.name;
+    th.appendChild(link);
+  } else { th.textContent = a.name; }
+  tr.appendChild(th);
+  a.m.forEach(v => {
+    const td = document.createElement("td");
+    td.className = "m";
+    td.textContent = v;
+    td.style.color = v === Y ? "var(--yes)" : v === P ? "var(--part)" : "var(--no)";
+    tr.appendChild(td);
+  });
+  mb.appendChild(tr);
+});
+
+const cb = document.getElementById("cards");
+APPS.forEach(a => {
+  const d = document.createElement("div");
+  d.className = "card";
+  d.innerHTML =
+    '<div class="cardmain">' +
+      '<div class="arch ' + a.cls + '">' + a.arch + '</div>' +
+      '<h3>' + a.name + '</h3>' +
+      '<div class="meta">' + a.meta + linkRow(a.name) + '</div>' +
+      '<dl class="field"><dt>Structure</dt><dd>' + a.structure + '</dd></dl>' +
+      '<dl class="field"><dt>Design &amp; UI</dt><dd>' + a.ui + '</dd></dl>' +
+      '<dl class="field pro"><dt>Strength</dt><dd>' + a.pro + '</dd></dl>' +
+      '<dl class="field con"><dt>Weakness</dt><dd>' + a.con + '</dd></dl>' +
+      '<dl class="field steal"><dt>Take for LauWell</dt><dd>' + a.steal + '</dd></dl>' +
+    '</div>' +
+    '<div><div class="gallery">' + a.viz.map(phone).join("") + '</div>' +
+      '<div class="galnote">Schematic reconstruction — palette, header, nav and card rhythm, not a screenshot. The store and site links above are the real galleries.</div></div>';
+  cb.appendChild(d);
+});
+</script>
+
+</body></html>

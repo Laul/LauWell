@@ -1,0 +1,290 @@
+<title>Health Data Category Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F4F5F2; --surface:#FCFCFB; --surface-2:#EDEFEA;
+    --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
+    --line:#DCE0D9; --line-strong:#C3C9C0;
+    --accent:#2C6A57; --accent-soft:#E2EDE7;
+    --g1:#2D6CA8; --g2:#47873F; --g3:#A7561A; --g4:#7A4BA8;
+    --g5:#A8862C; --g6:#45636F; --g7:#9A3356; --g8:#5D6470;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+      --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+      --line:#2A322E; --line-strong:#3A443F;
+      --accent:#74C2A4; --accent-soft:#1D2D27;
+      --g1:#84B6E2; --g2:#93CC87; --g3:#E0A469; --g4:#BDA0E0;
+      --g5:#E0C76B; --g6:#9BB4C0; --g7:#E093AE; --g8:#AEB6C2;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+    --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+    --line:#2A322E; --line-strong:#3A443F;
+    --accent:#74C2A4; --accent-soft:#1D2D27;
+    --g1:#84B6E2; --g2:#93CC87; --g3:#E0A469; --g4:#BDA0E0;
+    --g5:#E0C76B; --g6:#9BB4C0; --g7:#E093AE; --g8:#AEB6C2;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:44px 76px}
+
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+    font-size:clamp(28px,5vw,40px);line-height:1.12;margin:.5rem 0 0;
+    letter-spacing:-.015em;text-wrap:balance}
+  .lede{margin:14px 0 0;color:var(--ink-2);font-size:16px;max-width:70ch}
+
+  h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:20px;
+    margin:48px 0 4px;letter-spacing:-.01em}
+  .sub{margin:0 0 16px;color:var(--ink-3);font-size:13.5px;max-width:76ch}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;
+    margin-top:32px;overflow:hidden}
+  .stat{background:var(--surface);padding:14px 16px}
+  .stat b{display:block;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:26px;font-weight:500;letter-spacing:-.02em;line-height:1.1}
+  .stat span{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+  .vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .vgroup{background:var(--surface);padding:14px 16px 16px}
+  .vgroup h3{margin:0 0 9px;font-size:12px;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;color:var(--ink-2)}
+  .vgroup h3::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--gc)}
+  .vcats{display:flex;flex-wrap:wrap;gap:5px}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;
+    border:1px solid var(--line-strong);border-radius:99px;padding:2px 9px;
+    color:var(--ink-2);background:transparent}
+  .chip::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--gc,var(--ink-3))}
+  .chip i{font-style:normal;color:var(--ink-3)}
+
+  .toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);
+    padding-block:12px;border-bottom:1px solid var(--line)}
+  .toolrow{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center}
+  .search{flex:1 1 220px;min-width:0;font:inherit;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:3px;padding:7px 11px}
+  .search::placeholder{color:var(--ink-3)}
+  .search:focus-visible,.fchip:focus-visible,.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .fgroup{display:flex;flex-wrap:wrap;gap:5px;align-items:baseline}
+  .glabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);margin-right:2px}
+  .fchip{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;background:transparent;
+    color:var(--ink-2);border:1px solid var(--line-strong);border-radius:99px;padding:3px 10px;cursor:pointer}
+  .fchip:hover{border-color:var(--ink-3)}
+  .fchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+  .reset{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;background:none;
+    border:none;color:var(--accent);cursor:pointer;text-decoration:underline;padding:3px 2px}
+  .count{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);
+    margin-left:auto;white-space:nowrap}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-top:none;background:var(--surface);
+    border-radius:0 0 3px 3px}
+  table{border-collapse:collapse;width:100%;min-width:860px}
+  thead th{position:sticky;top:0;z-index:2;background:var(--surface-2);text-align:left;padding:0;
+    border-bottom:1px solid var(--line-strong);font-weight:500;white-space:nowrap}
+  thead th button{all:unset;cursor:pointer;display:block;width:100%;padding:9px 14px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-2)}
+  thead th button:hover{color:var(--accent)}
+  thead th[aria-sort] button{color:var(--accent)}
+  .arrow{font-size:9px}
+  tbody tr{border-bottom:1px solid var(--line)}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--accent-soft)}
+  td{padding:8px 14px;vertical-align:middle;font-size:13.5px}
+  td.data{font-weight:600;color:var(--ink);min-width:230px}
+  td.grp{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);white-space:nowrap}
+  td.first{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-2);white-space:nowrap}
+  .apps{display:flex;flex-wrap:wrap;gap:4px}
+  .app{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;color:var(--ink-3);
+    border:1px solid var(--line);border-radius:99px;padding:1px 7px;white-space:nowrap}
+  .app.solo{border-color:var(--accent);color:var(--accent)}
+  .empty{padding:36px 16px;text-align:center;color:var(--ink-3);font-size:14px}
+
+  .note{margin-top:34px;padding:16px 18px;border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:3px;background:var(--surface);color:var(--ink-2);font-size:13.5px;max-width:80ch}
+  .note b{color:var(--ink)}
+  .note + .note{margin-top:12px;border-left-color:var(--g3)}
+
+  @media (max-width:640px){
+    .wrap{padding-block:30px 56px}
+    .count{margin-left:0;width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">LauWell · data structure · October 2026 · drafted with Claude</div>
+    <h1>Health Data Category Map</h1>
+    <p class="lede">Every distinct health data point found across the eleven apps in the teardown, each assigned to a category. The vocabulary wasn't designed up front — it was grown one app at a time, mapping each data point onto an existing category or opening a new one.</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <h2>The vocabulary that emerged</h2>
+  <p class="sub">Thirty-seven categories, which is far too many for a single select. They roll up into eight groups — so the practical shape is a two-level scheme: group as the coarse filter, category as the precise one.</p>
+  <div class="vocab" id="vocab"></div>
+
+  <h2>The map</h2>
+  <p class="sub">One row per distinct data point. <i>First seen in</i> records which app introduced it during the walk, so you can read the order the vocabulary grew in. A highlighted app chip means only that app carries the data point.</p>
+
+  <div class="toolbar">
+    <div class="toolrow">
+      <input class="search" id="q" type="search" placeholder="Search data points, categories…" aria-label="Search the map">
+      <div class="fgroup" id="f-group"><span class="glabel">Group</span></div>
+    </div>
+    <div class="toolrow" style="margin-top:9px">
+      <div class="fgroup" id="f-app"><span class="glabel">App</span></div>
+      <button class="reset" id="reset" type="button">Clear all</button>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-key="data" aria-sort="ascending"><button type="button">Health data <span class="arrow">▲</span></button></th>
+          <th data-key="cat"><button type="button">Health category <span class="arrow"></span></button></th>
+          <th data-key="group"><button type="button">Group <span class="arrow"></span></button></th>
+          <th data-key="first"><button type="button">First seen in <span class="arrow"></span></button></th>
+          <th data-key="n"><button type="button">Apps carrying it <span class="arrow"></span></button></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No rows match those filters.</div>
+  </div>
+
+  <div class="note">
+    <b>What the shape tells you.</b> Sort by <i>Apps carrying it</i> and the distribution is lopsided: a small core of measurement and medication data appears in almost every app, while whole categories — appliance care, supplies, products — exist in exactly one. Those single-app categories are the ones your build has to carry itself, because no platform will hand them to you.
+  </div>
+  <div class="note">
+    <b>Two judgement calls.</b> Rows are deduplicated — a data point found in six apps is one row listing six apps, not six rows, so the category assignment stays single-valued. And derived scores (sleep score, energy score, health age) were put in <i>Insights &amp; patterns</i> rather than their subject domain, on the grounds that a computed number has different storage, provenance and trust properties than a measured one. Both are reversible if you disagree.
+  </div>
+</div>
+
+<script>
+const PAYLOAD = {"rows":[{"data":"Heart rate","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Google","Samsung","Guava","Heads Up"]},{"data":"Resting heart rate","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Google","Samsung","Heads Up"]},{"data":"Walking heart rate average","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Heart rate variability","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Google","Samsung","Exist","Heads Up"]},{"data":"Irregular rhythm / AFib notification","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"ECG recording","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"Blood pressure","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Google","Samsung","Guava","Human Health","Heads Up"]},{"data":"Cardio fitness (VO₂max)","cat":"Cardiovascular","group":"Measurements","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Cardio load / training load","cat":"Cardiovascular","group":"Measurements","first":"Samsung","apps":["Samsung"]},{"data":"Blood oxygen (SpO₂)","cat":"Respiratory","group":"Measurements","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Respiratory rate","cat":"Respiratory","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"Peak expiratory flow","cat":"Respiratory","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Forced vital capacity (FEV1)","cat":"Respiratory","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Sleep apnea / breathing disturbance alert","cat":"Respiratory","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"Height","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Guava"]},{"data":"Weight","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Google","Samsung","Guava","Human Health","Heads Up"]},{"data":"Body mass index","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Body fat percentage","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Lean / skeletal muscle mass","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Waist circumference","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Body temperature","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Guava","Human Health"]},{"data":"Wrist / skin temperature deviation","cat":"Body measurements","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"Steps","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung","Guava","Exist"]},{"data":"Distance walked or run","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung","Exist"]},{"data":"Flights climbed","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Exercise minutes","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung"]},{"data":"Stand hours / sedentary time","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Active energy burned","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung","Exist"]},{"data":"Resting energy","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Workout session","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung","Exist"]},{"data":"Workout GPS route","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Strength sets, reps and load","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Swim / cycle specific metrics","cat":"Activity & exercise","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Walking speed","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Step length","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Walking asymmetry","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Double support time","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Walking steadiness","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Stair ascent / descent speed","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Six-minute walk distance","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Fall detection event","cat":"Mobility & balance","group":"Measurements","first":"Apple","apps":["Apple","Samsung"]},{"data":"Sleep duration","cat":"Sleep","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung","Human Health","Bearable","Exist"]},{"data":"Sleep stages","cat":"Sleep","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung"]},{"data":"Time in bed","cat":"Sleep","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung","Bearable"]},{"data":"Bedtime and wake time","cat":"Sleep","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung","Bearable"]},{"data":"Sleep schedule consistency","cat":"Sleep","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Subjective sleep quality","cat":"Sleep","group":"Activity & lifestyle","first":"Bearable","apps":["Human Health","Bearable"]},{"data":"Nap","cat":"Sleep","group":"Activity & lifestyle","first":"Samsung","apps":["Samsung"]},{"data":"Snoring / sleep audio","cat":"Sleep","group":"Activity & lifestyle","first":"Samsung","apps":["Samsung"]},{"data":"Dietary energy (calories)","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Google","Samsung"]},{"data":"Macronutrients","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Micronutrients","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung"]},{"data":"Water intake","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Samsung","Bearable","Ostomy apps"]},{"data":"Caffeine intake","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Guava","Exist"]},{"data":"Alcohol intake","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Apple","apps":["Apple","Guava","Exist"]},{"data":"Meal log / food diary","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Samsung","apps":["Samsung","Guava","Human Health","Bearable"]},{"data":"Food tolerance / trigger food","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Human Health","apps":["Human Health","Ostomy apps"]},{"data":"Fasting window","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Samsung","apps":["Samsung"]},{"data":"Hydration status","cat":"Nutrition & intake","group":"Activity & lifestyle","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Blood glucose","cat":"Metabolic","group":"Measurements","first":"Apple","apps":["Apple","Google","Guava","Human Health","Heads Up"]},{"data":"Insulin delivery","cat":"Metabolic","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Blood ketones","cat":"Metabolic","group":"Measurements","first":"Apple","apps":["Apple","Heads Up"]},{"data":"Blood alcohol content","cat":"Metabolic","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Headphone audio exposure","cat":"Hearing","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Environmental sound exposure","cat":"Hearing","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Audiogram","cat":"Hearing","group":"Measurements","first":"Apple","apps":["Apple"]},{"data":"Menstrual cycle","cat":"Reproductive health","group":"Experience","first":"Apple","apps":["Apple","Samsung","Guava","Human Health"]},{"data":"Basal body temperature","cat":"Reproductive health","group":"Experience","first":"Apple","apps":["Apple"]},{"data":"Ovulation / fertility signal","cat":"Reproductive health","group":"Experience","first":"Apple","apps":["Apple","Guava"]},{"data":"Pregnancy status","cat":"Reproductive health","group":"Experience","first":"Apple","apps":["Apple","Guava"]},{"data":"Mood rating","cat":"Mood & mental wellbeing","group":"Experience","first":"Apple","apps":["Apple","Samsung","Guava","Human Health","Bearable","Exist"]},{"data":"State of mind / emotion log","cat":"Mood & mental wellbeing","group":"Experience","first":"Apple","apps":["Apple"]},{"data":"Stress level","cat":"Mood & mental wellbeing","group":"Experience","first":"Samsung","apps":["Samsung","Bearable"]},{"data":"Mindfulness / breathing session","cat":"Mood & mental wellbeing","group":"Experience","first":"Apple","apps":["Apple","Samsung","Human Health"]},{"data":"Time in daylight","cat":"Mood & mental wellbeing","group":"Experience","first":"Apple","apps":["Apple"]},{"data":"Depression & anxiety questionnaire (PHQ-9, GAD-7)","cat":"Mood & mental wellbeing","group":"Experience","first":"Apple","apps":["Apple","Human Health"]},{"data":"Symptom occurrence","cat":"Symptoms","group":"Experience","first":"Apple","apps":["Apple","Guava","Human Health","Bearable"]},{"data":"Symptom severity / impact rating","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Guava","Human Health","Bearable"]},{"data":"Symptom body location","cat":"Symptoms","group":"Experience","first":"Guava","apps":["Guava","Human Health"]},{"data":"Flare start, end and duration","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health"]},{"data":"Pain score","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Fatigue / energy level","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Headache & migraine episode","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Wheezing / breathing symptom episode","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health"]},{"data":"Nausea & GI symptom episode","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"User-added custom symptom","cat":"Symptoms","group":"Experience","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Bowel movement frequency","cat":"Digestive & bowel","group":"Experience","first":"Human Health","apps":["Human Health","Ostomy apps"]},{"data":"Stool / output consistency","cat":"Digestive & bowel","group":"Experience","first":"Human Health","apps":["Human Health","Ostomy apps"]},{"data":"Stoma output volume","cat":"Digestive & bowel","group":"Experience","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Pouch emptying frequency","cat":"Digestive & bowel","group":"Experience","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Skin condition / rash log","cat":"Skin & wounds","group":"Experience","first":"Human Health","apps":["Human Health"]},{"data":"Peristomal skin condition score","cat":"Skin & wounds","group":"Experience","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Wound or site photo series","cat":"Skin & wounds","group":"Experience","first":"Human Health","apps":["Human Health","Ostomy apps"]},{"data":"Appliance / pouch change event","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Wear time per appliance","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Leak event","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Change reason (scheduled vs leak)","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Stoma size and shape measurement","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Stoma appearance photo","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Accessory used (ring, paste, powder)","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Next change countdown","cat":"Appliance & stoma care","group":"Treatment","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Supplies on hand / stock count","cat":"Supplies & inventory","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Low-stock threshold and alert","cat":"Supplies & inventory","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Reorder / supplier record","cat":"Supplies & inventory","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Supply cost and reimbursement","cat":"Supplies & inventory","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Product brand","cat":"Products & equipment","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Product reference / SKU code","cat":"Products & equipment","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Product physical attributes (convexity, flange size, barrier)","cat":"Products & equipment","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Product catalogue entry","cat":"Products & equipment","group":"Supplies","first":"Ostomy apps","apps":["Ostomy apps"]},{"data":"Medication list (drug, dose, route, frequency)","cat":"Medications & supplements","group":"Treatment","first":"Apple","apps":["Apple","Samsung","Guava","Human Health","Bearable"]},{"data":"Dose taken / logged","cat":"Medications & supplements","group":"Treatment","first":"Apple","apps":["Apple","Samsung","Guava","Human Health","Bearable"]},{"data":"Dose schedule and reminder","cat":"Medications & supplements","group":"Treatment","first":"Apple","apps":["Apple","Samsung","Guava","Human Health"]},{"data":"PRN / as-needed dose","cat":"Medications & supplements","group":"Treatment","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Supplement / vitamin log","cat":"Medications & supplements","group":"Treatment","first":"Apple","apps":["Apple","Human Health","Bearable","Heads Up"]},{"data":"Side effect log","cat":"Medications & supplements","group":"Treatment","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Medication interaction warning","cat":"Medications & supplements","group":"Treatment","first":"Apple","apps":["Apple"]},{"data":"Non-drug treatment log (physio, therapy)","cat":"Treatments & therapies","group":"Treatment","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Treatment plan / protocol","cat":"Treatments & therapies","group":"Treatment","first":"Human Health","apps":["Human Health"]},{"data":"Supplement and intervention protocol","cat":"Treatments & therapies","group":"Treatment","first":"Heads Up","apps":["Heads Up"]},{"data":"Daily plan completion percentage","cat":"Adherence","group":"Treatment","first":"Human Health","apps":["Human Health"]},{"data":"Dose taken vs skipped","cat":"Adherence","group":"Treatment","first":"Bearable","apps":["Bearable"]},{"data":"Treatment adherence rate","cat":"Adherence","group":"Treatment","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Lab analyte value","cat":"Lab results & biomarkers","group":"Measurements","first":"Guava","apps":["Guava","Human Health","Fasten","Heads Up"]},{"data":"Reference range","cat":"Lab results & biomarkers","group":"Measurements","first":"Guava","apps":["Guava","Fasten","Heads Up"]},{"data":"Lab panel / specimen metadata","cat":"Lab results & biomarkers","group":"Measurements","first":"Fasten","apps":["Fasten","Heads Up"]},{"data":"Biomarker trend over time","cat":"Lab results & biomarkers","group":"Measurements","first":"Guava","apps":["Guava","Heads Up"]},{"data":"Diagnosed condition","cat":"Diagnoses & conditions","group":"Clinical records","first":"Guava","apps":["Guava","Human Health","Fasten"]},{"data":"Suspected / undiagnosed condition","cat":"Diagnoses & conditions","group":"Clinical records","first":"Human Health","apps":["Human Health"]},{"data":"Condition onset date and status","cat":"Diagnoses & conditions","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Allergy / intolerance record","cat":"Allergies & intolerances","group":"Clinical records","first":"Apple","apps":["Apple","Guava","Fasten"]},{"data":"Reaction and severity","cat":"Allergies & intolerances","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Vaccination record","cat":"Immunisations","group":"Clinical records","first":"Apple","apps":["Apple","Guava","Fasten"]},{"data":"Booster due date","cat":"Immunisations","group":"Clinical records","first":"Guava","apps":["Guava"]},{"data":"Procedure / surgery record","cat":"Procedures & surgeries","group":"Clinical records","first":"Apple","apps":["Apple","Fasten"]},{"data":"Hospitalisation / admission","cat":"Procedures & surgeries","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Clinical document (PDF, letter)","cat":"Medical documents","group":"Clinical records","first":"Guava","apps":["Guava","Human Health","Fasten"]},{"data":"Imaging report","cat":"Medical documents","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Imaging file (DICOM)","cat":"Medical documents","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Pathology report","cat":"Medical documents","group":"Clinical records","first":"Fasten","apps":["Fasten"]},{"data":"Photo of a paper record","cat":"Medical documents","group":"Clinical records","first":"Guava","apps":["Guava","Human Health"]},{"data":"Appointment (upcoming or past)","cat":"Care encounters","group":"Care & admin","first":"Guava","apps":["Guava","Fasten"]},{"data":"Visit / encounter record","cat":"Care encounters","group":"Care & admin","first":"Guava","apps":["Guava","Fasten"]},{"data":"Visit notes","cat":"Care encounters","group":"Care & admin","first":"Guava","apps":["Guava"]},{"data":"Questions for the appointment","cat":"Care encounters","group":"Care & admin","first":"Guava","apps":["Guava"]},{"data":"Doctor-ready summary report","cat":"Care encounters","group":"Care & admin","first":"Human Health","apps":["Guava","Human Health","Heads Up"]},{"data":"Provider / practitioner record","cat":"Care team & admin","group":"Care & admin","first":"Guava","apps":["Guava","Fasten"]},{"data":"Pharmacy record","cat":"Care team & admin","group":"Care & admin","first":"Guava","apps":["Guava"]},{"data":"Insurance coverage and claims","cat":"Care team & admin","group":"Care & admin","first":"Guava","apps":["Guava","Fasten"]},{"data":"Out-of-pocket cost / receipt","cat":"Care team & admin","group":"Care & admin","first":"Guava","apps":["Guava"]},{"data":"Medical ID / emergency card","cat":"Emergency & identity","group":"Care & admin","first":"Apple","apps":["Apple","Guava"]},{"data":"Blood type","cat":"Emergency & identity","group":"Care & admin","first":"Apple","apps":["Apple"]},{"data":"Emergency contacts","cat":"Emergency & identity","group":"Care & admin","first":"Apple","apps":["Apple"]},{"data":"Organ donor status","cat":"Emergency & identity","group":"Care & admin","first":"Apple","apps":["Apple"]},{"data":"Connected device registry","cat":"Device & data sources","group":"System","first":"Apple","apps":["Apple","Google","Samsung"]},{"data":"Data source priority / conflict rule","cat":"Device & data sources","group":"System","first":"Apple","apps":["Apple","Google"]},{"data":"Sync status and last sync","cat":"Device & data sources","group":"System","first":"Apple","apps":["Apple","Google","Samsung","Exist"]},{"data":"Per-datapoint provenance","cat":"Device & data sources","group":"System","first":"Apple","apps":["Apple","Fasten"]},{"data":"Bulk import (Health Connect, CSV, FHIR)","cat":"Device & data sources","group":"System","first":"Google","apps":["Google","Fasten","Exist"]},{"data":"Provider portal connection","cat":"Device & data sources","group":"System","first":"Guava","apps":["Guava","Fasten"]},{"data":"Derived domain score (sleep, energy, heart)","cat":"Insights & patterns","group":"System","first":"Apple","apps":["Apple","Samsung","Heads Up"]},{"data":"Health age / biological age","cat":"Insights & patterns","group":"System","first":"Apple","apps":["Apple","Heads Up"]},{"data":"Baseline and trend","cat":"Insights & patterns","group":"System","first":"Apple","apps":["Apple","Google","Exist","Heads Up"]},{"data":"Detected pattern / written insight","cat":"Insights & patterns","group":"System","first":"Google","apps":["Google","Human Health","Exist"]},{"data":"Factor-to-outcome correlation","cat":"Insights & patterns","group":"System","first":"Bearable","apps":["Guava","Bearable","Exist"]},{"data":"Insight feedback rating","cat":"Insights & patterns","group":"System","first":"Human Health","apps":["Human Health"]},{"data":"Goal / target","cat":"Insights & patterns","group":"System","first":"Apple","apps":["Apple","Google","Samsung"]},{"data":"Streak / milestone","cat":"Insights & patterns","group":"System","first":"Samsung","apps":["Samsung"]},{"data":"Suspected trigger tag","cat":"Triggers & exposures","group":"Activity & lifestyle","first":"Human Health","apps":["Human Health","Bearable"]},{"data":"Behaviour / habit log","cat":"Triggers & exposures","group":"Activity & lifestyle","first":"Human Health","apps":["Human Health","Bearable","Exist"]},{"data":"Personal care activity","cat":"Triggers & exposures","group":"Activity & lifestyle","first":"Bearable","apps":["Bearable"]},{"data":"Weather conditions","cat":"Environment & context","group":"Activity & lifestyle","first":"Bearable","apps":["Bearable","Exist"]},{"data":"Pollen / air quality","cat":"Environment & context","group":"Activity & lifestyle","first":"Bearable","apps":["Bearable"]},{"data":"Location / place","cat":"Environment & context","group":"Activity & lifestyle","first":"Exist","apps":["Exist","Nomie"]},{"data":"Time zone and travel","cat":"Environment & context","group":"Activity & lifestyle","first":"Exist","apps":["Exist"]},{"data":"People present / social context","cat":"Environment & context","group":"Activity & lifestyle","first":"Bearable","apps":["Bearable","Nomie"]},{"data":"Screen time and app usage","cat":"Environment & context","group":"Activity & lifestyle","first":"Exist","apps":["Exist"]},{"data":"Free-text journal entry","cat":"Journal & notes","group":"Experience","first":"Human Health","apps":["Human Health","Bearable","Nomie"]},{"data":"Daily check-in note","cat":"Journal & notes","group":"Experience","first":"Human Health","apps":["Human Health"]},{"data":"Note attached to an entry","cat":"Journal & notes","group":"Experience","first":"Human Health","apps":["Human Health","Bearable","Nomie"]},{"data":"Additional person profile","cat":"Household & profiles","group":"Care & admin","first":"Human Health","apps":["Human Health","Fasten"]},{"data":"Caregiver / shared access","cat":"Household & profiles","group":"Care & admin","first":"Fasten","apps":["Fasten"]},{"data":"User-created tracker","cat":"Custom & user-defined","group":"System","first":"Human Health","apps":["Human Health","Bearable","Exist","Nomie"]},{"data":"Tracker input type (scale, quantity, duration, tag)","cat":"Custom & user-defined","group":"System","first":"Exist","apps":["Exist","Human Health","Nomie"]},{"data":"Custom tag","cat":"Custom & user-defined","group":"System","first":"Exist","apps":["Exist","Nomie"]},{"data":"Challenge / leaderboard","cat":"Social & motivation","group":"System","first":"Samsung","apps":["Samsung"]}],"GROUPS":{"Measurements":["Cardiovascular","Respiratory","Body measurements","Mobility & balance","Metabolic","Hearing","Lab results & biomarkers"],"Activity & lifestyle":["Activity & exercise","Sleep","Nutrition & intake","Environment & context","Triggers & exposures"],"Experience":["Symptoms","Mood & mental wellbeing","Digestive & bowel","Skin & wounds","Reproductive health","Journal & notes"],"Treatment":["Medications & supplements","Treatments & therapies","Adherence","Appliance & stoma care"],"Supplies":["Supplies & inventory","Products & equipment"],"Clinical records":["Diagnoses & conditions","Allergies & intolerances","Immunisations","Procedures & surgeries","Medical documents"],"Care & admin":["Care encounters","Care team & admin","Emergency & identity","Household & profiles"],"System":["Device & data sources","Insights & patterns","Custom & user-defined","Social & motivation"]}};
+const ROWS = PAYLOAD.rows, GROUPS = PAYLOAD.GROUPS;
+const GNAMES = Object.keys(GROUPS);
+const GVAR = {};
+GNAMES.forEach((g,i) => GVAR[g] = "var(--g" + (i+1) + ")");
+
+const APPS = [...new Set(ROWS.flatMap(r => r.apps))].sort();
+const CATS = [...new Set(ROWS.map(r => r.cat))];
+
+/* stats */
+document.getElementById("stats").innerHTML = [
+  [ROWS.length, "data points"],
+  [CATS.length, "categories"],
+  [GNAMES.length, "groups"],
+  [APPS.length, "apps walked"],
+  [ROWS.filter(r => r.apps.length === 1).length, "single-app rows"]
+].map(s => '<div class="stat"><b>' + s[0] + '</b><span>' + s[1] + '</span></div>').join("");
+
+/* vocabulary */
+document.getElementById("vocab").innerHTML = GNAMES.map(g => {
+  const cats = GROUPS[g].slice().sort((a,b) =>
+    ROWS.filter(r => r.cat === b).length - ROWS.filter(r => r.cat === a).length);
+  return '<div class="vgroup" style="--gc:' + GVAR[g] + '"><h3>' + g + '</h3><div class="vcats">' +
+    cats.map(c => '<span class="chip" style="--gc:' + GVAR[g] + '">' + c +
+      ' <i>' + ROWS.filter(r => r.cat === c).length + '</i></span>').join("") +
+    '</div></div>';
+}).join("");
+
+/* filters */
+const state = {q:"", group:new Set(), app:new Set(), key:"data", dir:1};
+function buildChips(id, values, field){
+  const host = document.getElementById(id);
+  values.forEach(v => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "fchip"; b.textContent = v;
+    b.setAttribute("aria-pressed","false");
+    b.addEventListener("click", () => {
+      const s = state[field];
+      if (s.has(v)) { s.delete(v); b.setAttribute("aria-pressed","false"); }
+      else { s.add(v); b.setAttribute("aria-pressed","true"); }
+      render();
+    });
+    host.appendChild(b);
+  });
+}
+buildChips("f-group", GNAMES, "group");
+buildChips("f-app", APPS, "app");
+
+function sortVal(r, key){
+  if (key === "n") return String(999 - r.apps.length).padStart(4,"0");
+  return String(r[key]).toLowerCase();
+}
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  const rows = ROWS.filter(r =>
+    (!state.group.size || state.group.has(r.group)) &&
+    (!state.app.size || r.apps.some(a => state.app.has(a))) &&
+    (!q || (r.data + " " + r.cat + " " + r.group).toLowerCase().includes(q))
+  ).sort((a,b) => {
+    const x = sortVal(a, state.key), y = sortVal(b, state.key);
+    if (x < y) return -1 * state.dir;
+    if (x > y) return 1 * state.dir;
+    return a.data.localeCompare(b.data);
+  });
+
+  const tb = document.getElementById("rows");
+  tb.innerHTML = rows.map(r =>
+    '<tr><td class="data"></td>' +
+    '<td><span class="chip" style="--gc:' + GVAR[r.group] + '"></span></td>' +
+    '<td class="grp"></td><td class="first"></td>' +
+    '<td><div class="apps">' + r.apps.map(a =>
+      '<span class="app' + (r.apps.length === 1 ? ' solo' : '') + '"></span>').join("") +
+    '</div></td></tr>'
+  ).join("");
+  [...tb.children].forEach((tr, i) => {
+    const r = rows[i];
+    tr.children[0].textContent = r.data;
+    tr.children[1].firstChild.textContent = r.cat;
+    tr.children[2].textContent = r.group;
+    tr.children[3].textContent = r.first;
+    [...tr.children[4].firstChild.children].forEach((el, j) => el.textContent = r.apps[j]);
+  });
+  document.getElementById("empty").hidden = rows.length > 0;
+  document.getElementById("count").textContent = rows.length + " of " + ROWS.length + " rows";
+}
+
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+document.querySelectorAll("thead th").forEach(th => {
+  th.querySelector("button").addEventListener("click", () => {
+    const key = th.dataset.key;
+    if (state.key === key) state.dir *= -1; else { state.key = key; state.dir = 1; }
+    document.querySelectorAll("thead th").forEach(o => {
+      o.removeAttribute("aria-sort"); o.querySelector(".arrow").textContent = "";
+    });
+    th.setAttribute("aria-sort", state.dir === 1 ? "ascending" : "descending");
+    th.querySelector(".arrow").textContent = state.dir === 1 ? "▲" : "▼";
+    render();
+  });
+});
+document.getElementById("reset").addEventListener("click", () => {
+  state.q = ""; document.getElementById("q").value = "";
+  state.group.clear(); state.app.clear();
+  document.querySelectorAll(".fchip").forEach(c => c.setAttribute("aria-pressed","false"));
+  render();
+});
+
+render();
+</script>

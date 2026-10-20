@@ -1,0 +1,123 @@
+# Feature modules and on/off toggles
+
+*Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
+2026-10-11 for the simplified data model and the four-tab navigation; 2026-10-15 for the Tracker
+list/widgets views; 2026-10-18 for the regenerated counts. Status: adopted (PLAN.md → M0).
+Replaces the earlier "feature descriptor + registry" proposal.*
+
+## The question
+
+LauWell holds many kinds of health data (vitals, activity, sleep, medication, ostomy, glucose, …)
+and the user should be able to hide what they don't track. Does that change how the app is built
+with Gradle, and what is the unit that gets switched on and off?
+
+## Runtime toggle, not build-time exclusion
+
+There are two separate meanings of "optional":
+
+| | Runtime toggle | Build-time exclusion |
+|---|---|---|
+| What it is | One APK containing everything; a setting hides or shows each part | Gradle product flavors or dynamic feature modules produce different APKs |
+| Changing it | Instant, from Settings | Rebuild, or a Play Store download |
+| Good for | A personal app where the choice may change | Separate product editions, or cutting APK size at scale |
+
+LauWell needs the **runtime toggle**. Gradle stays as it is: a single `:app` module. Separate
+Gradle modules would only be worth it for build reasons (slow incremental builds, compiler-enforced
+boundaries); neither applies today. Dynamic feature modules need Play Store distribution and are
+not recommended.
+
+## The toggle unit is the data hierarchy itself
+
+The first version of this document proposed a `FeatureDescriptor` per feature, each bringing its
+own screens. Two later decisions made that the wrong shape (PLAN.md → Decisions):
+
+- Adding a tracker is a **registry entry, never a new screen or navigation destination**.
+- Every data point already has a home in a three-level hierarchy
+  (`docs/data-structure/health-data-model/Patient Data Categories`):
+
+| Level | Count | Example | In code |
+|---|---|---|---|
+| Category | 7 (was 5; Labs added 2026-10-11, Ostomy 2026-10-17) | Vitals | `Category` enum |
+| Sub-category | 35 | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
+| Data point | 113 (was 81) | Heart rate | `MetricDefinition` |
+
+Counts and names follow the simplified data model (PLAN.md → Decisions → *Simplified data model*),
+regenerated 2026-10-17; the enums in code match it (`CatalogMatchesDocsTest`).
+
+So there is no separate "feature" concept to invent. **Any level of that hierarchy can be switched
+off**: a whole category, a sub-category, or a single metric. The hierarchy also answers the old
+"who owns heart rate?" question for free: each metric has exactly one sub-category.
+
+### What gets stored: the switched-off set
+
+The app stores the set of things the user has turned **off**, not what is on. Each entry is a
+stable key at one of the three levels:
+
+```kotlin
+// core/catalog (sketch, names not final)
+sealed interface ToggleKey {
+    data class OfCategory(val category: Category) : ToggleKey
+    data class OfSubCategory(val subCategory: SubCategory) : ToggleKey
+    data class OfMetric(val metricId: String) : ToggleKey
+}
+
+fun isVisible(metric: MetricDefinition, off: Set<ToggleKey>): Boolean =
+    ToggleKey.OfMetric(metric.id) !in off &&
+    ToggleKey.OfSubCategory(metric.subCategory) !in off &&
+    ToggleKey.OfCategory(metric.subCategory.category) !in off
+```
+
+Why "off" rather than "on":
+
+- An empty set means **everything visible**, which is the MVP behaviour, with nothing to seed on
+  first launch.
+- A metric added in a later release appears without a migration of the stored set.
+- Whatever the Settings screen ends up looking like (per category, per sub-category, per metric),
+  it only adds and removes keys. Nothing else changes.
+
+`isVisible` is **the only place** that decides visibility. Home, the category screens, the
+permission flow and background sync all ask it (through a repository exposing
+`Flow<Set<ToggleKey>>`); none of them checks a toggle directly.
+
+### MVP scope
+
+- No selection screen after sign-in. Everything is visible.
+- The switched-off set sits behind an interface; the first implementation returns an empty set.
+  The DataStore-backed implementation lands together with the Settings toggles, which are backlog.
+- When the Settings toggles do land, Settings is their primary home.
+
+## Consequences of a hidden part
+
+Example: Lifestyle → Activity switched off.
+
+- **Code:** still ships in the APK, never runs. Negligible size cost.
+- **Data:** hidden, **never deleted**. Turning it back on loses nothing. Deleting data is a
+  separate, explicit action in Settings. Storage (Firestore `users/{uid}/…`, Room tables) keeps
+  one schema and one migration history either way.
+- **Permissions:** `AndroidManifest.xml` declares every permission any metric might need. At
+  runtime a permission is requested only for a visible metric, and only when it is first needed
+  (e.g. the first heart-rate read), never all at once. Partial grants are fine. Permissions and
+  data sources are declared on the **metric definition**, so they follow any toggle level.
+- **Background work:** syncs and reminders are scheduled only for visible metrics. A change in the
+  switched-off set starts or cancels the matching jobs.
+- **UI:** navigation is four bottom tabs — Today, Tracker, Care, Records (PLAN.md → Decisions → *App
+  navigation*) — plus Settings. Each data point carries the tab(s) it shows on (`Nav. Screens`), and
+  every tab lists only visible metrics. Today's quick-log row and the Tracker hub read from the same
+  registry. Adding a metric never touches the nav host.
+- **Tracker views:** the hub shows the same visible metrics as either a list with 7-day sparklines
+  (default) or a 2-up widget grid, switched from its header (`docs/design/UI-spec.md`). The view is
+  a display preference (`TrackerView` in DataStore), separate from the switched-off set: it never
+  changes which metrics are visible. Each `MetricDefinition` declares its mini-chart type (bars,
+  line, range, severity dots, cycle strip) so a new metric gets a chart without new UI code.
+
+## Deferred: switching off everything related to one condition
+
+Some data is related across categories. Ostomy was the clearest case: output volume was in Vitals,
+the change routine in Lifestyle, peristomal skin in Symptoms, products in Treatments & appliances.
+The ideal behaviour is one switch that turns off *everything related to ostomy*, wherever it is
+filed.
+
+**Resolved by the simplified data model:** Ostomy is its own category since 2026-10-17 (after a
+short stay under Treatments & Appliances → Ostomy), so switching off that category is the one switch. The
+cross-category tag (a "topic" on the metric definition plus a fourth `ToggleKey` variant) is only
+needed if another condition turns out to span categories; revisit then.

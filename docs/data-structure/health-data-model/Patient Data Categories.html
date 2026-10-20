@@ -1,0 +1,551 @@
+<title>Patient Data Categories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+  :root{
+    --paper:#F4F5F2; --surface:#FCFCFB; --surface-2:#EDEFEA;
+    --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
+    --line:#DCE0D9; --line-strong:#C3C9C0;
+    --accent:#2C6A57; --accent-soft:#E2EDE7;
+    --c1:#D4312A; --c2:#8C51D9; --c3:#0073E9; --c4:#00952A; --c5:#C83184; --c6:#0095A5; --c7:#B26200;
+    --warn:#A7561A; --ok:#2C6A57;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+      --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+      --line:#2A322E; --line-strong:#3A443F;
+      --accent:#74C2A4; --accent-soft:#1D2D27;
+      --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
+      --warn:#E0A661; --ok:#74C2A4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#111614; --surface:#181E1B; --surface-2:#1F2623;
+    --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
+    --line:#2A322E; --line-strong:#3A443F;
+    --accent:#74C2A4; --accent-soft:#1D2D27;
+    --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
+    --warn:#E0A661; --ok:#74C2A4;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding-inline:20px;padding-block:48px 80px}
+  .wide{max-width:1120px;margin-inline:auto}
+
+  .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+    font-size:clamp(30px,5.5vw,42px);line-height:1.1;margin:.5rem 0 0;
+    letter-spacing:-.018em;text-wrap:balance}
+  .lede{margin:16px 0 0;color:var(--ink-2);font-size:17px;max-width:62ch}
+
+  h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:23px;
+    margin:60px 0 6px;letter-spacing:-.012em;text-wrap:balance}
+  h2 + .sub{margin:0 0 22px;color:var(--ink-3);font-size:14px;max-width:74ch}
+  .sub b{color:var(--ink-2)}
+  p{max-width:68ch}
+
+  .axis{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;
+    background:var(--surface);padding:18px 20px;margin-top:30px}
+  .axis h3{margin:0 0 8px;font-size:15px;font-weight:600;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .axis p{margin:0;font-size:14.5px;color:var(--ink-2)}
+  .axis p + p{margin-top:9px}
+  .axis b{color:var(--ink)}
+
+  .glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:24px}
+  .gcard{background:var(--surface);padding:16px 18px 18px;display:flex;flex-direction:column;gap:7px}
+  .gnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.12em;
+    color:var(--cc);display:flex;align-items:center;gap:7px}
+  .gnum::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--cc)}
+  .gcard h3{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .gtest{margin:0;font-size:14px;color:var(--ink-2);font-style:italic;line-height:1.45}
+
+  .cat{border:1px solid var(--line);border-left:3px solid var(--cc);border-radius:3px;
+    background:var(--surface);padding:24px 24px 26px;margin-top:20px}
+  .cat h3{margin:0 0 3px;font-family:"IBM Plex Serif",Georgia,serif;font-size:21px;font-weight:600;
+    letter-spacing:-.012em;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .cat h3 em{font-style:normal;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cc)}
+  .test{margin:0 0 16px;font-size:15px;color:var(--cc);font-weight:500}
+  .cat p{margin:0 0 14px;color:var(--ink-2);font-size:14.5px}
+  .cat p:last-child{margin-bottom:0}
+
+  .lbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-3);margin:18px 0 7px;display:block}
+  .items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+  .item{font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:3px;padding:3px 9px;color:var(--ink-2)}
+  .excl{border-style:dashed;opacity:.8;text-decoration:line-through;text-decoration-color:var(--ink-3)}
+
+  .edge{border-top:1px solid var(--line);margin-top:18px;padding-top:14px}
+  .edge dt{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--warn);margin-bottom:3px}
+  .edge dd{margin:0 0 12px;font-size:14px;color:var(--ink-2);line-height:1.5}
+  .edge dd:last-child{margin-bottom:0}
+  .edge dd b{color:var(--ink);font-weight:600}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;min-width:640px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+  thead th{background:var(--surface-2);border-bottom:1px solid var(--line-strong);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--ink-2);font-weight:500;vertical-align:bottom;line-height:1.3}
+  tbody th{font-weight:600;color:var(--ink);font-size:13.5px;white-space:nowrap}
+  tbody th small{display:block;font-weight:400;color:var(--ink-3);font-size:11.5px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;letter-spacing:.02em;margin-top:2px}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  td.m{text-align:center;font-size:14px;font-weight:600;color:var(--ok);
+    font-family:"IBM Plex Mono",ui-monospace,monospace}
+  td.m.no{color:var(--line-strong);font-weight:400}
+
+  #maptable table{min-width:1120px}
+  #maptable tbody tr:hover{background:var(--accent-soft)}
+  td.dname{font-weight:600;color:var(--ink);white-space:nowrap}
+  td.dsub{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  td.dshape{white-space:nowrap}
+  td.ddesc{color:var(--ink-2);font-size:13px;line-height:1.5;min-width:300px}
+  td.dtags{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-2);white-space:nowrap}
+  .pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;
+    border:1px solid var(--line-strong);border-radius:99px;padding:2px 9px;color:var(--ink-2)}
+  .pill::before{content:"";width:7px;height:7px;border-radius:99px;background:var(--cc)}
+  .shp{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;color:var(--ink-2);
+    border:1px solid var(--line);border-radius:3px;padding:2px 7px;background:var(--surface-2)}
+
+  .structure{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:20px}
+  .sgroup{background:var(--surface);padding:13px 15px 15px}
+  .sgroup h4{margin:0 0 9px;font-size:11.5px;font-family:"IBM Plex Mono",ui-monospace,monospace;
+    letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;color:var(--ink-2)}
+  .sgroup h4::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--cc)}
+  .sgroup ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+  .sgroup li{font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+  .sgroup li span{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3)}
+
+  .toolrow{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:12px}
+  .search{flex:1 1 200px;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line-strong);border-radius:3px;padding:6px 10px}
+  .search::placeholder{color:var(--ink-3)}
+  .search:focus-visible,.fchip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .fchip{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;background:transparent;
+    color:var(--ink-2);border:1px solid var(--line-strong);border-radius:99px;padding:3px 10px;cursor:pointer}
+  .fchip:hover{border-color:var(--ink-3)}
+  .fchip[aria-pressed="true"]{background:var(--cc,var(--accent));border-color:var(--cc,var(--accent));color:var(--paper)}
+  .glbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--ink-3)}
+  .count{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);margin-left:auto}
+
+  .finding{display:grid;grid-template-columns:auto 1fr;gap:0 16px;margin-top:22px;
+    padding-top:20px;border-top:1px solid var(--line)}
+  .finding:first-of-type{border-top:none;padding-top:4px}
+  .fnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;color:var(--cc,var(--accent));
+    padding-top:3px;font-weight:500}
+  .fbody h4{margin:0 0 7px;font-size:16px;font-weight:600;letter-spacing:-.008em;text-wrap:balance}
+  .fbody p{margin:0 0 10px;color:var(--ink-2);font-size:14.5px}
+  .fbody p:last-child{margin-bottom:0}
+  .verdict{display:inline-block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;
+    letter-spacing:.05em;border:1px solid var(--line-strong);border-radius:99px;padding:2px 10px;
+    color:var(--accent);margin-top:2px}
+  .verdict.done{color:var(--ok);border-color:var(--ok)}
+
+  .close{margin-top:52px;padding:22px 24px;border:1px solid var(--line);border-radius:3px;
+    background:var(--accent-soft)}
+  .close h3{margin:0 0 10px;font-family:"IBM Plex Serif",Georgia,serif;font-size:19px;font-weight:600}
+  .close p{margin:0 0 12px;font-size:14.5px;color:var(--ink-2)}
+  .close p:last-child{margin-bottom:0}
+  .close b{color:var(--ink)}
+
+  @media (max-width:560px){
+    .wrap{padding-block:32px 60px}
+    .cat{padding:18px 16px 20px}
+    .finding{grid-template-columns:1fr;gap:4px}
+    .count{margin-left:0;width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">LauWell · data structure · October 2026 · v4 · drafted with Claude</div>
+    <h1>Patient Data Categories</h1>
+    <p class="lede">Seven categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes, and a tag for the screens that show it. The rows mirror the Notion table <i>Data Model [Simplified]</i>; the earlier five-category map (v03) is kept beside this page.</p>
+  </header>
+
+  <div class="axis">
+    <h3>The dividing axis</h3>
+    <p><b>Is this value read against a clinical normal range, or against a goal you set yourself?</b> A blood pressure of 160/100 is abnormal to any clinician; nobody reads 4,000 steps as pathological. Clinical band → <b>Vitals</b>. Personal goal → <b>Lifestyle</b>.</p>
+    <p>One question decides both, and it handles mood without an exception: a daily log with no clinical band, so Lifestyle. Two categories now sit beside the axis rather than on it: <b>Labs</b>, split by where the number comes from, and <b>Ostomy</b>, split by subject so that everything about the stoma is in one place.</p>
+  </div>
+
+  <div class="glance">
+    <div class="gcard" style="--cc:var(--c1)">
+      <div class="gnum">01 · Vitals</div><h3>Vitals</h3>
+      <p class="gtest">A measured value a clinician would read against a normal range.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c2)">
+      <div class="gnum">02 · Labs</div><h3>Labs</h3>
+      <p class="gtest">A result from a laboratory report, read against the range printed on it.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c3)">
+      <div class="gnum">03 · Records</div><h3>Medical Records</h3>
+      <p class="gtest">Standing facts about me, my documents, and the record of my care.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c4)">
+      <div class="gnum">04 · Lifestyle</div><h3>Lifestyle</h3>
+      <p class="gtest">My daily log, measured against my own goals.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c5)">
+      <div class="gnum">05 · Symptoms</div><h3>Symptoms</h3>
+      <p class="gtest">Something I feel, that I report myself.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c6)">
+      <div class="gnum">06 · Treatments</div><h3>Treatments &amp; Appliances</h3>
+      <p class="gtest">What I'm taking or using, and the care I have planned.</p>
+    </div>
+    <div class="gcard" style="--cc:var(--c7)">
+      <div class="gnum">07 · Ostomy</div><h3>Ostomy</h3>
+      <p class="gtest">Everything about my stoma: its output, its skin, the appliance on it.</p>
+    </div>
+  </div>
+
+  <h2>The seven, in detail</h2>
+  <p class="sub">Sub-category lists are generated from the data map further down, which is the authoritative row set.</p>
+
+  <section class="cat" style="--cc:var(--c1)">
+    <h3>Vitals <em>clinical measurement</em></h3>
+    <p class="test">A measured value with a unit and a timestamp, read against a clinical normal range.</p>
+    <p>The strongest category in the set, because it describes a <i>shape</i> plus one interpretive test rather than a topic. Anything shaped like value + unit + timestamp, whose number a clinician would call normal or abnormal, is a Vital — so a sensor you connect in 2028 lands here with no new category and no new screen. Shown in Tracker.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Vitals"></div>
+    <dl class="edge">
+      <dt>Lab results moved out</dt>
+      <dd>By the rule a lab result is a Vital, and it keeps the same storage shape. It now has its own category because it arrives differently — dozens of analytes at once, every few months, on a report — and lives on a different screen (Records). <b>A home glucose reading is Vitals; a fasting glucose from the lab is Labs.</b></dd>
+      <dt>The menstrual cycle sits here, as an exception</dt>
+      <dd>Filed under <i>Woman Health</i> so that cycle data has one home next to the body's other signals. Strictly, the axis would put it in Lifestyle (a daily log with no clinical band); the simplified model chose the grouping over the rule.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c2)">
+    <h3>Labs <em>lab result</em></h3>
+    <p class="test">A value from a laboratory report, read against the reference range printed on that report.</p>
+    <p>One row per analyte, grouped by panel — hematology, lipid profile, iron studies — the way a report lays them out. The seed list is <code>docs/data-structure/health_data_labs/common_lab_tests.csv</code>. Storage is the ordinary <b>Measurement</b> with <code>source = lab</code>, plus the reference range the lab printed, because ranges differ between labs and methods. Shown in Records.</p>
+    <span class="lbl">Sub-categories (panels)</span>
+    <div class="items" data-cat="Labs"></div>
+    <dl class="edge">
+      <dt>Keep the lab's range, not a generic one</dt>
+      <dd>A result is only "high" relative to the range on its own report. <b>Store the printed range with each result</b>; a generic range is a fallback for display, never the reference.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c3)">
+    <h3>Medical Records <em>standing fact + care record</em></h3>
+    <p class="test">A fact with a start date rather than a timestamp, a document, or the record of an encounter with the health system.</p>
+    <p>Not called "Medical history", because that signals <i>the past</i> — and the active diagnosis list is one of the two things anyone needs in a consultation. Documents, pictures, the medical history and the record of each visit live here. Shown in Records.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Medical Records"></div>
+    <dl class="edge">
+      <dt>An appointment and an encounter are two records</dt>
+      <dd>The appointment is the plan (date, place, who, questions to ask) and lives in Treatments &amp; Appliances, shown in Care. The encounter — <i>Note (Encounter)</i> — is what happened, and lives here. <b>An encounter points to the appointment it is based on, when there is one</b>: an emergency visit has no appointment, and a cancelled appointment never becomes an encounter.</dd>
+      <dt>Status, not deletion</dt>
+      <dd>A resolved diagnosis stays visible as resolved rather than disappearing. The fact that something ended is itself clinical information.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c4)">
+    <h3>Lifestyle <em>daily log</em></h3>
+    <p class="test">Something I logged about my day, measured against a goal I set rather than a clinical range.</p>
+    <p>This is where the modifiable variables live — the levers you can actually pull — which makes it the input side of nearly every correlation the app will run. Shown in Tracker.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Lifestyle"></div>
+    <dl class="edge">
+      <dt>Cut down on purpose</dt>
+      <dd>Nutrition, hydration, caffeine and alcohol, mindfulness, travel and weather were dropped from the simplified model as far from current priorities. They are in the v03 map, ready to come back as rows when needed.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c5)">
+    <h3>Symptoms <em>self-report</em></h3>
+    <p class="test">Something I feel and rate myself — no instrument involved.</p>
+    <p>The separation from Vitals is <b>who produced the value</b>: a device or a lab, versus you. A pain score is a number with a timestamp exactly like a blood pressure, but you generated it, so it's a Symptom. Sub-categories follow body systems, with one general bucket for records not tied to a system. Shown in Tracker.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Symptoms"></div>
+    <dl class="edge">
+      <dt>The taxonomy problem</dt>
+      <dd>Clinical symptom vocabularies (SNOMED CT, ICD-11) are complete, rigorously classified, and hostile to browse. <b>The answer is two vocabularies:</b> a coded reference terminology underneath for correctness and any export to a clinician, and a patient-facing layer on top — everyday names, synonyms so "tummy ache" finds the right code, a body map, and a personal shortlist of the symptoms you actually track. The sub-categories here are that patient-facing layer; they are not the terminology.</dd>
+      <dt>Two shapes live here</dt>
+      <dd>A rating logged now is a measurement; a headache or a palpitation is an event with an onset and a duration. Both read as Symptoms to the patient but they're different records.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c6)">
+    <h3>Treatments &amp; Appliances <em>intervention + catalogue</em></h3>
+    <p class="test">What I'm taking or using, the product behind it, and the care I have planned.</p>
+    <p>Holds the <b>things</b> — drugs, devices, supplies — and the intervention records that govern them, plus appointments, the forward-looking plan of care. Shown in Care.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Treatments &amp; Appliances"></div>
+    <dl class="edge">
+      <dt>Unfinished, by choice</dt>
+      <dd>Only the Appointment row is in the simplified model so far. Medication (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies, devices, supplies and trial periods stay as defined in the v03 map and come back as rows when their screens are built.</dd>
+      <dt>Product and act must stay separate entities</dt>
+      <dd>The single most consequential decision in the set. Product attributes — convexity, flange size, barrier chemistry, brand, reference — belong to a catalogue entity; the appliance-change event points at it. Only then can you ask <b>"did the 25mm convex barrier give me longer wear time and better skin than the flat one"</b>. If product is a free-text field on the event, that question is permanently out of reach.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c7)">
+    <h3>Ostomy <em>one subject, two rhythms</em></h3>
+    <p class="test">Anything about the stoma: its output, the skin around it, and the appliance on it.</p>
+    <p>Ostomy data used to be spread over Vitals, Lifestyle, Symptoms and Treatments. Gathered into one category, <b>one switch hides all of it</b> for someone without a stoma, and a stoma-nurse export reads a single category. Inside it, the split between signals and interventions survives as two sub-categories.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Ostomy"></div>
+    <dl class="edge">
+      <dt>Daily routines are signals, replacement is an intervention</dt>
+      <dd>Output, emptying and skin are read day to day and show in Tracker; the appliance change and the wear time it produces show in Care. Peristomal skin is shown in both, stored once.</dd>
+      <dt>A leak is a reason, not an event</dt>
+      <dd>A leak forces an appliance change, so it is recorded as that change's reason. <b>Wear time is derived</b> from consecutive changes and is the headline outcome for comparing products.</dd>
+    </dl>
+  </section>
+
+  <h2>Data map</h2>
+  <p class="sub">Every data point the app is expected to hold, at the level a patient would recognise it. <b>Category</b> is the data's home, <b>sub-category</b> the second level inside it, <b>shape</b> the storage form, <b>screens</b> the tabs that show it (Today reads from all of them) and <b>sources</b> where values come from. Filter to see one slice.</p>
+
+  <div class="wide">
+    <div class="structure" id="structure"></div>
+    <div class="toolrow">
+      <input class="search" id="q" type="search" placeholder="Search data points…" aria-label="Search">
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="filters"></div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="toolrow" style="margin-top:-4px">
+      <span class="glbl">Shape</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="shapefilters"></div>
+      <span class="glbl">Screen</span>
+      <div style="display:flex;flex-wrap:wrap;gap:5px" id="screenfilters"></div>
+    </div>
+    <div class="tablewrap" id="maptable">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Category</th><th>Sub-category</th><th>Shape</th><th>Screens</th><th>Sources</th><th>What it is</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Categories are not entities</h2>
+  <p class="sub">Seven categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart.</p>
+
+  <div class="tablewrap" id="shapematrix"></div>
+
+  <h2>Where the model stands</h2>
+  <p class="sub">Two changes settled in this revision, three things still open.</p>
+
+  <div class="finding" style="--cc:var(--ok)">
+    <div class="fnum">01</div>
+    <div class="fbody">
+      <h4>Labs and Ostomy get their own homes</h4>
+      <p>Labs left Vitals because results arrive as reports and are read in Records; Ostomy gathered rows from four categories so that one switch and one export cover the stoma. Both keep the storage shapes they had.</p>
+      <span class="verdict done">Resolved</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--ok)">
+    <div class="fnum">02</div>
+    <div class="fbody">
+      <h4>Category is not screen</h4>
+      <p>Every row now says which tabs show it. A row is stored once and may appear on several tabs — peristomal skin in Tracker and Care — keeping its category colour on both. Adding a data point to a screen is a tag, not a new destination.</p>
+      <span class="verdict done">Resolved</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c6)">
+    <div class="fnum">03</div>
+    <div class="fbody">
+      <h4>The catalogue rows are missing</h4>
+      <p>Wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table: the ostomy product and its changes, the medication and its doses. The simplified model has the events but none of the catalogues yet — the shape matrix shows an empty Catalogue row. They come back with Treatments &amp; Appliances.</p>
+      <span class="verdict">Core modelling decision, still to re-add</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c5)">
+    <div class="fnum">04</div>
+    <div class="fbody">
+      <h4>Sub-category names leak across categories</h4>
+      <p>In Notion the sub-category list is one flat select shared by every category, so lab panel names reach other categories: home blood glucose is filed as Vitals → "Biochemistry - Metabolic". "Cardiovascular" exists under Vitals, Labs and Symptoms, which is fine — identity is category plus name — but the Vitals glucose row wants a Vitals name.</p>
+      <span class="verdict">Open in Notion</span>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--c4)">
+    <div class="fnum">05</div>
+    <div class="fbody">
+      <h4>Nothing here is an output</h4>
+      <p>Every category describes data going in. Trends, correlations, adherence rates, the History timeline and the stoma-nurse export are a layer over the categories — and only two rows carry the <b>Derived</b> shape. The value sits in joins (Ostomy against Symptoms, Lifestyle against Vitals), which need to be first-class rather than inferred at query time.</p>
+      <span class="verdict">Design the joins deliberately</span>
+    </div>
+  </div>
+
+  <h2>Still outside the seven</h2>
+  <p class="sub">Four things that deliberately aren't categories, and what they are instead.</p>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">01</div>
+    <div class="fbody">
+      <h4>Attachments — any record can carry one</h4>
+      <p>Lab PDFs, imaging, letters, product specs, stoma photos. Records → Documents and Pictures hold the ones filed on their own, but a file can also hang off any record in any category, which is why <b>Document</b> is a shape as well. One "all files" view, and unattached files allowed.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">02</div>
+    <div class="fbody">
+      <h4>Emergency view — derived, not stored</h4>
+      <p>Blood type, active conditions, current medications, allergies, contacts. Every element lives in a category already; what's missing is the assembly. It must be reachable without unlocking the app — any design where finding a blood type takes two taps has failed at the only moment it mattered.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">03</div>
+    <div class="fbody">
+      <h4>Provenance and links — fields on every record</h4>
+      <p>Which device, which lab, entered by hand or synced, edited since — and which other records it belongs with (a reading taken during an encounter, a photo about a skin rating). When two sources disagree you need a rule, and when you show a clinician a number they will ask where it came from.</p>
+    </div>
+  </div>
+
+  <div class="finding" style="--cc:var(--accent)">
+    <div class="fnum">04</div>
+    <div class="fbody">
+      <h4>Free text — attaches anywhere</h4>
+      <p>The note that doesn't fit a field: what the nurse said, why today was different, a question to remember. A note should attach to any record and also stand alone with a date. Every structured system needs its escape hatch, or people stop using the structured parts.</p>
+    </div>
+  </div>
+
+  <div class="close">
+    <h3>Where this leaves things</h3>
+    <p><span id="n-cats"></span> categories, <span id="n-subs"></span> sub-categories, <span id="n-rows"></span> data points, seven storage shapes, and a screen tag on every row. Nothing in the set requires a patient to learn a vocabulary, and nothing in the shape column requires a developer to guess at a table.</p>
+    <p>The thing to protect from here is the <b>Catalogue plus Event</b> pattern. It looks like an implementation detail and it is actually the feature — the difference between an app that records that you changed a pouch and one that can tell you which pouch works better for you.</p>
+    <p>Category and sub-category are <b>facets on the data type</b>, not separate tables, so if an assignment turns out wrong in six months it's a config row rather than a migration.</p>
+  </div>
+</div>
+
+<script>
+const CATS = {
+  "Vitals":"--c1", "Labs":"--c2", "Medical Records":"--c3", "Lifestyle":"--c4",
+  "Symptoms":"--c5", "Treatments & Appliances":"--c6", "Ostomy":"--c7"
+};
+const SHAPES = ["Measurement","Event","Interval","Standing fact","Catalogue","Document","Derived"];
+const SCREENS = ["Tracker","Records","Care"];
+const SHAPE_DESC = {
+  "Measurement":"value · unit · timestamp",
+  "Event":"timestamp · optional duration",
+  "Interval":"start · end · status",
+  "Standing fact":"no timestamp · true until changed",
+  "Catalogue":"a thing with attributes",
+  "Document":"a file with a date",
+  "Derived":"computed from the rest"
+};
+
+const DATA = [["Blood glucose","Vitals","Biochemistry - Metabolic","Measurement",["Tracker"],["Wearable","Manual"],"Fingerstick readings or a continuous sensor stream. One metric, two very different data shapes. (Self Reported)"],["Blood Oxygen","Vitals","Cardiovascular","Measurement",["Tracker"],["Wearable","Manual"],"Percentage saturation, spot-checked or sampled through the night."],["Blood Pressure","Vitals","Cardiovascular","Measurement",["Tracker"],["Wearable","Manual"],"Systolic and diastolic from a cuff, usually logged together with the pulse. Orthostatic pairs matter for some conditions."],["ECG Trace","Vitals","Cardiovascular","Document",["Tracker"],["Wearable"],"A recorded waveform plus the rhythm classification derived from it. Stored as a file, not a number."],["Heart Rate","Vitals","Cardiovascular","Measurement",["Tracker"],["Wearable"],"Beats per minute at rest, in activity or overnight. The most commonly synced measure and the one most apps lead with."],["Respiratory Rate","Vitals","Respiratory","Measurement",["Tracker"],["Wearable","Manual"],"Breaths per minute, generally derived overnight by a wearable rather than measured directly."],["Menstrual Cycle","Vitals","Woman Health","Interval",["Tracker"],["Manual"],"Phase and flow. Not behaviour, but a daily log without a clinical band, so the axis places it here."],["Bicarbonate (CO2 total)","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Total CO2 in blood, mostly bicarbonate. The main buffer for acid-base balance."],["Calcium (total)","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Total blood calcium. Reflects bone, parathyroid and vitamin D status and affects muscles and nerves."],["Chloride (Cl)","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Electrolyte that moves with sodium and helps balance fluids and acid-base status."],["Magnesium","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Serum magnesium level. Supports nerve, muscle and heart rhythm function and can drop with diarrhoea or certain medications."],["Phosphate","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Mineral tied to bone and energy metabolism. Interacts with calcium, vitamin D and kidney function."],["Potassium (K)","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Key electrolyte for heart and muscle rhythm. Both high and low levels need attention."],["Sodium (Na)","Labs","Biochemistry - Electrolytes","Measurement",["Records"],["Manual"],"Main electrolyte controlling water balance. Shifts with hydration, fluid losses and some medications."],["Amylase","Labs","Biochemistry - Enzymes","Measurement",["Records"],["Manual"],"Enzyme from the pancreas and salivary glands. Raised in pancreatitis and some other abdominal conditions."],["Creatine kinase (CK)","Labs","Biochemistry - Enzymes","Measurement",["Records"],["Manual"],"Enzyme released from muscle. Rises with muscle injury, intense exercise or some medications."],["Lactate dehydrogenase (LDH)","Labs","Biochemistry - Enzymes","Measurement",["Records"],["Manual"],"Enzyme found in nearly all tissues. A non-specific marker of cell damage or red cell breakdown."],["Lipase","Labs","Biochemistry - Enzymes","Measurement",["Records"],["Manual"],"Pancreatic enzyme. Raised markedly in acute pancreatitis."],["Alkaline phosphatase (ALP)","Labs","Biochemistry - Liver","Measurement",["Records"],["Manual"],"Enzyme from bile ducts and bone. Raised with bile flow problems and some bone conditions."],["ALT","Labs","Biochemistry - Liver","Measurement",["Records"],["Manual"],"Liver enzyme, the most liver-specific of the transaminases. Rises with liver cell injury."],["AST","Labs","Biochemistry - Liver","Measurement",["Records"],["Manual"],"Enzyme found in liver, heart and muscle. Read alongside ALT to assess liver injury."],["Gamma-GT (GGT)","Labs","Biochemistry - Liver","Measurement",["Records"],["Manual"],"Liver and bile duct enzyme. Helps tell whether a raised ALP comes from the liver."],["Total bilirubin","Labs","Biochemistry - Liver","Measurement",["Records"],["Manual"],"Breakdown product of red cells, processed by the liver. Raised in liver or bile duct problems and with red cell breakdown."],["Glucose (fasting)","Labs","Biochemistry - Metabolic","Measurement",["Records"],["Manual"],"Blood glucose after at least 8 hours without food. Used to screen for and monitor diabetes."],["Hemoglobin A1c (HbA1c)","Labs","Biochemistry - Metabolic","Measurement",["Records"],["Manual"],"Average blood glucose over roughly the past three months. The standard long-term marker of glucose control."],["Albumin","Labs","Biochemistry - Protein","Measurement",["Records"],["Manual"],"Main blood protein made by the liver. Reflects nutrition, liver function and protein loss."],["Total protein","Labs","Biochemistry - Protein","Measurement",["Records"],["Manual"],"Sum of albumin and globulins in blood. A broad indicator of nutrition, liver and immune status."],["Creatinine","Labs","Biochemistry - Renal","Measurement",["Records"],["Manual"],"Muscle waste product cleared by the kidneys. Used to estimate kidney function."],["eGFR","Labs","Biochemistry - Renal","Measurement",["Records"],["Manual"],"Estimated kidney filtration rate, calculated from creatinine, age and sex. The main overall measure of kidney function."],["Urea (BUN)","Labs","Biochemistry - Renal","Measurement",["Records"],["Manual"],"Waste product of protein breakdown, cleared by the kidneys. Reflects kidney function and hydration."],["Uric acid","Labs","Biochemistry - Renal","Measurement",["Records"],["Manual"],"End product of purine metabolism. High levels relate to gout and kidney stones."],["NT-proBNP","Labs","Cardiovascular","Measurement",["Records"],["Manual"],"Hormone fragment released by the heart when its walls are stretched. Used to detect and monitor heart failure."],["Troponin (hs)","Labs","Cardiovascular","Measurement",["Records"],["Manual"],"Heart muscle protein released with cardiac injury. The key blood test for a heart attack."],["aPTT","Labs","Coagulation","Measurement",["Records"],["Manual"],"Clotting time for the intrinsic pathway. Used to monitor heparin and to look for clotting factor problems."],["D-dimer","Labs","Coagulation","Measurement",["Records"],["Manual"],"Fragment released when a clot breaks down. Used mainly to rule out blood clots when the result is normal."],["Fibrinogen","Labs","Coagulation","Measurement",["Records"],["Manual"],"Clotting protein made by the liver. Also rises with inflammation."],["Prothrombin time / INR","Labs","Coagulation","Measurement",["Records"],["Manual"],"Blood clotting time, with INR as its standardised ratio. Used to monitor warfarin and to assess clotting and liver function."],["Cortisol (morning)","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Stress hormone from the adrenal glands, highest in the morning. Used to screen for adrenal under- or overactivity."],["Estradiol","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Main estrogen hormone. Tracked for cycle, fertility and menopause questions, and to monitor hormone therapy."],["Free T3","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Active thyroid hormone circulating unbound. Helps assess an overactive thyroid."],["Free T4","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Unbound thyroxine, the main thyroid hormone in blood. Read with TSH to assess thyroid function."],["Prolactin","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Pituitary hormone behind milk production. Raised in some pituitary conditions, in pregnancy and with certain medications."],["Testosterone (total)","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Main androgen hormone. Tracked for hormonal, fertility and metabolic questions in all sexes."],["TSH","Labs","Endocrinology","Measurement",["Records"],["Manual"],"Pituitary hormone that signals the thyroid. The first-line screen for an under- or overactive thyroid."],["Basophils","Labs","Hematology","Measurement",["Records"],["Manual"],"Rare white cells involved in allergic reactions. Usually reported for completeness in a differential count."],["Eosinophils","Labs","Hematology","Measurement",["Records"],["Manual"],"White cells involved in allergic and parasite responses. Raised in allergic and some inflammatory conditions."],["Erythrocyte Sedimentation Rate (ESR)","Labs","Hematology","Measurement",["Records"],["Manual"],"How fast red cells settle in a tube of blood. A non-specific marker of inflammation."],["Hematocrit (Hct)","Labs","Hematology","Measurement",["Records"],["Manual"],"Share of blood volume made up of red cells. Falls in anemia and rises with dehydration."],["Hemoglobin (Hb)","Labs","Hematology","Measurement",["Records"],["Manual"],"Oxygen-carrying protein in red blood cells. The main number used to define anemia."],["Lymphocytes","Labs","Hematology","Measurement",["Records"],["Manual"],"White cells that drive adaptive immunity (T, B and NK cells). Shift with viral infection and immune conditions."],["Mean Corpuscular Hemoglobin (MCH)","Labs","Hematology","Measurement",["Records"],["Manual"],"Average amount of hemoglobin in each red blood cell. Helps classify the type of anemia."],["Mean Corpuscular Hemoglobin Concentration (MCHC)","Labs","Hematology","Measurement",["Records"],["Manual"],"Concentration of hemoglobin inside red blood cells. Low values suggest pale (hypochromic) cells, as in iron deficiency."],["Mean Corpuscular Volume (MCV)","Labs","Hematology","Measurement",["Records"],["Manual"],"Average size of red blood cells. Separates small-cell from large-cell anemias."],["Monocytes","Labs","Hematology","Measurement",["Records"],["Manual"],"White cells that engulf pathogens and debris, then become tissue macrophages. Rise in chronic inflammation and during recovery from infection."],["Neutrophils","Labs","Hematology","Measurement",["Records"],["Manual"],"The most common white cell and first responder to bacterial infection. Raised in infection and stress, low in neutropenia."],["Platelets (PLT)","Labs","Hematology","Measurement",["Records"],["Manual"],"Cell fragments that form clots. Low counts raise bleeding risk; high counts can occur with inflammation or iron deficiency."],["Red Blood Cell count (RBC)","Labs","Hematology","Measurement",["Records"],["Manual"],"Number of red blood cells per volume of blood. They carry oxygen, so low counts point to anemia."],["Red Cell Distribution Width (RDW)","Labs","Hematology","Measurement",["Records"],["Manual"],"Variation in red blood cell size. Raised values suggest mixed cell populations, as seen in iron or B12 deficiency."],["Reticulocytes","Labs","Hematology","Measurement",["Records"],["Manual"],"Young red blood cells just released from the marrow. Show whether the marrow is keeping up, e.g. after bleeding or during anemia treatment."],["White Blood Cell count (WBC)","Labs","Hematology","Measurement",["Records"],["Manual"],"Total white blood cell count. Rises with infection or inflammation and falls with some medications or marrow problems."],["C-reactive protein (CRP)","Labs","Inflammation","Measurement",["Records"],["Manual"],"Protein made by the liver in response to inflammation. Rises and falls quickly, so useful for tracking infection or flares."],["High-sensitivity CRP (hs-CRP)","Labs","Inflammation","Measurement",["Records"],["Manual"],"CRP measured with a more sensitive method, to read the low levels that reflect cardiovascular risk rather than acute infection."],["Ferritin","Labs","Iron studies","Measurement",["Records"],["Manual"],"Main iron storage protein. The most sensitive blood marker of iron stores, though it also rises with inflammation."],["Serum iron","Labs","Iron studies","Measurement",["Records"],["Manual"],"Iron circulating in blood at the moment of the test. Fluctuates through the day, so read with ferritin and transferrin saturation."],["Transferrin saturation","Labs","Iron studies","Measurement",["Records"],["Manual"],"Share of the iron-carrying protein that is loaded with iron. Shows how much iron is available to the body."],["HDL cholesterol","Labs","Lipid profile","Measurement",["Records"],["Manual"],"Cholesterol carried by HDL particles. Higher levels are generally linked to lower cardiovascular risk."],["LDL cholesterol","Labs","Lipid profile","Measurement",["Records"],["Manual"],"Cholesterol carried by LDL particles. A main modifiable driver of cardiovascular risk."],["Non-HDL cholesterol","Labs","Lipid profile","Measurement",["Records"],["Manual"],"Total cholesterol minus HDL: all cholesterol carried by atherogenic particles. Does not require fasting."],["Total cholesterol","Labs","Lipid profile","Measurement",["Records"],["Manual"],"Sum of all cholesterol in blood. A starting point before looking at LDL, HDL and triglycerides."],["Triglycerides","Labs","Lipid profile","Measurement",["Records"],["Manual"],"Fats circulating in blood. Rise after meals, with alcohol and with insulin resistance."],["Albumin/creatinine ratio (ACR)","Labs","Urinalysis","Measurement",["Records"],["Manual"],"Urine albumin relative to creatinine. An early marker of kidney damage, often tracked alongside diabetes and blood pressure."],["Urinalysis - Glucose","Labs","Urinalysis","Measurement",["Records"],["Manual"],"Glucose in urine on dipstick. Appears when blood glucose is high enough to spill into urine."],["Urinalysis - Leukocyte esterase / nitrites","Labs","Urinalysis","Measurement",["Records"],["Manual"],"Dipstick markers for white cells and bacteria in urine. Used to screen for urinary tract infection."],["Urinalysis - pH","Labs","Urinalysis","Measurement",["Records"],["Manual"],"Acidity of urine on dipstick. Varies with diet and relates to stone and infection risk."],["Urinalysis - Protein","Labs","Urinalysis","Measurement",["Records"],["Manual"],"Protein in urine on dipstick. Persistent protein can signal kidney damage."],["25-OH Vitamin D","Labs","Vitamins","Measurement",["Records"],["Manual"],"Stored form of vitamin D. The standard measure of vitamin D status."],["Folate (serum)","Labs","Vitamins","Measurement",["Records"],["Manual"],"B vitamin needed for DNA and red cell formation. Low levels cause macrocytic anemia."],["Vitamin B12","Labs","Vitamins","Measurement",["Records"],["Manual"],"Vitamin needed for red cells and nerves. Low levels can cause anemia and nerve problems and can follow poor absorption."],["Note (Encounter)","Medical Records","Appointment","Event",["Records"],["Manual"],"What happened at a past appointment, what was said and what changed as a result."],["Clinical Records","Medical Records","Documents","Document",["Records"],["Manual"],"Lab reports, letters, discharge summaries. Attaches to the record it belongs to rather than floating free."],["Insurance files (Policy, Claims)","Medical Records","Documents","Document",["Records"],["Manual"],"Policy, claims, what is reimbursable and what you have already paid."],["Prescription","Medical Records","Documents","Document",["Records"],["Manual"],"Written order for medication or treatment, including the dose, frequency, and duration."],["Allergy","Medical Records","Medical History","Interval",["Records"],["Manual"],"Substance, the reaction it causes and how severe. Must be reachable instantly, including from the emergency view."],["Diagnosis","Medical Records","Medical History","Interval",["Records"],["Manual"],"What you have been diagnosed with, its onset date, and whether it is active or resolved. One of the two things a clinician asks for first."],["Hospitalization","Medical Records","Medical History","Interval",["Records"],["Manual"],"Admission and discharge dates with the reason. Rarely read, must never be lost."],["Immunisation","Medical Records","Medical History","Event",["Records"],["Manual"],"Vaccine, date, product and lot, plus when the next dose is due."],["Surgery","Medical Records","Medical History","Event",["Records"],["Manual"],"Date, facility, surgeon, and anything implanted or created - including the stoma formation itself."],["Pictures","Medical Records","Pictures","Document",["Records"],["Manual"],"Includes Imaging picture, self reported symptom evolution, etc"],["Active energy","Lifestyle","Activity","Derived",["Tracker"],["Wearable"],"Calories burned beyond resting metabolism. Computed from movement and heart rate rather than measured."],["Steps","Lifestyle","Activity","Measurement",["Tracker"],["Wearable"],"Daily count. The default ambient activity measure that every device supplies."],["Workout","Lifestyle","Activity","Event",["Tracker"],["Manual","Wearable"],"Type, duration, intensity and route. Sets, reps and load where it is strength work."],["Mood","Lifestyle","Mind and mood","Measurement",["Tracker"],["Manual"],"A daily self-rating as part of a check-in rather than a clinical assessment. A clinical mood problem is recorded as a Symptom instead."],["Stress","Lifestyle","Mind and mood","Measurement",["Tracker"],["Manual","Wearable"],"Self-rated, or inferred by a wearable from heart rate variability."],["Sleep duration","Lifestyle","Sleep","Measurement",["Tracker"],["Wearable"],"Hours slept and the schedule you kept. Behaviour you control, judged against your own target rather than a clinical band."],["Sleep quality rating","Lifestyle","Sleep","Measurement",["Tracker"],["Manual"],"Your own verdict on the night, which frequently explains what the numbers cannot."],["Sleep stages","Lifestyle","Sleep","Measurement",["Tracker"],["Wearable"],"Deep, light, REM and awake time as estimated by a wearable."],["Heart Palpitations","Symptoms","Cardiovascular","Event",["Tracker"],["Manual"],"Awareness of the heartbeat - racing, skipping or pounding. Worth logging separately from any ECG it prompts."],["Nausea","Symptoms","Digestive","Measurement",["Tracker"],["Manual"],"Severity and its relation to meals or medication timing."],["Symptom entry","Symptoms","General","Measurement",["Tracker"],["Manual"],"What you felt and how severe, with a timestamp. The generic record the whole category is built on."],["Symptom photo","Symptoms","General","Document",["Tracker"],["Manual"],"A picture of the same site over time, which communicates change better than any written score."],["Brain fog","Symptoms","Neurological","Measurement",["Tracker"],["Manual"],"Self-rated clarity and concentration."],["Headache / migraine","Symptoms","Pain","Event",["Tracker"],["Manual"],"An episode with onset, duration and intensity, frequently worth its own focused view."],["Pain","Symptoms","Pain","Measurement",["Tracker"],["Manual"],"Location, intensity and quality, usually entered on a body map rather than typed."],["Fatigue","Symptoms","Systemic","Measurement",["Tracker"],["Manual"],"Often the most actionable subjective measure in chronic illness, and the hardest to capture consistently."],["Fever & chills","Symptoms","Systemic","Measurement",["Tracker"],["Manual"],"Self-reported feeling, distinct from the thermometer reading that belongs in Vitals."],["Appointment","Treatments & Appliances","Appointment","Event",["Care"],["Manual"],"A scheduled visit with prep instructions and the questions you want to ask. The one item here that points forward rather than back."],["Ostomy Accessories used","Ostomy","Ostomy • Daily Routines","Event",["Care"],["Manual"],"Barrier ring, paste, powder, adhesive remover - what went on alongside the appliance."],["Ostomy Output Consistency","Ostomy","Ostomy • Daily Routines","Measurement",["Tracker"],["Manual"],"A Bristol-style ordinal scale for stoma or bowel output, logged alongside volume."],["Ostomy Output Volume","Ostomy","Ostomy • Daily Routines","Measurement",["Tracker"],["Manual"],"Millilitres over a period. Sits in Vitals rather than Lifestyle because sustained high output is a clinical dehydration risk."],["Ostomy Pouch Emptying","Ostomy","Ostomy • Daily Routines","Event",["Tracker"],["Manual"],"Frequency and timing across the day."],["Peristomal Skin Rating","Ostomy","Ostomy • Daily Routines","Measurement",["Tracker","Care"],["Manual"],"Skin quality rating around the stoma. Irritation, burning or soreness around the stoma, as you experience it rather than as it is scored."],["Ostomy Appliance Change (+ reason)","Ostomy","Ostomy • Replacement","Event",["Care"],["Manual"],"When the pouch was changed, which product was used, and whether it was scheduled or forced by a leak."],["Ostomy Wear Time","Ostomy","Ostomy • Replacement","Derived",["Care"],["Computed"],"How long an appliance stayed on. Derived from consecutive appliance changes, and the headline outcome for comparing products."]];
+const rows = DATA.map(r => ({ name:r[0], cat:r[1], sub:r[2], shape:r[3], screens:r[4], sources:r[5], desc:r[6] }));
+const subsOf = c => [...new Set(rows.filter(r => r.cat === c).map(r => r.sub))];
+
+/* sub-category chips in each category section */
+document.querySelectorAll(".items[data-cat]").forEach(host => {
+  subsOf(host.dataset.cat).forEach(s => {
+    const span = document.createElement("span");
+    span.className = "item"; span.textContent = s;
+    host.appendChild(span);
+  });
+});
+
+/* counts in the closing note */
+document.getElementById("n-cats").textContent = Object.keys(CATS).length;
+document.getElementById("n-subs").textContent = Object.keys(CATS).reduce((n, c) => n + subsOf(c).length, 0);
+document.getElementById("n-rows").textContent = rows.length;
+
+/* sub-category structure */
+(function(){
+  document.getElementById("structure").innerHTML = Object.keys(CATS).map(c => {
+    const subs = {};
+    rows.filter(r => r.cat === c).forEach(r => subs[r.sub] = (subs[r.sub] || 0) + 1);
+    return '<div class="sgroup" style="--cc:var(' + CATS[c] + ')"><h4>' + c.replace("&", "&amp;") + '</h4><ul>' +
+      Object.entries(subs).sort((a,b) => b[1] - a[1])
+        .map(s => '<li>' + s[0] + '<span>' + s[1] + '</span></li>').join("") +
+      '</ul></div>';
+  }).join("");
+})();
+
+/* shape x category matrix, generated from the rows */
+(function(){
+  const cats = Object.keys(CATS);
+  const short = c => c === "Treatments & Appliances" ? "Treatments" : c.replace("Medical ", "");
+  const head = '<thead><tr><th>Shape</th>' +
+    cats.map(c => '<th>' + short(c) + '</th>').join("") + '<th>Total</th></tr></thead>';
+  const body = '<tbody>' + SHAPES.map(s => {
+    const cells = cats.map(c => {
+      const n = rows.filter(r => r.shape === s && r.cat === c).length;
+      return n ? '<td class="m">' + n + '</td>' : '<td class="m no">·</td>';
+    }).join("");
+    const total = rows.filter(r => r.shape === s).length;
+    return '<tr><th>' + s + '<small>' + SHAPE_DESC[s] + '</small></th>' + cells +
+      '<td class="m">' + total + '</td></tr>';
+  }).join("") + '</tbody>';
+  document.getElementById("shapematrix").innerHTML = '<table>' + head + body + '</table>';
+})();
+
+/* map table */
+const state = { q:"", cat:new Set(), shape:new Set(), screen:new Set() };
+function chip(host, label, field, colorVar){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "fchip"; b.textContent = label;
+  if (colorVar) b.style.setProperty("--cc", "var(" + colorVar + ")");
+  b.setAttribute("aria-pressed","false");
+  b.addEventListener("click", () => {
+    const s = state[field];
+    if (s.has(label)) { s.delete(label); b.setAttribute("aria-pressed","false"); }
+    else { s.add(label); b.setAttribute("aria-pressed","true"); }
+    render();
+  });
+  host.appendChild(b);
+}
+Object.keys(CATS).forEach(c => chip(document.getElementById("filters"), c, "cat", CATS[c]));
+SHAPES.forEach(s => chip(document.getElementById("shapefilters"), s, "shape", null));
+SCREENS.forEach(s => chip(document.getElementById("screenfilters"), s, "screen", null));
+
+function render(){
+  const q = state.q.trim().toLowerCase();
+  const out = rows.filter(r =>
+    (!state.cat.size || state.cat.has(r.cat)) &&
+    (!state.shape.size || state.shape.has(r.shape)) &&
+    (!state.screen.size || r.screens.some(s => state.screen.has(s))) &&
+    (!q || (r.name + " " + r.cat + " " + r.sub + " " + r.shape + " " + r.screens.join(" ") + " " + r.desc).toLowerCase().includes(q))
+  );
+  const tb = document.getElementById("rows");
+  tb.innerHTML = out.map(() =>
+    '<tr><td class="dname"></td><td><span class="pill"></span></td>' +
+    '<td class="dsub"></td><td class="dshape"><span class="shp"></span></td>' +
+    '<td class="dtags"></td><td class="dtags"></td><td class="ddesc"></td></tr>'
+  ).join("");
+  [...tb.children].forEach((tr, i) => {
+    const r = out[i];
+    tr.children[0].textContent = r.name;
+    const pill = tr.children[1].firstChild;
+    pill.textContent = r.cat;
+    pill.style.setProperty("--cc", "var(" + CATS[r.cat] + ")");
+    tr.children[2].textContent = r.sub;
+    tr.children[3].firstChild.textContent = r.shape;
+    tr.children[4].textContent = r.screens.join(", ");
+    tr.children[5].textContent = r.sources.join(", ");
+    tr.children[6].textContent = r.desc;
+  });
+  document.getElementById("count").textContent = out.length + " of " + rows.length;
+}
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; render(); });
+render();
+</script>

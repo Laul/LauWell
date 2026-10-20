@@ -1,0 +1,72 @@
+test_name,category,unit,normal_range,description
+Hemoglobin (Hb),Hematology,g/L,F: 120-160 / M: 135-175,Oxygen-carrying protein in red cells; low values indicate anemia.
+Hematocrit (Hct),Hematology,L/L,F: 0.36-0.46 / M: 0.41-0.53,Fraction of blood volume occupied by red blood cells.
+Red Blood Cell count (RBC),Hematology,x10^12/L,F: 4.0-5.2 / M: 4.5-5.9,Number of red cells per litre of blood.
+Mean Corpuscular Volume (MCV),Hematology,fL,80-100,Average red cell size; helps classify anemia (micro/normo/macrocytic).
+Mean Corpuscular Hemoglobin (MCH),Hematology,pg,27-33,Average hemoglobin amount per red cell.
+Mean Corpuscular Hemoglobin Concentration (MCHC),Hematology,g/L,320-360,Average hemoglobin concentration within red cells.
+Red Cell Distribution Width (RDW),Hematology,%,11.5-14.5,Variation in red cell size; raised in mixed or nutritional anemias.
+White Blood Cell count (WBC),Hematology,x10^9/L,4.0-11.0,Total white cells; raised in infection/inflammation and lowered in some viral or marrow conditions.
+Neutrophils,Hematology,x10^9/L,2.0-7.5,Main white cells fighting bacterial infection.
+Lymphocytes,Hematology,x10^9/L,1.0-4.0,White cells involved in immune response; often raised in viral infection.
+Monocytes,Hematology,x10^9/L,0.2-0.8,White cells that clear debris and pathogens.
+Eosinophils,Hematology,x10^9/L,0.0-0.5,White cells linked to allergy and parasitic infection.
+Basophils,Hematology,x10^9/L,0.0-0.1,Rare white cells involved in allergic reactions.
+Platelets (PLT),Hematology,x10^9/L,150-400,Cell fragments essential for clotting.
+Reticulocytes,Hematology,%,0.5-2.5,Immature red cells; reflects bone marrow output.
+Erythrocyte Sedimentation Rate (ESR),Hematology,mm/h,F: 0-20 / M: 0-15 (rises with age),Non-specific marker of inflammation.
+Prothrombin time / INR,Coagulation,ratio,0.9-1.2 (therapeutic on warfarin: 2.0-3.0),Clotting time of the extrinsic pathway; monitors warfarin and liver function.
+aPTT,Coagulation,seconds,25-35,Clotting time of the intrinsic pathway; monitors heparin.
+Fibrinogen,Coagulation,g/L,2.0-4.0,Clotting protein; also an acute-phase reactant.
+D-dimer,Coagulation,ug/L FEU,<500,Fibrin breakdown product; used to rule out thrombosis or embolism.
+Sodium (Na),Biochemistry - Electrolytes,mmol/L,135-145,Main extracellular cation; reflects water balance.
+Potassium (K),Biochemistry - Electrolytes,mmol/L,3.5-5.0,Critical for heart and muscle function.
+Chloride (Cl),Biochemistry - Electrolytes,mmol/L,98-107,Extracellular anion; tracks with sodium and acid-base status.
+Bicarbonate (CO2 total),Biochemistry - Electrolytes,mmol/L,22-29,Acid-base buffer.
+Calcium (total),Biochemistry - Electrolytes,mmol/L,2.15-2.60,Bone and nerve/muscle function; interpret with albumin.
+Magnesium,Biochemistry - Electrolytes,mmol/L,0.70-1.05,Cofactor for many enzymes; affects heart rhythm and muscle function.
+Phosphate,Biochemistry - Electrolytes,mmol/L,0.80-1.45,Bone mineral and energy metabolism; linked to kidney function.
+Glucose (fasting),Biochemistry - Metabolic,mmol/L,3.9-5.5 (diabetes >=7.0),Blood sugar after 8 h fasting; screens for diabetes.
+Hemoglobin A1c (HbA1c),Biochemistry - Metabolic,%,4.0-5.6 (diabetes >=6.5),Average blood glucose over about 3 months.
+Urea (BUN),Biochemistry - Renal,mmol/L,2.5-7.8,Protein breakdown waste product; raised in kidney impairment or dehydration.
+Creatinine,Biochemistry - Renal,umol/L,F: 45-90 / M: 60-110,Muscle metabolism waste product; used to estimate kidney function.
+eGFR,Biochemistry - Renal,mL/min/1.73 m2,>=90 (CKD if <60),Estimated glomerular filtration rate calculated from creatinine.
+Uric acid,Biochemistry - Renal,umol/L,F: 150-350 / M: 210-420,End product of purine metabolism; raised in gout.
+Albumin,Biochemistry - Protein,g/L,35-50,Main blood protein; reflects nutrition and liver/kidney health.
+Total protein,Biochemistry - Protein,g/L,60-80,Sum of albumin and globulins.
+ALT,Biochemistry - Liver,U/L,F: 7-35 / M: 10-50,Liver enzyme; raised in hepatocellular injury.
+AST,Biochemistry - Liver,U/L,10-40,Enzyme in liver and muscle; raised in liver or muscle damage.
+Alkaline phosphatase (ALP),Biochemistry - Liver,U/L,40-130,Enzyme from liver and bone; raised in biliary obstruction or bone disease.
+Gamma-GT (GGT),Biochemistry - Liver,U/L,F: 5-35 / M: 8-60,Sensitive liver/bile duct enzyme; raised with alcohol use.
+Total bilirubin,Biochemistry - Liver,umol/L,3-21,Hemoglobin breakdown product; raised in jaundice.
+Lactate dehydrogenase (LDH),Biochemistry - Enzymes,U/L,120-250,Non-specific tissue damage marker.
+Creatine kinase (CK),Biochemistry - Enzymes,U/L,F: 30-170 / M: 40-250,Muscle enzyme; raised in muscle injury.
+Amylase,Biochemistry - Enzymes,U/L,25-125,Pancreatic and salivary enzyme; raised in pancreatitis.
+Lipase,Biochemistry - Enzymes,U/L,10-140,More specific pancreatic enzyme for pancreatitis.
+Total cholesterol,Lipid profile,mmol/L,<5.2,Overall cholesterol level; cardiovascular risk marker.
+LDL cholesterol,Lipid profile,mmol/L,<3.5 (lower targets for high risk),"""Bad"" cholesterol; main target in cardiovascular prevention."
+HDL cholesterol,Lipid profile,mmol/L,F: >1.3 / M: >1.0,"""Good"" cholesterol; protective against atherosclerosis."
+Triglycerides,Lipid profile,mmol/L,<1.7 (fasting),Blood fats; raised with diet and metabolic syndrome.
+Non-HDL cholesterol,Lipid profile,mmol/L,<4.3,Total minus HDL cholesterol; captures all atherogenic particles.
+Ferritin,Iron studies,ug/L,F: 15-200 / M: 30-400,Iron storage protein; best marker of iron deficiency (also an acute-phase reactant).
+Serum iron,Iron studies,umol/L,F: 9-30 / M: 11-32,Circulating iron; fluctuates through the day.
+Transferrin saturation,Iron studies,%,20-50,Percentage of iron-binding capacity in use.
+Vitamin B12,Vitamins,pmol/L,150-700,Needed for red cell formation and nerves; low in deficiency or malabsorption.
+Folate (serum),Vitamins,nmol/L,>10,Vitamin needed for DNA synthesis; low in poor diet or malabsorption.
+25-OH Vitamin D,Vitamins,nmol/L,50-125 (deficient <30),Main marker of vitamin D status.
+TSH,Endocrinology,mIU/L,0.4-4.0,First-line thyroid screening; raised in hypothyroidism and lowered in hyperthyroidism.
+Free T4,Endocrinology,pmol/L,9-19,Active thyroid hormone; confirms thyroid dysfunction.
+Free T3,Endocrinology,pmol/L,3.5-6.5,Active thyroid hormone; useful in suspected hyperthyroidism.
+Cortisol (morning),Endocrinology,nmol/L,170-540,Stress hormone; assesses adrenal function.
+Estradiol,Endocrinology,pmol/L,Varies with cycle phase (F follicular 100-600 / M <160),Main estrogen; fertility and menopause evaluation.
+Testosterone (total),Endocrinology,nmol/L,F: 0.3-2.4 / M: 10-35,Main androgen; hypogonadism and PCOS evaluation.
+Prolactin,Endocrinology,ug/L,F: 3-25 / M: 3-15,Pituitary hormone; raised with pituitary adenoma or some medications.
+C-reactive protein (CRP),Inflammation,mg/L,<5,Acute-phase protein; rises quickly in infection and inflammation.
+High-sensitivity CRP (hs-CRP),Inflammation,mg/L,<2.0 (cardiovascular risk: <1 low),Sensitive CRP assay used for cardiovascular risk stratification.
+Troponin (hs),Cardiac,ng/L,<14 (assay-specific),Cardiac muscle protein; key marker of myocardial infarction.
+NT-proBNP,Cardiac,ng/L,<125 (age-dependent),Heart failure marker.
+Urinalysis - pH,Urinalysis,pH units,4.5-8.0,Urine acidity.
+Urinalysis - Protein,Urinalysis,mg/L (dipstick),Negative,Protein in urine; may indicate kidney damage.
+Urinalysis - Glucose,Urinalysis,mmol/L (dipstick),Negative,Glucose in urine; suggests hyperglycemia or renal glycosuria.
+Urinalysis - Leukocyte esterase / nitrites,Urinalysis,qualitative,Negative,Dipstick markers of urinary tract infection.
+Albumin/creatinine ratio (ACR),Urinalysis,mg/mmol,<2.0 (F <2.8),Early marker of kidney damage in diabetes and hypertension.
