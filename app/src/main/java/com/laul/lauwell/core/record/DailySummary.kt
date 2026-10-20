@@ -40,10 +40,13 @@ sealed interface DayValue {
         override val aggregation get() = Aggregation.Sum
     }
 
-    /** Mean of the day's records. */
-    data class Mean(val value: Double, val count: Int) : DayValue {
+    /**
+     * Mean of the day's records. [count] is null when the source doesn't say: Health Connect's
+     * aggregation gives none for blood pressure or resting heart rate.
+     */
+    data class Mean(val value: Double, val count: Int? = null) : DayValue {
         init {
-            require(count > 0) { "a mean needs at least one record" }
+            require(count == null || count > 0) { "a mean needs at least one record" }
         }
 
         override val aggregation get() = Aggregation.Average

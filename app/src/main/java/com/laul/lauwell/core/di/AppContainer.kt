@@ -13,6 +13,8 @@ import com.laul.lauwell.core.auth.AuthRepository
 import com.laul.lauwell.core.auth.FirebaseAuthRepository
 import com.laul.lauwell.core.catalog.EverythingOnToggleRepository
 import com.laul.lauwell.core.catalog.ToggleRepository
+import com.laul.lauwell.core.healthconnect.HealthConnectDataSource
+import com.laul.lauwell.core.healthconnect.HealthDataSource
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
 import com.laul.lauwell.core.settings.DisplayPreferences
@@ -55,4 +57,6 @@ class AppContainer(context: Context) {
     val displayPreferences: DisplayPreferences by lazy { DataStoreDisplayPreferences(settingsDataStore) }
 
     val pinnedMetrics: PinnedMetrics by lazy { DataStorePinnedMetrics(settingsDataStore) }
+
+    val healthDataSource: HealthDataSource by lazy { HealthConnectDataSource(appContext) }
 }

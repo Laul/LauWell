@@ -560,7 +560,17 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 ### M3 — Health Connect, starting with heart rate
 Builds the reusable reading and display pieces with heart rate (read-only; started with steps
 until 2026-10-18, see Decisions → *Read first*).
-- [ ] Health Connect data source behind a `HealthDataSource` interface (paginated with `pageToken`)
+- [x] Health Connect data source behind a `HealthDataSource` interface (2026-10-19): availability,
+      granted permissions, `readMeasurements` (every page read; a heart-rate series = one
+      `Measurement` per sample, id `<series id>#<index>`) and `dailySummaries` from
+      `aggregateGroupByPeriod` by local day (app priority applied, empty days left out). The mapping
+      is pure functions in `HealthConnectMapping.kt`, unit-tested; `HealthConnectDataSource` only
+      makes the calls. Not yet run against a real Health Connect
+  - [ ] History beyond 30 days: Health Connect only returns data from 30 days before the first
+        grant unless `READ_HEALTH_DATA_HISTORY` is granted too; declare and request it with the
+        grant screen (`HealthConnectPermissionsTest` then allows it beside the registry's)
+  - [ ] Reading counts: the aggregation gives no count for blood pressure or resting heart rate
+        (`DayValue.Mean.count` is null), so "3 readings" on the Tracker row needs the day's records
 - [ ] Room database as the local store for Health Connect data; incremental sync
 - [ ] Daily aggregation + stats, unit-tested (TrackAid's min/avg and off-by-one bugs)
 - [ ] Chart validation test (~1 day): build the hardest chart first — heart-rate weekly range bar
