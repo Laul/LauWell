@@ -1,6 +1,8 @@
 package com.laul.lauwell.core.catalog
 
 import androidx.annotation.DrawableRes
+import androidx.health.connect.client.records.Record
+import kotlin.reflect.KClass
 
 /**
  * Stable identifier of a metric. Ends up in Firestore paths, Room rows and stored settings, so it
@@ -42,6 +44,11 @@ data class MetricDefinition(
     val miniChart: MiniChartKind? = null,
     /** Default personal goal (Lifestyle). Clinical ranges live on each [Quantity] instead. */
     val goal: Goal? = null,
+    /**
+     * The Health Connect record types it is read from. Their read permissions are what the metric
+     * asks for, and only while it is visible (`core.healthconnect.readPermissions`).
+     */
+    val healthConnectTypes: Set<KClass<out Record>> = emptySet(),
 ) {
     val category: Category get() = subCategory.category
 
@@ -55,10 +62,19 @@ data class MetricDefinition(
         require(chartKind == null || aggregation != null) { "$id: a chart needs an aggregation" }
         require(sources.isNotEmpty()) { "$id: a metric needs at least one source" }
         require(screens.isNotEmpty()) { "$id: a metric needs at least one screen" }
+        require(healthConnectTypes.isEmpty() || DataSource.Wearable in sources) {
+            "$id: only a wearable metric is read from Health Connect"
+        }
     }
 
     /** Can be logged by hand: offered in Quick log and on its detail screen. */
     val isManual: Boolean get() = DataSource.Manual in sources
+
+    /**
+     * Has a latest value to show on a pinned tile (value and unit; goal progress when it has a
+     * [goal]). A file or a fact without a number can't be pinned.
+     */
+    val canPin: Boolean get() = quantities.isNotEmpty() && aggregation != null
 }
 
 /** Where a metric's records come from. */

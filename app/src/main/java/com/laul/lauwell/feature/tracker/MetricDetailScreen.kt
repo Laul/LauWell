@@ -16,7 +16,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
  * One metric's detail, shared by every metric (`metric/{id}`). For now: where it is filed and an
- * empty value; the chart, stats and history come with M3 (Steps detail as designed).
+ * empty value; the chart, stats and history come with M3 (heart rate first, then the Steps detail as designed).
  */
 @Composable
 fun MetricDetailScreen(metricId: String, onBack: () -> Unit) {

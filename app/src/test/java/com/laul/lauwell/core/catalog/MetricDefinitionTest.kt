@@ -1,5 +1,7 @@
 package com.laul.lauwell.core.catalog
 
+import androidx.health.connect.client.records.HeartRateRecord
+import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -57,6 +59,21 @@ class MetricDefinitionTest {
     fun `manual when it can be logged by hand`() {
         assertEquals(false, metric(SubCategory.SymptomsPain, StorageShape.Event, sources = setOf(DataSource.Wearable)).isManual)
         assertEquals(true, metric(SubCategory.SymptomsPain, StorageShape.Event, sources = setOf(DataSource.Wearable, DataSource.Manual)).isManual)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `only a wearable metric is read from Health Connect`() {
+        MetricDefinition(
+            MetricId("x"), "X", SubCategory.SymptomsPain, StorageShape.Event,
+            icon = 0, sources = setOf(DataSource.Manual), screens = setOf(NavScreen.Tracker),
+            healthConnectTypes = setOf(HeartRateRecord::class),
+        )
+    }
+
+    @Test
+    fun `a metric can be pinned when it has a number to summarise`() {
+        assertEquals(true, CardiovascularMetrics.HeartRate.canPin)
+        assertEquals(false, CardiovascularMetrics.EcgTrace.canPin)
     }
 
     @Test

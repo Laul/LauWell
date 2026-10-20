@@ -9,7 +9,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   shared `core.*` packages. Data is shown or hidden at runtime, not at build time.
   → Notion: *Modular Architecture*; `docs/architecture/feature-modules-and-toggles.md`.
 - **Toggles:** no separate "feature" concept. The data hierarchy itself is the toggle unit:
-  category → sub-category → metric (counts were 5 / 35 / 81; being revised, see *Simplified data model*), and any level can be switched off. The app stores
+  category → sub-category → metric (7 / 35 / 113 since 2026-10-17, see *Simplified data model*; 5 / 35 / 81 before it), and any level can be switched off. The app stores
   the **switched-off** set (empty = everything visible, new metrics appear on their own), and one
   `isVisible` function is the only place that reads it. Hiding never deletes data. Permissions and
   syncs are declared per metric and run only for visible ones. MVP: everything on, no selection
@@ -28,6 +28,26 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     summaries go to Firestore.
   - User-logged data (manual vitals, medication, ostomy, glucose) goes to **Firestore**, relying on its
     built-in offline cache. No Room for this data unless a need shows up.
+- **Read first** (decided 2026-10-18). The current goal is reading Health Connect data and showing
+  it properly; manual entry is not a goal for now. M3 starts with **heart rate**, not steps, and M4
+  (manual entries) waits, together with the logging groundwork that only manual entries need.
+  - **Why heart rate first:** one record type, no goal, no manual path to reconcile, and its weekly
+    range bar is the hardest chart, so M3's chart validation test runs on real data from day one.
+  - **Steps and duplicates:** the same walk reaches Health Connect two or three times, since Garmin
+    (watch), Samsung Health and Google Health all write steps to it. Summing the raw `StepsRecord`s
+    over-counts. Health Connect's aggregate calls (`aggregate`, `aggregateGroupByPeriod`)
+    deduplicate using the user's app priority (Health Connect → Data and access → Steps → Data
+    sources and priority); `readRecords` does not. Rule: **daily totals of cumulative data (steps,
+    distance, energy) come from Health Connect's aggregation, never from adding records up**; raw
+    records are read only to show which app or device a value came from. Check on device which
+    source wins once all three apps are writing.
+  - **Heart rate also arrives from several apps.** Min and max are not changed by a duplicate; the
+    average leans towards whichever app samples more often. Keep each sample's data origin, take the
+    daily min / average / max from Health Connect's aggregates, and check on device whether those
+    apply the app priority too.
+  - **Two sources for one metric** (the open rule of the provenance task), for now: between apps,
+    Health Connect's priority list decides and we keep each record's data origin; manual vs device
+    is decided with M4.
 - **Charts:** Vico 3.x (`compose` module, no Material), behind our own `ChartSpec` layer; only one
   mapper file imports Vico. Koala Plot is the fallback; MPAndroidChart v4 to revisit once mature.
   → Notion: *Charting library*.
@@ -141,7 +161,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   Seven shapes carry everything: `Measurement` (value·unit·instant), `Event` (instant + optional
   duration), `Interval` (start·end·status), `StandingFact` (no instant — blood type, family history),
   `CatalogueItem` (a thing with attributes), `Document` (a file with a date), `Derived` (computed —
-  e.g. wear time from consecutive appliance changes). The map of 81 data points to shapes lives in the
+  e.g. wear time from consecutive appliance changes). The map of 113 data points to shapes lives in the
   same doc, and its shape×category matrix is generated from the rows so the two cannot drift.
 - **Terminology codes** (decided 2026-10-09; options and verdicts in the Notion *Data Model* page §2):
   standards give a metric its identity, not navigation. Each metric definition can carry codes (FHIR
@@ -391,10 +411,11 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       (`allowBackup="false"` + `data_extraction_rules.xml`), since it holds the Firebase session
 
 ### M2 — Feature framework
-- [x] Catalogue of the hierarchy (`core.catalog`, 2026-10-08): `Category` (5), `SubCategory` (35, keyed
+- [x] Catalogue of the hierarchy (`core.catalog`, 2026-10-08): `Category` (5, now 7), `SubCategory` (35, keyed
       by category + name), `StorageShape` (7), `MetricDefinition` (quantities with unit, precision and
       normal range; aggregation; chart kind; goal — no terminology codes yet) and a `MetricRegistry`, starting with
-      the 4 Vitals → Cardiovascular metrics. `CatalogMatchesDocsTest` checks the code against the CSVs
+      the 4 Vitals → Cardiovascular metrics (3 since heart rate variability was cut by the simplified
+      model: heart rate, blood pressure, ECG trace). `CatalogMatchesDocsTest` checks the code against the CSVs
       in `docs/data-structure/health-data-model/` (categories, sub-categories, each metric's filing and shape)
 - [x] Visibility: `ToggleKey` (category / sub-category / metric, with stable storage keys), `isVisible`,
       `MetricRegistry.visible`, unit-tested; `ToggleRepository` in `AppContainer`, first implementation
@@ -495,43 +516,49 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
         glucose"; the app keeps sentence case)
   - [x] Descriptions for NT-proBNP, Reticulocytes and hs-CRP written in Notion and copied (2026-10-17).
         *Ostomy Output Volume*'s "sits in Vitals" wording is intentional and stays as Notion has it
-- [ ] Domain model: the seven storage shapes (`Measurement`, `Event`, `Interval`, `StandingFact`,
-      `CatalogueItem`, `Document`, `Derived`). `MetricDefinition` carries unit, precision, target,
-      aggregation and chart kind **plus `category` and `subCategory` as facets** — so adding a tracker
-      is a registry entry, never a new screen or a new navigation destination
-- [ ] Catalogue + occurrence split wherever both exist (see Decisions): catalogue tables for
-      medication, ostomy product, accessory, device and supplier; event tables for their use
-- [ ] Provenance on every record: `source` (device / lab / manual / import), recorded-at, edited-at,
-      and a stated rule for when two sources report the same metric. Steps detail shows the
-      originating app or device and the last sync time, so keep Health Connect's data origin and a
-      per-metric sync timestamp
-- [ ] Common record fields (Decisions → *Records → History*): id, type, category, when, source, a
-      one-line summary and `links: [{to, relation}]`; the named links of *Relationships between
-      records* on the models that need them, stored in `users/{uid}/records` (decided)
-- [ ] Appointment and Encounter as two records (Decisions → *Appointments and encounters*):
-      Encounter `basedOn` its appointment; Prescription (Medical Records → Documents, in Notion) linked
-      to its encounter and to the medications it prescribes. Past appointment with no encounter →
-      "To complete" in Care and a "How did it go?" prompt on Today (confirmed)
-- [ ] Today's two user lists, stored as ordered metric IDs in DataStore and filtered by `isVisible`:
-      the quick-log set and the pinned set (defaults in Decisions → App navigation). Defaults only
-      for now; the pinned editor is an M6 task. A metric can only be pinned if it has a
-      "latest value" summary, so `MetricDefinition` needs one (value, unit, optional goal progress,
-      context line)
-- [ ] Attachments: a `Document` entity that can hang off any record, plus unattached files and one
-      "all files" view
-- [ ] Free-text note, attachable to any record and able to stand alone with a date (the escape hatch —
-      without it people stop using the structured fields)
-- [ ] Data conventions: one Firestore collection `users/{uid}/records/{docId}` with a `type` field
-      (Decisions → *Records → History*), FHIR-inspired common fields,
-      one typed model per feature, repositories returning `Flow<AppResult<…>>`
-- [ ] Permissions declared per metric, requested only for visible metrics when first needed
-      (partial grants allowed, no all-or-nothing)
+- Re-scoped 2026-10-18 (Decisions → *Read first*): the rest of M2 is what reading Health Connect
+  needs. The logging groundwork (catalogue + occurrence, appointments and encounters, attachments,
+  notes, the quick-log set) moved to M4, and the Firestore record conventions to M3, next to their
+  first writer, the daily-summary upload.
+- [x] Domain model (`core.record`, 2026-10-18): `Measurement` (values keyed by `Quantity.key`, units
+      from the definition, `requireMatches(definition)`) and `DailySummary` with one `DayValue`
+      subtype per `Aggregation` (`Total`, `Mean`, `Range`, `Last`); a day without data has no
+      summary, never a zero. `MetricDefinition` already carries unit, precision, aggregation and
+      chart kind plus `category` and `subCategory` as facets. The other six shapes (`Event`,
+      `Interval`, `StandingFact`, `CatalogueItem`, `Document`, `Derived`) get their record type with
+      their first metric, not before
+- [x] Provenance on every record (2026-10-18): `Provenance(source, origin, recordingMethod,
+      recordedAt, editedAt)`; `Source` = device / lab / manual / import, `DataOrigin` = the writing
+      app's package + `SourceDevice` (manufacturer, model, type), `RecordingMethod` as Health
+      Connect reports it (a value typed into Samsung Health is device-sourced, manual-recorded). The
+      two-source rule is stated in Decisions → *Read first*
+  - [ ] Per-metric last-sync timestamp for the source line: sync state in Room, with M3's sync
+- [x] Common record fields (2026-10-18): `HealthRecord` (id, metric, time, zone offset, provenance,
+      `links: [RecordLink(to, relation)]`); type = metric + record class, category read from the
+      definition; `summaryLine` gives the one-line summary ("Blood pressure 118/76 mmHg"). The named
+      links of *Relationships between records* come with the models that need them (M4, M5)
+- [x] Today's pinned set (2026-10-18): `PinnedMetrics` in the settings DataStore (`today_pinned`,
+      ordered IDs; nothing stored = `DefaultPinned`), `pinnedTiles` keeps the stored order, skips
+      hidden metrics, metrics not in the registry yet and those that can't be pinned
+      (`MetricDefinition.canPin`: a quantity and an aggregation), at most six. Today shows the grid
+      (heart rate and blood pressure for now, "—" and "No data yet"). A metric ID is the snake_case of
+      its Notion name, so the defaults already name `steps`, `sleep_duration`, `fatigue`,
+      `ostomy_output_volume`. Compiled, not yet seen on a device
+  - [ ] The edit icon in the Pinned header waits for the pinned editor (M6); a tile doesn't open the
+        metric yet (the detail route lives in the Tracker graph)
+- [x] Permissions declared per metric (2026-10-18): `MetricDefinition.healthConnectTypes` (heart
+      rate: `HeartRateRecord` + `RestingHeartRateRecord`; blood pressure: `BloodPressureRecord`; ECG
+      has no Health Connect type), `readPermissions(metrics)` for the visible ones, and the manifest
+      declaring every one of them (`HealthConnectPermissionsTest` keeps manifest and registry equal).
+      Requesting them, partial grants allowed, is M3's grant screen, which also needs the
+      permissions-rationale activity Health Connect requires
 - [ ] *Deferred — Lauranne handles standardization separately; the code carries no codes or UCUM units
       until then.* Terminology: `MetricDefinition.codings` (FHIR Coding shape + UCUM unit) filled from `docs/data-structure/health-data-model/Patient Data Codings.csv`; confirm the `Verified = no` rows in the LOINC search first (glucose, ketones, peak flow and blood type are still candidates;
       HRV is RMSSD in the app, while the drafted code 80404-7 is SDNN). Codes are never load-bearing in app logic
 
-### M3 — Health Connect, starting with steps
-Builds the reusable pieces with the simplest data type (read-only, one number per day).
+### M3 — Health Connect, starting with heart rate
+Builds the reusable reading and display pieces with heart rate (read-only; started with steps
+until 2026-10-18, see Decisions → *Read first*).
 - [ ] Health Connect data source behind a `HealthDataSource` interface (paginated with `pageToken`)
 - [ ] Room database as the local store for Health Connect data; incremental sync
 - [ ] Daily aggregation + stats, unit-tested (TrackAid's min/avg and off-by-one bugs)
@@ -544,18 +571,43 @@ Builds the reusable pieces with the simplest data type (read-only, one number pe
       design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
       today outlined, missing day as a dashed empty slot
 - [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
-- [ ] Steps: pinned tile on Today, Tracker hub row, and the detail screen as designed (big Mono
-      value + goal progress, chart, stats row, per-day list with notes, source line). The design
-      assumes a default goal of 8,000 steps (sleep: 8 h) until user-configurable targets exist
+- [ ] Heart rate: Tracker hub row (resting rate per day as the line mini chart), the detail screen
+      (weekly range bar + daily average + normal band, stats row, per-day list, source line naming
+      the apps and devices), and the Resting HR pinned tile on Today. Open: whether Garmin writes a
+      `RestingHeartRateRecord` to Health Connect or the resting rate has to be derived; Resting HR is
+      not its own row in the Notion data model yet
 - [ ] Health Connect grant screen as designed: one row per requested metric (category, "read only",
       toggle), "Allow N permissions" / "Not now", and the privacy line ("Sensor data stays on this
       phone. Only daily summaries are saved to your account."). Also: onboarding when Health Connect
       is missing
-- [ ] Then: heart rate (range bar + average), sleep
+- [ ] Then steps, with the duplicates rule (Decisions → *Read first*: Garmin, Samsung Health and
+      Google Health all write steps; daily totals from Health Connect's aggregation): pinned tile,
+      Tracker hub row, and the detail screen as designed (big Mono value + goal progress, chart,
+      stats row, per-day list with notes, source line). The design assumes a default goal of 8,000
+      steps (sleep: 8 h) until user-configurable targets exist
+- [ ] Then sleep
+- [ ] Data conventions (moved from M2): one Firestore collection `users/{uid}/records/{docId}` with a
+      `type` field (Decisions → *Records → History*), FHIR-inspired common fields, one typed model
+      per feature, repositories returning `Flow<AppResult<…>>`
 - [ ] Daily summaries uploaded to Firestore (WorkManager, only for enabled features)
 
 ### M4 — Manual entries, starting with fatigue
+*On hold since 2026-10-18: reading comes first (Decisions → Read first).*
 Adds the entry form and Firestore writes, reusing M3's chart and card.
+- [ ] Logging groundwork (moved from M2, 2026-10-18):
+  - [ ] Catalogue + occurrence split wherever both exist (see Decisions): catalogue tables for
+        medication, ostomy product, accessory, device and supplier; event tables for their use
+  - [ ] The named links of *Relationships between records* on the models that need them
+  - [ ] Appointment and Encounter as two records (Decisions → *Appointments and encounters*):
+        Encounter `basedOn` its appointment; Prescription (Medical Records → Documents, in Notion)
+        linked to its encounter and to the medications it prescribes. Past appointment with no
+        encounter → "To complete" in Care and a "How did it go?" prompt on Today (confirmed)
+  - [ ] Today's quick-log set, stored as ordered metric IDs in DataStore like the pinned set
+  - [ ] Attachments: a `Document` entity that can hang off any record, plus unattached files and one
+        "all files" view
+  - [ ] Free-text note, attachable to any record and able to stand alone with a date (the escape
+        hatch — without it people stop using the structured fields)
+  - [ ] The manual vs device rule for a metric with both sources (heart rate, blood pressure)
 Weight, temperature and height were cut from the data model on purpose (2026-10-11). Fatigue goes first
 instead: a single 1–10 rating, so the entry form, the Firestore write and the chart are proven on the
 simplest possible input before blood pressure's two values.

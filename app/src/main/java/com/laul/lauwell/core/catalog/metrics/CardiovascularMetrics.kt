@@ -1,5 +1,8 @@
 package com.laul.lauwell.core.catalog.metrics
 
+import androidx.health.connect.client.records.BloodPressureRecord
+import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.RestingHeartRateRecord
 import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.Aggregation
 import com.laul.lauwell.core.catalog.ChartKind
@@ -37,6 +40,8 @@ object CardiovascularMetrics {
         aggregation = Aggregation.MinAverageMax,
         chartKind = ChartKind.RangeBar,
         miniChart = MiniChartKind.Line, // resting rate per day
+        // Resting rate as its own record when the writing app provides one (to check for Garmin, M3).
+        healthConnectTypes = setOf(HeartRateRecord::class, RestingHeartRateRecord::class),
     )
 
     val BloodPressure = MetricDefinition(
@@ -64,9 +69,10 @@ object CardiovascularMetrics {
         aggregation = Aggregation.Average,
         chartKind = ChartKind.RangeBar, // one bar from diastolic to systolic
         miniChart = MiniChartKind.Range,
+        healthConnectTypes = setOf(BloodPressureRecord::class),
     )
 
-    /** A recorded waveform stored as a file: no number to summarise or chart. */
+    /** A recorded waveform stored as a file: no number to summarise or chart. Health Connect has no ECG type. */
     val EcgTrace = MetricDefinition(
         id = MetricId("ecg_trace"),
         label = "ECG trace",

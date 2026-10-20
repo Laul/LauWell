@@ -2,7 +2,7 @@
 
 *Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
 2026-10-11 for the simplified data model and the four-tab navigation; 2026-10-15 for the Tracker
-list/widgets views. Status: adopted (PLAN.md → M0).
+list/widgets views; 2026-10-18 for the regenerated counts. Status: adopted (PLAN.md → M0).
 Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
@@ -37,12 +37,12 @@ own screens. Two later decisions made that the wrong shape (PLAN.md → Decision
 
 | Level | Count | Example | In code |
 |---|---|---|---|
-| Category | 6 (was 5; Labs added 2026-10-11) | Vitals | `Category` enum |
-| Sub-category | being revised (was 35) | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
-| Data point | being revised (was 81) | Heart rate | `MetricDefinition` |
+| Category | 7 (was 5; Labs added 2026-10-11, Ostomy 2026-10-17) | Vitals | `Category` enum |
+| Sub-category | 35 | Vitals → Cardiovascular | `SubCategory` enum, keyed by category **and** name ("Respiratory" exists under both Vitals and Symptoms) |
+| Data point | 113 (was 81) | Heart rate | `MetricDefinition` |
 
-Counts and names follow the simplified data model (PLAN.md → Decisions → *Simplified data model*);
-the enums in code still reflect the older five-category map until `docs/data-structure/` is regenerated.
+Counts and names follow the simplified data model (PLAN.md → Decisions → *Simplified data model*),
+regenerated 2026-10-17; the enums in code match it (`CatalogMatchesDocsTest`).
 
 So there is no separate "feature" concept to invent. **Any level of that hierarchy can be switched
 off**: a whole category, a sub-category, or a single metric. The hierarchy also answers the old
