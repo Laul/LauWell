@@ -84,6 +84,9 @@ dependencies {
 
     implementation(libs.androidx.health.connect.client)
 
+    // Only `core.ui.chart.VicoChart` may import it (CLAUDE.md → Stack → Charts).
+    implementation(libs.vico.compose)
+
     implementation(libs.androidx.datastore.preferences)
 
     implementation(platform(libs.firebase.bom))

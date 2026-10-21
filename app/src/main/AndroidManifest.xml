@@ -11,6 +11,11 @@
     <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
 
+    <!-- Android 13 and below: Health Connect is an app, which LauWell must be able to see. -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <!--
         No backup or transfer of app data: it holds the Firebase session and (later) cached health
         data. allowBackup="false" covers Android 11 and below; dataExtractionRules covers 12+, where
@@ -35,6 +40,31 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+            Health Connect shows its grant prompt only to apps that explain their use of the data
+            (PermissionsRationaleActivity): this filter for Android 13 and below, the alias below
+            for Android 14 and up.
+        -->
+        <activity
+            android:name=".core.healthconnect.PermissionsRationaleActivity"
+            android:exported="true"
+            android:theme="@style/Theme.LauWell">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".core.healthconnect.PermissionsRationaleActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
     </application>
 

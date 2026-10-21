@@ -49,7 +49,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     Health Connect's priority list decides and we keep each record's data origin; manual vs device
     is decided with M4.
 - **Charts:** Vico 3.x (`compose` module, no Material), behind our own `ChartSpec` layer; only one
-  mapper file imports Vico. Koala Plot is the fallback; MPAndroidChart v4 to revisit once mature.
+  mapper file imports Vico (`core.ui.chart.VicoChart`). Pinned to **3.2.3**: 3.3.x needs compileSdk 37
+  and AGP 9.1, and every Vico 3 needs Compose ≥ 1.10 (Compose BOM 2026.06.01, Compose 1.11, since
+  2026-10-20). Koala Plot is the fallback; MPAndroidChart v4 to revisit once mature.
   → Notion: *Charting library*.
 - **Dependency injection:** manual wiring — one `AppContainer` (plain Kotlin class) built in
   `LauWellApplication.onCreate()`, holding the app's singletons (auth, Firestore, Room, repositories);
@@ -591,10 +593,22 @@ until 2026-10-18, see Decisions → *Read first*).
       TrackAid's two bugs (average written into min; the range's last day left out)
   - [ ] Heart rate's period average is the mean of daily averages, not weighted by sample count;
         revisit if the detail screen shows it next to Health Connect's own weekly figure
-- [ ] Chart validation test (~1 day): build the hardest chart first — heart-rate weekly range bar
-      (Vico candlestick layer) + average dot + target band (`HorizontalBox`) + tooltip — fed by a
-      `StateFlow` that changes while the screen is open. Pass → Vico for every chart; fail → try
-      Koala Plot behind the same `ChartSpec`. (Notion: *Charting library*.)
+- [x] Chart validation test (2026-10-20, Galaxy Z Fold API 37, real Garmin data): **pass, Vico
+      stays.** Heart-rate 7-day range bars (candlestick layer, a candle body from low to high, no
+      wicks) + average dot (line layer, points only) + 60–100 normal band (own `Decoration` drawn
+      under the bars; Vico's `HorizontalBox` draws over them) + tooltip built from `ChartSpec` by
+      slot, fed by the Room flow while the sync runs every minute (sync time seen moving on screen).
+      `ChartSpec` / `rangeBarsSpec` / `yBounds` / `tooltip` unit-tested
+  - [ ] See the chart redraw on new data while open (sync the watch with the screen open)
+  - [ ] Check dark mode and the unfolded inner screen
+  - [ ] A day without data inside the week (all 7 had data): the gap is an x without an entry;
+        the design's dashed empty slot comes with the reusable component
+- [ ] Source line names the apps and devices: Health Connect's aggregation returns **no data
+      origins** on this device (all 31 synced days empty), so they must come from the day's
+      records (`Metadata.dataOrigin` + `device`, which the aggregation never gives anyway)
+- [ ] Interim: the detail screen asks for its own metric's permission ("Allow access") and syncs
+      on open; replaced by the grant screen and the sync triggers. `PermissionsRationaleActivity`
+      (+ activity-alias for Android 14+) is in place: Health Connect showed its prompt with it
 - [ ] Reusable chart component: our own `ChartSpec`, one mapper file to Vico (the only file that
       imports Vico), range selector (week / month / 3 months), gaps drawn for missing days. Match the
       design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
