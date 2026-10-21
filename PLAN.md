@@ -280,12 +280,16 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - A new tracker is still a registry entry, never a new destination; Today's chips, the pinned tiles
     and the Tracker hub read from the same registry.
 - **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
-  Desktop; Tracker views 15a/15b added 2026-10-15). Reference (local only, `docs/design/` is
-  gitignored): **`Design • Global direction - v15.html`**, a zip despite its name (a handoff:
-  `docs/design/Design • Global direction - v15a-01.html`, the bundled final design with eight screens
-  in light and dark incl. both Tracker views and Appointments; `docs/design/UI-spec.md`, the written
-  spec; `docs/design/Icons/lauwell-icons.csv`; and the architecture doc update). The spec and icon
-  list are also copied loose into `docs/design/`. Earlier exports, superseded:
+  Desktop; Tracker views 15a/15b added 2026-10-15; week board 16c and the Fold inner screen, round 18,
+  2026-10-17/18). Reference since 2026-10-20 (local only, `docs/design/` is gitignored):
+  **`Design • Full Experience.html`**, a bundled page: the Galaxy Z Fold **closed** — the cover
+  screen, i.e. the phone design used on any phone, nine screens (sign-in, Health Connect grant,
+  Today, quick-log sheet, Tracker list / widgets / week board, Steps detail, Care · Appointments) —
+  and **open** — the inner screen's chosen layouts — **each in light and dark**. Its phone screens are
+  byte-identical to the v18 handoff's; the dark inner screen is new. Written spec: `UI-spec.md` from
+  the v18 handoff (`Design • Global direction - v18.html`, a zip despite its name, with the icon
+  list; spec and icon list copied loose into `docs/design/`). Superseded: the v15 handoff
+  (`Design • Global direction - v15.html`, eight phone screens, no week board, no inner screen) and
   `Design • Global direction - v13b-02.html` (zip, 2026-10-13: Vivid palette, custom tab icons,
   Appointments, PNG screens, `tokens.png`) and the loose `LauWell Final Design (for Figma import).html`
   (before all of those). The exploration rounds are in `LauWell Design Directions.html`; the
@@ -364,15 +368,41 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     outlined; a missing day drawn as a dashed empty slot (`null`, never 0); dashed goal line; Week /
     Month / 3 months selector; stats row (daily average, best day, days at goal); per-day list with
     notes ("goal met", "watch not worn"); a source line ("Health Connect · Pixel Watch · synced 09:12").
+  - **Fold, open (inner screen ≈ 884 × 780 dp, expanded width), round 18:** switch on the window
+    size class and keep state (selected metric, day, Tracker view) across fold / unfold; the cover
+    screen keeps the phone layout unchanged. An **80dp navigation rail** (same four tabs and icons)
+    replaces the bottom bar. Tokens unchanged. Chosen layouts:
+    - **Today = widget dashboard (17a/18a):** 4-column grid, 10dp gap, 118dp rows — Steps 2×2,
+      Medications 2×2, Fatigue 2×1, Sleep · HR · BP · Output · Mood · Brain fog 1×1, Quick log
+      4×1; header date + greeting · Edit. **Edit:** dashed outline per widget, × to remove, resize
+      handle, "Add widget"; metric taps disabled while editing; stored like the pinned set
+      (ordered IDs + size) in DataStore.
+    - **Tracker = week board + day pane (16c/18b):** 152dp name column, 7 × 44dp day columns,
+      46dp rows; day pane 290dp: every metric's value that day, medications, "Log for this day".
+      A day column selects the day.
+    - **Tapping a metric** (a Today widget, a board row name, a row in the day pane) opens **list +
+      detail with compare (16b):** Tracker list 370dp (selected row on `surface2`) · detail: value,
+      Week / Month / 3 months, chart, *Compare with* chips (a second metric as a dashed overlay,
+      scaled to fit; not for the cycle), stats, entries, source. The back arrow returns to the
+      dashboard or the board.
+    - Not drawn: Care and Records on the inner screen. Alternatives kept in the file: 16a Today
+      always on the left, 17b journal + always-open log, 17c visit prep.
+  - **Tracker week board (16c, also on the phone):** a third Tracker view (`view_list` | `grid_view` |
+    `calendar_view_week`, stored as `TrackerView = LIST | WIDGETS | WEEK`): one shared Mon–Sun axis
+    so days line up; row 36dp: icon + short name (106dp column) · 7-day lane (7 × 30dp); category
+    labels as thin sub-headers; header with the week range and ‹ to go back; the selected day a
+    full-height `surface2` band; below the board a day summary row ("Sunday 11 Oct · Today — 7 of
+    9 metrics logged") that opens that day's entries, where you can also back-log. The cycle lane
+    shows the 7 cycle days as pills.
   - **Screens designed:** sign-in, Health Connect grant, Today (without its symptom-check prompt and
-    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker list and widgets
-    views, Steps detail, Appointments (Care tab).
+    upcoming appointments, see App navigation), quick-log sheet (fatigue), Tracker list, widgets and
+    week board, Steps detail, Appointments (Care tab) — each in light and dark — and the Fold inner
+    screen above (light and dark).
     **Not yet:** Today's symptom-check prompt and upcoming-appointments section, the rest of Care, Records, Labs
     (by report or by analyte), heart-rate range chart, Settings, the pinned editor, the symptom
     picker, empty and error states, appointment detail, Care's upcoming-appointments section with
-    "Later (n)" and "To complete", encounter detail with its linked records, Records → History, large-screen layouts (UI-spec describes the
-    foldable inner screen — navigation rail, 2-column list, 3–4-column widgets, list-detail — but it
-    is not mocked).
+    "Later (n)" and "To complete", encounter detail with its linked records, Records → History, Care
+    and Records on the inner screen.
 
 ## Milestones
 
@@ -477,8 +507,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
         metric or chart kind, written with the first real data (M3)
   - [ ] View toggle segments are 34 × 28dp as designed, under the 48dp touch target: revisit in the
         accessibility pass (M6)
-  - [ ] Large screens (the inner screen of a foldable): navigation rail, 2-column list, 3–4-column
-        widgets, list-detail for the metric detail — design first (UI-spec: "not yet mocked")
+  - [ ] Large screens: designed since 2026-10-17 (Fold inner screen, round 18, in *Visual design*);
+        to build — see M6 (Later)
 - [x] Restyle sign-in to the design (2026-10-16): six category bars + wordmark, filled
       "Continue with Google", privacy line; errors shown above the button. The "G" is Google's
       current gradient mark, rendered from the official Sign in with Google assets
@@ -707,6 +737,14 @@ simplest possible input before blood pressure's two values.
         Medications), missing from the final design file
   - [ ] Design, then build, the pinned editor (opened from the icon in the Pinned header): pick up to
         six visible metrics that have a latest-value summary, reorder them, reset to defaults
+  - [ ] Fold inner screen (designed, Visual design → *Fold, open*): switch layout on the window
+        size class, keep state across fold / unfold; navigation rail; Today widget dashboard (with
+        its Edit mode, stored like the pinned set); Tracker week board + day pane; list + detail
+        with *Compare with*. Also fixes the side-inset bug seen in landscape (M3)
+  - [ ] Tracker week board on the phone (third view, `TrackerView.WEEK`) and the day summary that
+        opens a day's entries (back-logging there needs M4)
+  - [ ] Ink tokens: `Color.kt` has `#12171B` light / `#E4EAEE` dark, the design (and *Look* below)
+        `#16191C` / `#ECEFF1`; confirm which is right before the dark-mode pass
 - Medications on Today ("2/3 taken", tap the circle when a dose is taken) need the medication
   schedule and dose log from M5; until then the section is hidden or shows placeholder data
 - Backlog: Settings toggles over the switched-off set (DataStore-backed; Settings is their home, no
