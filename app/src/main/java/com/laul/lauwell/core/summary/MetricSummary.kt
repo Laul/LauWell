@@ -76,7 +76,8 @@ private fun displayValue(metric: MetricDefinition, day: DailySummary): String? {
     return parts.joinToString("/")
 }
 
-private fun ago(date: LocalDate, today: LocalDate): String = when (val days = ChronoUnit.DAYS.between(date, today)) {
+/** "today", "yesterday", "3 days ago": when [date] was, seen from [today]. */
+fun ago(date: LocalDate, today: LocalDate): String = when (val days = ChronoUnit.DAYS.between(date, today)) {
     0L -> "today"
     1L -> "yesterday"
     else -> "$days days ago"

@@ -2,8 +2,6 @@ package com.laul.lauwell.feature.tracker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.laul.lauwell.core.catalog.Aggregation
-import com.laul.lauwell.core.catalog.ChartKind
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.healthconnect.HealthConnectAvailability
 import com.laul.lauwell.core.healthconnect.HealthDataSource
@@ -12,10 +10,12 @@ import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.PeriodStats
-import com.laul.lauwell.core.record.daySeries
+import com.laul.lauwell.core.record.formatValue
+import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
-import com.laul.lauwell.core.ui.chart.rangeBarsSpec
+import com.laul.lauwell.core.ui.chart.ChartPeriod
+import com.laul.lauwell.core.ui.chart.chartSpec
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,13 +44,16 @@ sealed interface HealthAccess {
 }
 
 /**
- * The detail screen of a synced metric, over the last 7 days. For now (M3 chart validation test):
- * the chart exists for range-bar metrics (heart rate) only; the week / month / 3 months selector,
- * the per-day list and the other chart kinds come with the reusable chart component.
+ * The detail screen of a synced metric: today's value, and the chart and stats of the selected
+ * period (week, month, 3 months, all ending today). The per-day list comes with the metric's
+ * detail as designed (PLAN.md → M3).
  */
 data class MetricDetailState(
     val access: HealthAccess = HealthAccess.Checking,
-    val today: DailySummary? = null,
+    val period: ChartPeriod = ChartPeriod.Week,
+    /** The latest day with data, up to today; its value is the screen's headline. */
+    val latest: DailySummary? = null,
+    val latestWhen: String? = null,
     val chart: ChartSpec? = null,
     val stats: PeriodStats? = null,
     val lastSyncedAt: Instant? = null,
@@ -67,25 +70,40 @@ class MetricDetailViewModel(
     clock: Clock,
 ) : ViewModel() {
 
-    private val week: ClosedRange<LocalDate> = LocalDate.now(clock).let { it.minusDays(6)..it }
-
     private val access = MutableStateFlow<HealthAccess>(HealthAccess.Checking)
+
+    private val period = MutableStateFlow(ChartPeriod.Week)
+
+    /**
+     * Every day the longest period can show (plus one, in case the date changes while the screen is
+     * open), read once; each period is cut from it, so switching period needs no new query.
+     */
+    private val summaries = LocalDate.now(clock).let { today ->
+        store.summaries(metric.id, today.minusDays(ChartPeriod.entries.maxOf { it.dayCount }.toLong())..today.plusDays(1))
+    }
 
     val state: StateFlow<MetricDetailState> = combine(
         access,
-        store.summaries(metric.id, week),
+        period,
+        summaries,
         store.lastSyncedAt(metric.id),
-    ) { access, summaries, syncedAt ->
-        val series = daySeries(metric, summaries, week)
+    ) { access, period, summaries, syncedAt ->
+        val today = LocalDate.now(clock)
         MetricDetailState(
             access = access,
-            today = series.last().summary,
-            chart = series.takeIf { metric.chartKind == ChartKind.RangeBar && metric.aggregation == Aggregation.MinAverageMax }
-                ?.let { rangeBarsSpec(metric, it) },
-            stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, week) },
+            period = period,
+            latest = summaries.filter { it.date <= today }.maxByOrNull { it.date },
+            latestWhen = summaries.filter { it.date <= today }.maxOfOrNull { it.date }
+                ?.let { ago(it, today).replaceFirstChar { c -> c.uppercase() } },
+            chart = chartSpec(metric, summaries, period, today),
+            stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, period.days(today)) },
             lastSyncedAt = syncedAt,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MetricDetailState())
+
+    fun setPeriod(value: ChartPeriod) {
+        period.value = value
+    }
 
     init {
         refreshAccess()
@@ -116,5 +134,23 @@ class MetricDetailViewModel(
                 }
             }
         }
+    }
+}
+
+/**
+ * The stats row: for a metric with a goal (steps), "Daily average · Best day · At goal" as in the
+ * design; otherwise "Lowest · Average · Highest". A value without data reads "—".
+ */
+internal fun statItems(metric: MetricDefinition, stats: PeriodStats): List<Pair<String, String>> {
+    val precision = metric.quantities.first().precision
+    fun f(value: Double?) = value?.let { formatValue(it, precision) } ?: "—"
+    return if (metric.goal != null) {
+        listOf(
+            "Daily average" to f(stats.average),
+            "Best day" to f(stats.highest?.value),
+            "At goal" to "${stats.daysAtGoal ?: 0} of ${stats.daysWithData}",
+        )
+    } else {
+        listOf("Lowest" to f(stats.lowest?.value), "Average" to f(stats.average), "Highest" to f(stats.highest?.value))
     }
 }

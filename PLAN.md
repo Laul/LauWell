@@ -611,10 +611,22 @@ until 2026-10-18, see Decisions → *Read first*).
 - [ ] Interim: the detail screen asks for its own metric's permission ("Allow access") and syncs
       on open; replaced by the grant screen and the sync triggers. `PermissionsRationaleActivity`
       (+ activity-alias for Android 14+) is in place: Health Connect showed its prompt with it
-- [ ] Reusable chart component: our own `ChartSpec`, one mapper file to Vico (the only file that
-      imports Vico), range selector (week / month / 3 months), gaps drawn for missing days. Match the
-      design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
-      today outlined, missing day as a dashed empty slot
+- [x] Reusable chart component (2026-10-20): one `ChartSpec` for bars, lines and range bars
+      (`chartSpec(metric, summaries, period, today)`), `VicoChart.kt` the only file importing Vico.
+      Periods end today: Week (7 days), Month (30 days), 3 months (13 weekly slots: mean of the
+      days, extremes of their ranges; 91 daily bars would be unreadable); `SegmentedSelector` on
+      the detail screen. Conventions from the Steps detail (v18 source): bars in the category fg,
+      the current slot outlined, below-goal bars at 55%, dashed goal line (1.5dp ink2 55%), no y
+      axis for bars, a missing day as a dashed empty slot (bars and range bars, week only) and as
+      a break for a line; header "14 – 20 Oct" · "Goal 8,000" / "Normal 60–100"; today's label
+      bold; labels every 7th day (month) / 4th week (3 months) counted back from today; tooltip
+      from the spec by slot. Stats row: "Daily average · Best day · At goal" with a goal, else
+      "Lowest · Average · Highest". Headline: the latest day with data ("76 bpm · Yesterday").
+      Seen on device: heart rate range bars (all periods), resting heart rate line with its gaps
+  - [ ] Bars seen on device (no bar metric until steps) and the dashed empty slot of a range bar
+  - Note: Vico refuses blank axis labels (crash): labeled slots are chosen with its `ItemPlacer`,
+        and `slotLabel` gives a label for any index, also outside the slots — keep it that way
+  - [ ] "Compare with" (design v18, Fold inner screen 16b): a second metric as a dashed overlay
 - [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
 - [x] Tracker rows / widgets and Today's pinned tiles read the synced data (2026-10-20):
       `core.summary.metricSummary` (pure, unit-tested) turns a metric's last 7 daily summaries into

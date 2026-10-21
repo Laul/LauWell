@@ -23,15 +23,15 @@ import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.DayValue
-import com.laul.lauwell.core.record.PeriodStats
 import com.laul.lauwell.core.record.formatValue
 import com.laul.lauwell.core.record.main
 import com.laul.lauwell.core.ui.chart.Chart
+import com.laul.lauwell.core.ui.chart.ChartPeriod
 import com.laul.lauwell.core.ui.components.CategoryLine
 import com.laul.lauwell.core.ui.components.FilledButton
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.ScreenColumn
-import com.laul.lauwell.core.ui.components.Section
+import com.laul.lauwell.core.ui.components.SegmentedSelector
 import com.laul.lauwell.core.ui.components.TopBar
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import java.time.Clock
@@ -85,12 +85,12 @@ private fun MetricDetail(metric: MetricDefinition) {
         Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
             CategoryLine(metric.category, "${metric.category.label} · ${metric.subCategory.label}")
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
-                BasicText(state.today?.let { headline(it, metric) } ?: "—", style = type.metricXl.copy(color = colors.ink))
+                BasicText(state.latest?.let { headline(it, metric) } ?: "—", style = type.metricXl.copy(color = colors.ink))
                 metric.quantities.firstOrNull()?.let {
                     BasicText(it.unit, style = type.body.copy(color = colors.ink2), modifier = Modifier.padding(bottom = LauWellTheme.spacing.sm))
                 }
             }
-            BasicText(if (state.today != null) "Today" else "No data today", style = type.caption.copy(color = colors.ink2))
+            BasicText(state.latestWhen ?: "No data yet", style = type.caption.copy(color = colors.ink2))
         }
 
         when (val access = state.access) {
@@ -107,14 +107,17 @@ private fun MetricDetail(metric: MetricDefinition) {
         }
 
         state.chart?.let { chart ->
-            Section("Last 7 days") {
-                Panel(contentPadding = PaddingValues(LauWellTheme.spacing.sm)) { Chart(chart) }
-            }
+            SegmentedSelector(
+                options = ChartPeriod.entries.map { it.label },
+                selectedIndex = state.period.ordinal,
+                onSelect = { viewModel.setPeriod(ChartPeriod.entries[it]) },
+            )
+            Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) { Chart(chart) }
         }
-        state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(it, metric) }
+        state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
         if (state.access == HealthAccess.Granted) {
             BasicText(
-                sourceLine(state.today?.origins.orEmpty(), state.lastSyncedAt),
+                sourceLine(state.latest?.origins.orEmpty(), state.lastSyncedAt),
                 style = type.caption.copy(color = colors.ink2),
             )
         }
@@ -131,22 +134,17 @@ private fun AccessPanel(text: String, action: (@Composable () -> Unit)? = null) 
     }
 }
 
-/** Lowest · average · highest of the period, values in Mono. */
+/** The period's three stats, values in Mono. */
 @Composable
-private fun StatsRow(stats: PeriodStats, metric: MetricDefinition) {
-    val precision = metric.quantities.first().precision
+private fun StatsRow(items: List<Pair<String, String>>) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) {
         Row {
-            listOf(
-                "Lowest" to stats.lowest?.value,
-                "Average" to stats.average,
-                "Highest" to stats.highest?.value,
-            ).forEach { (label, value) ->
+            items.forEach { (label, value) ->
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs)) {
                     BasicText(label, style = type.caption.copy(color = colors.ink2))
-                    BasicText(value?.let { formatValue(it, precision) } ?: "—", style = type.metric.copy(color = colors.ink))
+                    BasicText(value, style = type.metric.copy(color = colors.ink))
                 }
             }
         }

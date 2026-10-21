@@ -8,8 +8,8 @@ import kotlinx.coroutines.sync.withLock
 import java.time.Clock
 import java.time.LocalDate
 
-/** How many days back the store is kept: the longest chart range (3 months). */
-const val SyncWindowDays = 90L
+/** How many days back the store is kept: the longest chart range (3 months = 13 weeks). */
+const val SyncWindowDays = 91L
 
 /**
  * Copies Health Connect's daily summaries into the [store], incrementally.
