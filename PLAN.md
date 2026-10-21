@@ -583,7 +583,14 @@ until 2026-10-18, see Decisions → *Read first*).
   - [ ] Trigger the sync: on app start and when Tracker / Today open, after the grant screen, and
         periodically with WorkManager (with the daily-summary upload)
   - [ ] DAO instrumented test (in-memory Room) once there is an emulator in the loop
-- [ ] Daily aggregation + stats, unit-tested (TrackAid's min/avg and off-by-one bugs)
+- [x] Daily aggregation + stats, unit-tested (2026-10-20). Daily aggregation is Health Connect's
+      (`dailySummaries`, above); `core.record.PeriodStats`: `daySeries` (every day of a range, both
+      ends, missing days `null`) and `periodStats` per quantity: days with data, average of the
+      daily values (missing days don't pull it down), lowest / highest with their day (a range's
+      own min and max; the latest day on a tie), days at goal, days in the normal range. Tests pin
+      TrackAid's two bugs (average written into min; the range's last day left out)
+  - [ ] Heart rate's period average is the mean of daily averages, not weighted by sample count;
+        revisit if the detail screen shows it next to Health Connect's own weekly figure
 - [ ] Chart validation test (~1 day): build the hardest chart first — heart-rate weekly range bar
       (Vico candlestick layer) + average dot + target band (`HorizontalBox`) + tooltip — fed by a
       `StateFlow` that changes while the screen is open. Pass → Vico for every chart; fail → try
