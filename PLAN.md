@@ -582,8 +582,10 @@ until 2026-10-18, see Decisions → *Read first*).
       older than the window ignored; ungranted metrics skipped, one failing metric doesn't stop
       the others, one sync at a time. A schema change drops the cache (rebuilt from Health
       Connect). Sync logic unit-tested with fakes; the DAO is compiled, not yet run on a device
-  - [ ] Trigger the sync: on app start and when Tracker / Today open, after the grant screen, and
-        periodically with WorkManager (with the daily-summary upload)
+  - [x] Sync when Tracker or Today resumes (their shown metrics) and while a detail screen is open
+        (every minute) (2026-10-20)
+  - [ ] Still to trigger: on app start, after the grant screen, and periodically with WorkManager
+        (with the daily-summary upload)
   - [ ] DAO instrumented test (in-memory Room) once there is an emulator in the loop
 - [x] Daily aggregation + stats, unit-tested (2026-10-20). Daily aggregation is Health Connect's
       (`dailySummaries`, above); `core.record.PeriodStats`: `daySeries` (every day of a range, both
@@ -614,13 +616,25 @@ until 2026-10-18, see Decisions → *Read first*).
       design's chart conventions (Decisions → Visual design): goal line, below-goal days dimmed,
       today outlined, missing day as a dashed empty slot
 - [ ] Chart updates: ViewModel `StateFlow` → mapper → Vico model producer; one refresh at a time
-- [ ] Heart rate: Tracker hub row (daily low–high range as the mini chart), the detail screen
-      (weekly range bar + daily average + normal band, stats row, per-day list, source line naming
-      the apps and devices)
+- [x] Tracker rows / widgets and Today's pinned tiles read the synced data (2026-10-20):
+      `core.summary.metricSummary` (pure, unit-tested) turns a metric's last 7 daily summaries into
+      the Mono value (the latest day's; "118/76" for shared units), the takeaway ("83–130 · today",
+      "Yesterday · in range"), the mini chart by `MiniChartKind` (gaps kept, scale padded), and the
+      tile's context ("of 8,000" with a goal, else when) and goal progress. `metricSummaries` feeds
+      both ViewModels from Room. Seen on device with heart rate (list and widgets)
+  - Decision: no "in / above / below range" for a min–average–max day (heart rate): its average
+    includes activity, while the 60–100 range is at rest. The detail chart keeps the band
+  - [x] Today's tile seen with data (2026-10-20): resting heart rate "76 bpm · Yesterday"
+- [ ] Landscape / inner screen: content runs under the side navigation bar (horizontal insets not
+      applied; seen on the Fold in landscape, "Good evening" cut at the start)
+- [ ] Heart rate: the detail screen as designed — per-day list, range selector, source line naming
+      the apps and devices (row and validation chart done above)
 - [ ] Resting heart rate (own Notion row and metric `resting_heart_rate` since 2026-10-19, in the
       default pinned set): Tracker row (line mini chart), detail screen (line + normal band), the
-      pinned tile on Today. Open: whether Garmin writes a `RestingHeartRateRecord` to Health Connect
-      or the resting rate has to be derived from the night's samples
+      pinned tile on Today (done, see above). Answered 2026-10-20: a `RestingHeartRateRecord` arrives
+      in Health Connect once a day (last 30 days present, one gap on 2026-10-14, none yet for today
+      at 21:30), so nothing to derive; which app writes it is unknown until the source line reads
+      the records' origins
   - [x] Data map (2026-10-19): row added to `_src/rows.js` and rebuilt (114 data points); counts
         updated in the README, the architecture doc and here
 - [ ] Health Connect grant screen as designed: one row per requested metric (category, "read only",

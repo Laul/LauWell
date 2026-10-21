@@ -20,6 +20,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.laul.lauwell.R
@@ -28,6 +30,7 @@ import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.settings.TrackerView
+import com.laul.lauwell.core.summary.MetricSummary
 import com.laul.lauwell.core.ui.components.IconToggle
 import com.laul.lauwell.core.ui.components.IconToggleOption
 import com.laul.lauwell.core.ui.components.MetricRow
@@ -38,22 +41,7 @@ import com.laul.lauwell.core.ui.components.PanelDivider
 import com.laul.lauwell.core.ui.components.ScreenHeader
 import com.laul.lauwell.core.ui.components.Section
 import com.laul.lauwell.core.ui.theme.LauWellTheme
-
-/**
- * What a Tracker row or widget shows for one metric. Real values arrive with M3 (Health Connect)
- * and M4 (manual entries); until then every metric is [empty].
- *
- * @param takeaway one line that reads the chart ("60% of goal"); replaces the old Synced / + Add badges.
- */
-data class MetricSummary(val value: String?, val takeaway: String, val chart: MiniChartData?) {
-    companion object {
-        fun empty(metric: MetricDefinition) = MetricSummary(
-            value = null,
-            takeaway = "No data yet",
-            chart = metric.miniChart?.let(MiniChartData::empty),
-        )
-    }
-}
+import java.time.Clock
 
 /**
  * The Tracker hub (`docs/design/UI-spec.md` → Tracker): every visible metric, grouped by category,
@@ -62,16 +50,20 @@ data class MetricSummary(val value: String?, val takeaway: String, val chart: Mi
  */
 @Composable
 fun TrackerScreen(onOpenMetric: (MetricId) -> Unit) {
-    val viewModel = appViewModel { TrackerViewModel(toggleRepository, displayPreferences) }
+    val viewModel = appViewModel {
+        TrackerViewModel(toggleRepository, displayPreferences, summaryStore, healthSync, Clock.systemDefaultZone())
+    }
     val groups by viewModel.groups.collectAsStateWithLifecycle()
     val view by viewModel.view.collectAsStateWithLifecycle()
+    val summaries by viewModel.summaries.collectAsStateWithLifecycle()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.sync() }
 
     TrackerContent(
         groups = groups,
         view = view,
         onViewChange = viewModel::setView,
         onOpenMetric = onOpenMetric,
-        summaryOf = MetricSummary::empty,
+        summaryOf = { summaries[it.id] ?: MetricSummary.empty(it) },
     )
 }
 

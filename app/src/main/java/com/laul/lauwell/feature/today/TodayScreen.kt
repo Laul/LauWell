@@ -21,16 +21,20 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.di.appViewModel
+import com.laul.lauwell.core.summary.MetricSummary
 import com.laul.lauwell.core.ui.components.LauWellIcon
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.PinnedTile
 import com.laul.lauwell.core.ui.components.ScreenColumn
 import com.laul.lauwell.core.ui.components.Section
 import com.laul.lauwell.core.ui.theme.LauWellTheme
+import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -41,8 +45,12 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun TodayScreen(onOpenSettings: () -> Unit) {
-    val viewModel = appViewModel { TodayViewModel(toggleRepository, pinnedMetrics) }
+    val viewModel = appViewModel {
+        TodayViewModel(toggleRepository, pinnedMetrics, summaryStore, healthSync, Clock.systemDefaultZone())
+    }
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
+    val summaries by viewModel.summaries.collectAsStateWithLifecycle()
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.sync() }
     val now = remember { LocalDateTime.now() }
     val colors = LauWellTheme.colors
 
@@ -74,7 +82,9 @@ fun TodayScreen(onOpenSettings: () -> Unit) {
                 LauWellIcon(R.drawable.ic_person, contentDescription = "Settings", tint = colors.ink, size = 22.dp)
             }
         }
-        pinned?.takeIf { it.isNotEmpty() }?.let { PinnedGrid(it) }
+        pinned?.takeIf { it.isNotEmpty() }?.let { metrics ->
+            PinnedGrid(metrics) { summaries[it.id] ?: MetricSummary.empty(it) }
+        }
     }
 }
 
@@ -83,7 +93,7 @@ fun TodayScreen(onOpenSettings: () -> Unit) {
  * the header waits for the pinned editor (M6).
  */
 @Composable
-private fun PinnedGrid(metrics: List<MetricDefinition>) {
+private fun PinnedGrid(metrics: List<MetricDefinition>, summaryOf: (MetricDefinition) -> MetricSummary) {
     val spacing = LauWellTheme.spacing
     Section("Pinned") {
         Panel(contentPadding = PaddingValues(spacing.panel)) {
@@ -91,14 +101,15 @@ private fun PinnedGrid(metrics: List<MetricDefinition>) {
                 metrics.chunked(PinnedColumns).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
                         row.forEach { metric ->
+                            val summary = summaryOf(metric)
                             PinnedTile(
                                 icon = metric.icon,
                                 name = metric.label,
-                                value = null, // M3: the latest value from the metric's daily summary
+                                value = summary.value,
                                 unit = metric.quantities.map { it.unit }.distinct().singleOrNull().orEmpty(),
-                                context = "No data yet",
+                                context = summary.context,
                                 category = metric.category,
-                                progress = null,
+                                progress = summary.progress,
                                 modifier = Modifier.weight(1f),
                             )
                         }
