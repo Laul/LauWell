@@ -532,7 +532,8 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
       app's package + `SourceDevice` (manufacturer, model, type), `RecordingMethod` as Health
       Connect reports it (a value typed into Samsung Health is device-sourced, manual-recorded). The
       two-source rule is stated in Decisions → *Read first*
-  - [ ] Per-metric last-sync timestamp for the source line: sync state in Room, with M3's sync
+  - [x] Per-metric last-sync timestamp for the source line (2026-10-20): `sync_state` in Room,
+        read with `SummaryStore.lastSyncedAt`
 - [x] Common record fields (2026-10-18): `HealthRecord` (id, metric, time, zone offset, provenance,
       `links: [RecordLink(to, relation)]`); type = metric + record class, category read from the
       definition; `summaryLine` gives the one-line summary ("Blood pressure 118/76 mmHg"). The named
@@ -571,7 +572,17 @@ until 2026-10-18, see Decisions → *Read first*).
         grant screen (`HealthConnectPermissionsTest` then allows it beside the registry's)
   - [ ] Reading counts: the aggregation gives no count for blood pressure or resting heart rate
         (`DayValue.Mean.count` is null), so "3 readings" on the Tracker row needs the day's records
-- [ ] Room database as the local store for Health Connect data; incremental sync
+- [x] Room database as the local store for Health Connect data; incremental sync (2026-10-20).
+      Room caches daily summaries (`daily_summary_value`, one row per metric · day · quantity) and
+      `sync_state` (changes token, last sync); raw samples stay in Health Connect. `HealthSync`:
+      first sync or expired token → token first, then the whole 90-day window; later → only the
+      days the changed records fall on, the whole window after a deletion (no day given), edits
+      older than the window ignored; ungranted metrics skipped, one failing metric doesn't stop
+      the others, one sync at a time. A schema change drops the cache (rebuilt from Health
+      Connect). Sync logic unit-tested with fakes; the DAO is compiled, not yet run on a device
+  - [ ] Trigger the sync: on app start and when Tracker / Today open, after the grant screen, and
+        periodically with WorkManager (with the daily-summary upload)
+  - [ ] DAO instrumented test (in-memory Room) once there is an emulator in the loop
 - [ ] Daily aggregation + stats, unit-tested (TrackAid's min/avg and off-by-one bugs)
 - [ ] Chart validation test (~1 day): build the hardest chart first — heart-rate weekly range bar
       (Vico candlestick layer) + average dot + target band (`HorizontalBox`) + tooltip — fed by a

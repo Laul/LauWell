@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.room.Room
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.laul.lauwell.BuildConfig
@@ -13,12 +14,17 @@ import com.laul.lauwell.core.auth.AuthRepository
 import com.laul.lauwell.core.auth.FirebaseAuthRepository
 import com.laul.lauwell.core.catalog.EverythingOnToggleRepository
 import com.laul.lauwell.core.catalog.ToggleRepository
+import com.laul.lauwell.core.data.LauWellDatabase
+import com.laul.lauwell.core.data.RoomSummaryStore
 import com.laul.lauwell.core.healthconnect.HealthConnectDataSource
 import com.laul.lauwell.core.healthconnect.HealthDataSource
+import com.laul.lauwell.core.healthconnect.HealthSync
+import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.PinnedMetrics
+import java.time.Clock
 
 /**
  * Manual dependency injection: the one place that builds the app's process-wide singletons
@@ -59,4 +65,18 @@ class AppContainer(context: Context) {
     val pinnedMetrics: PinnedMetrics by lazy { DataStorePinnedMetrics(settingsDataStore) }
 
     val healthDataSource: HealthDataSource by lazy { HealthConnectDataSource(appContext) }
+
+    /**
+     * The Health Connect cache. A schema change drops it instead of migrating: everything in it is
+     * read again from Health Connect on the next sync.
+     */
+    private val database: LauWellDatabase by lazy {
+        Room.databaseBuilder(appContext, LauWellDatabase::class.java, "lauwell.db")
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
+    }
+
+    val summaryStore: SummaryStore by lazy { RoomSummaryStore(database.healthCacheDao()) }
+
+    val healthSync: HealthSync by lazy { HealthSync(healthDataSource, summaryStore, Clock.systemDefaultZone()) }
 }

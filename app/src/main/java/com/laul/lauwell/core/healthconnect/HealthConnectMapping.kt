@@ -21,10 +21,14 @@ import com.laul.lauwell.core.record.RecordId
 import com.laul.lauwell.core.record.RecordingMethod
 import com.laul.lauwell.core.record.Source
 import com.laul.lauwell.core.record.SourceDevice
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 // Health Connect records and aggregates → our record model. Pure functions, so they are unit-tested
 // without a device; [HealthConnectDataSource] only adds the client calls. A new synced metric adds a
-// branch to [toMeasurements], [aggregateMetricsFor] and [dailySummary]; `HealthConnectMappingTest`
+// branch to [toMeasurements], [localDays], [aggregateMetricsFor] and [dailySummary]; `HealthConnectMappingTest`
 // fails for a registered metric that has Health Connect types but no mapping.
 
 private val HeartRate = CardiovascularMetrics.HeartRate.id
@@ -149,6 +153,26 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
         origins = result.dataOrigins.mapTo(mutableSetOf()) { DataOrigin(it.packageName) },
     )
 }
+
+/**
+ * The local days [record] falls on, each end in its own offset, as the daily aggregation places
+ * it: one for a reading, every day from start to end for a series (a night's heart rate spans two).
+ * [fallback] is used when the writing app gave no offset.
+ */
+internal fun localDays(record: Record, fallback: ZoneId): Set<LocalDate> = when (record) {
+    is HeartRateRecord -> {
+        val first = localDate(record.startTime, record.startZoneOffset, fallback)
+        val last = localDate(record.endTime, record.endZoneOffset, fallback)
+        generateSequence(first) { it.plusDays(1) }.takeWhile { it <= last }.toSet()
+    }
+    is RestingHeartRateRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
+    is BloodPressureRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
+    // Health Connect's instant / interval interfaces are internal, hence one branch per record type.
+    else -> error("No mapping for ${record::class.simpleName}")
+}
+
+private fun localDate(time: Instant, offset: ZoneOffset?, fallback: ZoneId): LocalDate =
+    time.atZone(offset ?: fallback).toLocalDate()
 
 /** Reads every page: [fetch] gets the previous page's token (null first) and returns its items and the next token. */
 internal suspend fun <T> readAllPages(fetch: suspend (pageToken: String?) -> Pair<List<T>, String?>): List<T> {

@@ -22,6 +22,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import androidx.health.connect.client.records.metadata.DataOrigin as HcDataOrigin
 
@@ -139,6 +140,26 @@ class HealthConnectMappingTest {
             assert(aggregateMetricsFor(metric).isNotEmpty()) { "${metric.id} has no aggregation mapping" }
         }
         assertEquals(emptySet<Any>(), aggregateMetricsFor(CardiovascularMetrics.EcgTrace))
+    }
+
+    @Test
+    fun `a night's heart-rate series falls on both days, in its own offset`() {
+        // 23:30 to 00:30 in Montreal (UTC-4), i.e. 03:30 to 04:30 UTC the next day.
+        val record = HeartRateRecord(
+            startTime = Instant.parse("2026-10-19T03:30:00Z"),
+            startZoneOffset = offset,
+            endTime = Instant.parse("2026-10-19T04:30:00Z"),
+            endZoneOffset = offset,
+            samples = emptyList(),
+            metadata = metadata("hr-night"),
+        )
+        assertEquals(setOf(LocalDate.of(2026, 10, 18), LocalDate.of(2026, 10, 19)), localDays(record, ZoneOffset.UTC))
+    }
+
+    @Test
+    fun `a reading without an offset uses the phone's zone`() {
+        val record = RestingHeartRateRecord(Instant.parse("2026-10-19T02:00:00Z"), null, 58, metadata("rhr-2"))
+        assertEquals(setOf(LocalDate.of(2026, 10, 18)), localDays(record, ZoneId.of("America/Montreal")))
     }
 
     @Test

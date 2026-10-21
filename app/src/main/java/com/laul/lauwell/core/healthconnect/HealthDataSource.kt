@@ -35,6 +35,26 @@ interface HealthDataSource {
      * Decisions → *Read first*). Days without data are left out.
      */
     suspend fun dailySummaries(metric: MetricDefinition, days: ClosedRange<LocalDate>): List<DailySummary>
+
+    /** A token marking "now" in [metric]'s change log; [changes] later returns what happened since. */
+    suspend fun changesToken(metric: MetricDefinition): String
+
+    /** What changed in [metric]'s records since [token], all pages read. */
+    suspend fun changes(metric: MetricDefinition, token: String): HealthChanges
+}
+
+/** The result of [HealthDataSource.changes]. */
+sealed interface HealthChanges {
+
+    /**
+     * @param days the local days of records added or edited since the token.
+     * @param hadDeletions whether records were deleted: Health Connect only gives their id, not their day.
+     * @param nextToken where the next call starts.
+     */
+    data class Changed(val days: Set<LocalDate>, val hadDeletions: Boolean, val nextToken: String) : HealthChanges
+
+    /** Tokens expire after 30 days unused: read everything again and take a new token. */
+    data object TokenExpired : HealthChanges
 }
 
 /** Health Connect's SDK status, as the onboarding needs it. */
