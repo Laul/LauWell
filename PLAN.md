@@ -671,8 +671,14 @@ until 2026-10-18, see Decisions → *Read first*).
   - [x] Today's tile seen with data (2026-10-20): resting heart rate "76 bpm · Yesterday"
 - [ ] Landscape / inner screen: content runs under the side navigation bar (horizontal insets not
       applied; seen on the Fold in landscape, "Good evening" cut at the start)
-- [ ] Heart rate: the detail screen as designed — per-day list, range selector, source line naming
-      the apps and devices (row and validation chart done above)
+- [x] Heart rate: the detail screen as designed (row, chart, range selector and source line done
+      above)
+  - [x] Per-day list (2026-10-21, `feature.tracker.DayList`): the selected period's days, newest
+        first, from the oldest day with data; day ("Today", "Tue 20", "Thu 1 Oct" past a week),
+        note, value in Mono ("60–118", "118/76" for blood pressure, "—" without data, category
+        colour at goal). Notes: "in progress" today for a total or a range, "goal met", "above /
+        below range" for a single daily reading, "no data". Normal / abnormal visuals will be
+        revisited (Lauranne, UX/UI decisions pending)
 - [ ] Resting heart rate (own Notion row and metric `resting_heart_rate` since 2026-10-19, in the
       default pinned set): Tracker row (line mini chart), detail screen (line + normal band), the
       pinned tile on Today (done, see above). Answered 2026-10-20: a `RestingHeartRateRecord` arrives

@@ -50,9 +50,8 @@ sealed interface HealthAccess {
 }
 
 /**
- * The detail screen of a synced metric: today's value, and the chart and stats of the selected
- * period (week, month, 3 months, all ending today). The per-day list comes with the metric's
- * detail as designed (PLAN.md → M3).
+ * The detail screen of a synced metric: today's value, and the chart, stats and per-day list of the
+ * selected period (week, month, 3 months, all ending today).
  */
 data class MetricDetailState(
     val access: HealthAccess = HealthAccess.Checking,
@@ -62,6 +61,8 @@ data class MetricDetailState(
     val latestWhen: String? = null,
     val chart: ChartSpec? = null,
     val stats: PeriodStats? = null,
+    /** The period's days, newest first. */
+    val days: List<DayRow> = emptyList(),
     /** Where [latest]'s records come from, read from them: the daily aggregation gives no origins. */
     val origins: Set<DataOrigin> = emptySet(),
     val lastSyncedAt: Instant? = null,
@@ -127,6 +128,7 @@ class MetricDetailViewModel(
             latestWhen = latest?.let { ago(it.date, today).replaceFirstChar { c -> c.uppercase() } },
             chart = chartSpec(metric, summaries, period, today),
             stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, period.days(today)) },
+            days = dayRows(metric, summaries, period, today),
             lastSyncedAt = syncedAt,
             origins = origins,
         )

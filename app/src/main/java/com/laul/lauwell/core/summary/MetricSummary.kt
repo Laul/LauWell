@@ -88,7 +88,7 @@ fun ago(date: LocalDate, today: LocalDate): String = when (val days = ChronoUnit
  * range" if any is below, else "in range"; null when no quantity has a range. Not said for a
  * min–average–max day (heart rate): its average includes activity, while the range is at rest.
  */
-private fun rangeStatus(metric: MetricDefinition, day: DailySummary): String? {
+internal fun rangeStatus(metric: MetricDefinition, day: DailySummary): String? {
     if (metric.aggregation == Aggregation.MinAverageMax) return null
     val checked = metric.quantities.mapNotNull { q ->
         val range = q.normalRange ?: return@mapNotNull null

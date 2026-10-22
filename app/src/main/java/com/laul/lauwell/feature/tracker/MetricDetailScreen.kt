@@ -22,9 +22,6 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.di.appViewModel
-import com.laul.lauwell.core.record.DailySummary
-import com.laul.lauwell.core.record.DayValue
-import com.laul.lauwell.core.record.formatValue
 import com.laul.lauwell.core.record.main
 import com.laul.lauwell.core.ui.chart.Chart
 import com.laul.lauwell.core.ui.chart.ChartPeriod
@@ -38,6 +35,11 @@ import com.laul.lauwell.core.ui.components.TopBar
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import java.time.Clock
 import java.time.ZoneId
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.text.style.TextAlign
+import com.laul.lauwell.core.ui.components.PanelDivider
 
 /**
  * One metric's detail, shared by every metric (`metric/{id}`): today's value, the last 7 days as
@@ -85,7 +87,7 @@ private fun MetricDetail(metric: MetricDefinition) {
         Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
             CategoryLine(metric.category, "${metric.category.label} · ${metric.subCategory.label}")
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
-                BasicText(state.latest?.let { headline(it, metric) } ?: "—", style = type.metricXl.copy(color = colors.ink))
+                BasicText(state.latest?.let { valueText(metric, it) } ?: "—", style = type.metricXl.copy(color = colors.ink))
                 metric.quantities.firstOrNull()?.let {
                     BasicText(it.unit, style = type.body.copy(color = colors.ink2), modifier = Modifier.padding(bottom = LauWellTheme.spacing.sm))
                 }
@@ -115,6 +117,7 @@ private fun MetricDetail(metric: MetricDefinition) {
             Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) { Chart(chart) }
         }
         state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
+        if (state.days.isNotEmpty()) DayList(state.days, metric)
         if (state.access == HealthAccess.Granted) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
                 if (fromWatch(state.origins)) LauWellIcon(R.drawable.ic_watch, contentDescription = null, tint = colors.ink2, size = 16.dp)
@@ -154,13 +157,39 @@ private fun StatsRow(items: List<Pair<String, String>>) {
     }
 }
 
-/** Today's headline: a range as "52–148", otherwise the day's value. */
-private fun headline(day: DailySummary, metric: MetricDefinition): String? {
-    val quantity = metric.quantities.firstOrNull() ?: return null
-    val value = day.values[quantity.key] ?: return null
-    return if (value is DayValue.Range) {
-        "${formatValue(value.min, quantity.precision)}–${formatValue(value.max, quantity.precision)}"
-    } else {
-        formatValue(value.main, quantity.precision)
+/**
+ * The period's days as designed: day, note, value in Mono (category colour at goal, "—" without
+ * data), hairlines between rows, no panel.
+ */
+@Composable
+private fun DayList(days: List<DayRow>, metric: MetricDefinition) {
+    val colors = LauWellTheme.colors
+    val type = LauWellTheme.typography
+    val categoryColor = colors.forCategory(metric.category).fg
+    Column {
+        days.forEach { day ->
+            PanelDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth().heightIn(min = 46.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
+            ) {
+                BasicText(day.label, style = type.item.copy(color = colors.ink), modifier = Modifier.weight(1f))
+                day.note?.let { BasicText(it, style = type.caption.copy(color = colors.ink2)) }
+                BasicText(
+                    day.value ?: "—",
+                    style = type.metricSmall.copy(
+                        color = when {
+                            day.value == null -> colors.ink2
+                            day.atGoal -> categoryColor
+                            else -> colors.ink
+                        },
+                        textAlign = TextAlign.End,
+                    ),
+                    modifier = Modifier.widthIn(min = 54.dp),
+                )
+            }
+        }
+        PanelDivider()
     }
 }
