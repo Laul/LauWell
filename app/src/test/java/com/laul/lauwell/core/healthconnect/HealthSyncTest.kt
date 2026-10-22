@@ -130,6 +130,40 @@ class HealthSyncTest {
     }
 
     @Test
+    fun `granting past data refreshes the whole window`() = runBlocking {
+        store.saveSyncState(RestingHeartRate.id, SyncState("token-1", now, withHistory = false))
+        source.granted += HistoryPermission
+        source.changes = HealthChanges.Changed(emptySet(), hadDeletions = false, nextToken = "token-2")
+
+        sync.sync(listOf(RestingHeartRate))
+
+        assertEquals(listOf(window), source.aggregated)
+        assertEquals(SyncState("token-1", now, withHistory = true), store.syncState(RestingHeartRate.id))
+    }
+
+    @Test
+    fun `with past data still allowed, a later sync stays incremental`() = runBlocking {
+        store.saveSyncState(RestingHeartRate.id, SyncState("token-1", now, withHistory = true))
+        source.granted += HistoryPermission
+        source.changes = HealthChanges.Changed(emptySet(), hadDeletions = false, nextToken = "token-2")
+
+        sync.sync(listOf(RestingHeartRate))
+
+        assertTrue(source.aggregated.isEmpty())
+        assertEquals(SyncState("token-2", now, withHistory = true), store.syncState(RestingHeartRate.id))
+    }
+
+    @Test
+    fun `taking past data back refreshes the whole window too`() = runBlocking {
+        store.saveSyncState(RestingHeartRate.id, SyncState("token-1", now, withHistory = true))
+        source.changes = HealthChanges.Changed(emptySet(), hadDeletions = false, nextToken = "token-2")
+
+        sync.sync(listOf(RestingHeartRate))
+
+        assertEquals(listOf(window), source.aggregated)
+    }
+
+    @Test
     fun `nothing is read when Health Connect is unavailable`() = runBlocking {
         source.availability = HealthConnectAvailability.UpdateRequired
         val result = sync.sync(listOf(RestingHeartRate))
@@ -150,6 +184,7 @@ class HealthSyncTest {
 
         override fun availability() = availability
         override suspend fun grantedPermissions() = granted
+        override fun supportsHistory() = true
         override suspend fun readMeasurements(metric: MetricDefinition, from: Instant, until: Instant) =
             emptyList<Measurement>()
 

@@ -599,9 +599,7 @@ until 2026-10-18, see Decisions → *Read first*).
       `aggregateGroupByPeriod` by local day (app priority applied, empty days left out). The mapping
       is pure functions in `HealthConnectMapping.kt`, unit-tested; `HealthConnectDataSource` only
       makes the calls. Not yet run against a real Health Connect
-  - [ ] History beyond 30 days: Health Connect only returns data from 30 days before the first
-        grant unless `READ_HEALTH_DATA_HISTORY` is granted too; declare and request it with the
-        grant screen (`HealthConnectPermissionsTest` then allows it beside the registry's)
+  - [x] History beyond 30 days: done with the grant screen (below)
   - [ ] Reading counts: the aggregation gives no count for blood pressure or resting heart rate
         (`DayValue.Mean.count` is null), so "3 readings" on the Tracker row needs the day's records
 - [x] Room database as the local store for Health Connect data; incremental sync (2026-10-20).
@@ -614,7 +612,7 @@ until 2026-10-18, see Decisions → *Read first*).
       Connect). Sync logic unit-tested with fakes; the DAO is compiled, not yet run on a device
   - [x] Sync when Tracker or Today resumes (their shown metrics) and while a detail screen is open
         (every minute) (2026-10-20)
-  - [ ] Still to trigger: on app start, after the grant screen, and periodically with WorkManager
+  - [ ] Still to trigger: on app start and periodically with WorkManager
         (with the daily-summary upload)
   - [ ] DAO instrumented test (in-memory Room) once there is an emulator in the loop
 - [x] Daily aggregation + stats, unit-tested (2026-10-20). Daily aggregation is Health Connect's
@@ -679,10 +677,18 @@ until 2026-10-18, see Decisions → *Read first*).
       the records' origins
   - [x] Data map (2026-10-19): row added to `_src/rows.js` and rebuilt (114 data points); counts
         updated in the README, the architecture doc and here
-- [ ] Health Connect grant screen as designed: one row per requested metric (category, "read only",
-      toggle), "Allow N permissions" / "Not now", and the privacy line ("Sensor data stays on this
-      phone. Only daily summaries are saved to your account."). Also: onboarding when Health Connect
-      is missing
+- [x] Health Connect grant screen as designed (2026-10-20, `feature.onboarding`): opens once after
+      sign-in (DataStore flag, answered either way) and from Settings; one row per visible metric
+      read from Health Connect (icon box, "Vitals · read only", `Switch`, the whole row toggles), on by
+      default, an already-allowed metric says "allowed"; "Allow N permissions" / "Not now"; the
+      privacy line. Health Connect missing or outdated: says so, "Get Health Connect" opens the Play
+      Store. Seen on device (unfolded: still the phone layout, see M6)
+  - [x] Reading history: `READ_HEALTH_DATA_HISTORY` declared and asked with the metrics when
+        Health Connect supports it ("Allow past data" when it is the only thing left). `sync_state`
+        records whether the window was filled with history readable; when that changes, the next
+        sync refreshes the whole window, since no change event brings the older days (a first
+        version ran it from the grant screen and was cancelled when the screen closed). Verified
+        on device 2026-10-21: heart rate's 3 months now go back to early August
 - [ ] Then steps, with the duplicates rule (Decisions → *Read first*: Garmin, Samsung Health and
       Google Health all write steps; daily totals from Health Connect's aggregation): pinned tile,
       Tracker hub row, and the detail screen as designed (big Mono value + goal progress, chart,

@@ -31,6 +31,9 @@ object Routes {
     /** Opened from the avatar on Today; shown without the bottom bar. */
     const val SETTINGS = "settings"
 
+    /** The Health Connect grant screen: once after sign-in, then from Settings; no bottom bar. */
+    const val HEALTH_CONNECT = "health-connect"
+
     const val METRIC_ID_ARG = "metricId"
     const val METRIC_DETAIL = "metric/{$METRIC_ID_ARG}"
 

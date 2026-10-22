@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -182,5 +183,25 @@ fun IconToggle(
                 )
             }
         }
+    }
+}
+
+/**
+ * An on/off switch as designed (Health Connect grant rows): a 44 × 26dp track, ink when on and
+ * `surface2` when off, with a 20dp knob. Drawing only: make the whole row `toggleable`, so the
+ * touch target is the row and TalkBack reads it as one control.
+ */
+@Composable
+fun Switch(checked: Boolean, modifier: Modifier = Modifier) {
+    val colors = LauWellTheme.colors
+    Box(
+        modifier = modifier
+            .size(width = 44.dp, height = 26.dp)
+            .clip(CircleShape)
+            .background(if (checked) colors.accent else colors.surface2)
+            .padding(3.dp),
+        contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
+    ) {
+        Box(Modifier.size(20.dp).clip(CircleShape).background(colors.onAccent))
     }
 }

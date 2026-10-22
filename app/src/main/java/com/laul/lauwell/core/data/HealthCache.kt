@@ -50,6 +50,7 @@ data class SyncStateEntity(
     val changesToken: String,
     /** Epoch milliseconds. */
     val syncedAt: Long,
+    val withHistory: Boolean,
 )
 
 @Dao
@@ -93,10 +94,10 @@ class RoomSummaryStore(private val dao: HealthCacheDao) : SummaryStore {
     }
 
     override suspend fun syncState(metric: MetricId): SyncState? =
-        dao.syncState(metric.value)?.let { SyncState(it.changesToken, Instant.ofEpochMilli(it.syncedAt)) }
+        dao.syncState(metric.value)?.let { SyncState(it.changesToken, Instant.ofEpochMilli(it.syncedAt), it.withHistory) }
 
     override suspend fun saveSyncState(metric: MetricId, state: SyncState) =
-        dao.saveSyncState(SyncStateEntity(metric.value, state.changesToken, state.syncedAt.toEpochMilli()))
+        dao.saveSyncState(SyncStateEntity(metric.value, state.changesToken, state.syncedAt.toEpochMilli(), state.withHistory))
 
     override fun lastSyncedAt(metric: MetricId): Flow<Instant?> =
         dao.syncedAt(metric.value).map { it?.let(Instant::ofEpochMilli) }

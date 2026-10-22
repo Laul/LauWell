@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -17,7 +19,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.feature.care.CareScreen
+import com.laul.lauwell.feature.onboarding.HealthConnectGrantScreen
+import com.laul.lauwell.feature.onboarding.OnboardingViewModel
 import com.laul.lauwell.feature.records.RecordsScreen
 import com.laul.lauwell.feature.settings.SettingsScreen
 import com.laul.lauwell.feature.today.TodayScreen
@@ -36,6 +41,13 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
         backStackEntry?.destination?.hierarchy?.any { it.route == tab.graphRoute } == true
     }
     val showBar = selectedTab != null
+
+    // Once after sign-in (design: sign-in → Health Connect grant → Today), until answered.
+    val onboardingViewModel = appViewModel { OnboardingViewModel(onboarding) }
+    val promptSeen by onboardingViewModel.healthConnectPromptSeen.collectAsStateWithLifecycle()
+    LaunchedEffect(promptSeen) {
+        if (promptSeen == false) navController.navigate(Routes.HEALTH_CONNECT) { launchSingleTop = true }
+    }
 
     Column(Modifier.fillMaxSize()) {
         NavHost(
@@ -69,7 +81,13 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
             navigation(route = TopLevelTab.Records.graphRoute, startDestination = TopLevelTab.Records.route) {
                 composable(TopLevelTab.Records.route) { RecordsScreen() }
             }
-            composable(Routes.SETTINGS) { SettingsScreen(onBack = navController::popBackStack) }
+            composable(Routes.SETTINGS) {
+                SettingsScreen(
+                    onBack = navController::popBackStack,
+                    onOpenHealthConnect = { navController.navigate(Routes.HEALTH_CONNECT) },
+                )
+            }
+            composable(Routes.HEALTH_CONNECT) { HealthConnectGrantScreen(onDone = navController::popBackStack) }
         }
         if (showBar) {
             BottomNavBar(

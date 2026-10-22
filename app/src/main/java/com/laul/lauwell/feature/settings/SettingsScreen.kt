@@ -16,12 +16,13 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
  * reminders (PLAN.md → backlog). For now: sign out.
  */
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
     val viewModel = appViewModel { SettingsViewModel(authRepository) }
 
     Column(Modifier.fillMaxSize()) {
         TopBar(title = "Settings", onBack = onBack, modifier = Modifier.padding(horizontal = LauWellTheme.spacing.xs))
         ScreenColumn {
+            StrokeButton(text = "Health Connect permissions", onClick = onOpenHealthConnect)
             StrokeButton(text = "Sign out", onClick = viewModel::signOut)
         }
     }

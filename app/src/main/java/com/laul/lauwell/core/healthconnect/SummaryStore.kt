@@ -27,5 +27,10 @@ interface SummaryStore {
     fun lastSyncedAt(metric: MetricId): Flow<Instant?>
 }
 
-/** Where [metric]'s sync stands: the Health Connect changes token to continue from, and when it last ran. */
-data class SyncState(val changesToken: String, val syncedAt: Instant)
+/**
+ * Where a metric's sync stands: the Health Connect changes token to continue from, when it last
+ * ran, and whether the window was filled [withHistory] (reading past data allowed). When that
+ * permission changes, older days become readable or not with no change event, so the next sync
+ * refreshes the whole window.
+ */
+data class SyncState(val changesToken: String, val syncedAt: Instant, val withHistory: Boolean = false)

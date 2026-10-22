@@ -21,8 +21,10 @@ import com.laul.lauwell.core.healthconnect.HealthDataSource
 import com.laul.lauwell.core.healthconnect.HealthSync
 import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
+import com.laul.lauwell.core.settings.DataStoreOnboarding
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
 import com.laul.lauwell.core.settings.DisplayPreferences
+import com.laul.lauwell.core.settings.Onboarding
 import com.laul.lauwell.core.settings.PinnedMetrics
 import java.time.Clock
 
@@ -63,6 +65,8 @@ class AppContainer(context: Context) {
     val displayPreferences: DisplayPreferences by lazy { DataStoreDisplayPreferences(settingsDataStore) }
 
     val pinnedMetrics: PinnedMetrics by lazy { DataStorePinnedMetrics(settingsDataStore) }
+
+    val onboarding: Onboarding by lazy { DataStoreOnboarding(settingsDataStore) }
 
     val healthDataSource: HealthDataSource by lazy { HealthConnectDataSource(appContext) }
 

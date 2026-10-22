@@ -2,7 +2,9 @@ package com.laul.lauwell.core.healthconnect
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.changes.DeletionChange
+import androidx.health.connect.client.feature.ExperimentalFeatureAvailabilityApi
 import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
@@ -37,6 +39,13 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
 
     override suspend fun grantedPermissions(): Set<String> =
         client.permissionController.getGrantedPermissions()
+
+    // The feature check is still experimental in Health Connect 1.1.0-alpha11.
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    override fun supportsHistory(): Boolean =
+        availability() == HealthConnectAvailability.Available &&
+            client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
+            HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
 
     override suspend fun readMeasurements(metric: MetricDefinition, from: Instant, until: Instant): List<Measurement> {
         val range = TimeRangeFilter.between(from, until)

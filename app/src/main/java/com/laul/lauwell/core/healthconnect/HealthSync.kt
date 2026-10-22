@@ -14,8 +14,8 @@ const val SyncWindowDays = 91L
 /**
  * Copies Health Connect's daily summaries into the [store], incrementally.
  *
- * Per metric: the first sync (or one after the changes token expired) takes a token, then
- * refreshes the whole window of [SyncWindowDays]. Later syncs ask Health Connect what changed
+ * Per metric: the first sync (or one after the changes token expired, or after reading past data
+ * was granted or taken back) takes a token, then refreshes the whole window of [SyncWindowDays]. Later syncs ask Health Connect what changed
  * since the token and refresh only the days those records fall on, or the whole window when
  * records were deleted (a deletion has no day). Edits older than the window are ignored.
  *
@@ -34,10 +34,11 @@ class HealthSync(
         if (source.availability() != HealthConnectAvailability.Available) return SyncResult(unavailable = true)
         val granted = source.grantedPermissions()
         val (allowed, refused) = synced.partition { granted.containsAll(readPermissions(listOf(it))) }
+        val withHistory = HistoryPermission in granted
         val failed = mutableSetOf<MetricId>()
         allowed.forEach { metric ->
             try {
-                syncOne(metric)
+                syncOne(metric, withHistory)
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
@@ -52,10 +53,10 @@ class HealthSync(
         )
     }
 
-    private suspend fun syncOne(metric: MetricDefinition) {
+    private suspend fun syncOne(metric: MetricDefinition, withHistory: Boolean) {
         val today = LocalDate.now(clock)
         val window = today.minusDays(SyncWindowDays - 1)..today
-        val token = store.syncState(metric.id)?.changesToken
+        val token = store.syncState(metric.id)?.takeIf { it.withHistory == withHistory }?.changesToken
         val changes = token?.let { source.changes(metric, it) }
 
         val (days, nextToken) = when (changes) {
@@ -70,7 +71,7 @@ class HealthSync(
             }
         }
         if (days != null) store.replace(metric.id, days, source.dailySummaries(metric, days))
-        store.saveSyncState(metric.id, SyncState(nextToken, clock.instant()))
+        store.saveSyncState(metric.id, SyncState(nextToken, clock.instant(), withHistory))
     }
 }
 

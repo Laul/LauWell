@@ -13,7 +13,7 @@ import androidx.room.RoomDatabase
  */
 @Database(
     entities = [DailySummaryValueEntity::class, SyncStateEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class LauWellDatabase : RoomDatabase() {
