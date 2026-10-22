@@ -282,7 +282,7 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
 - **Visual design** (locked 2026-10-12 as direction **13b**, after five rounds of exploration in Claude
   Desktop; Tracker views 15a/15b added 2026-10-15; week board 16c and the Fold inner screen, round 18,
   2026-10-17/18). Reference since 2026-10-20 (local only, `docs/design/` is gitignored):
-  **`Design • Full Experience.html`**, a bundled page: the Galaxy Z Fold **closed** — the cover
+  **`Design • Full Experience - v02.html`** (v01 is the same file), a bundled page: the Galaxy Z Fold **closed** — the cover
   screen, i.e. the phone design used on any phone, nine screens (sign-in, Health Connect grant,
   Today, quick-log sheet, Tracker list / widgets / week board, Steps detail, Care · Appointments) —
   and **open** — the inner screen's chosen layouts — **each in light and dark**. Its phone screens are
@@ -633,9 +633,13 @@ until 2026-10-18, see Decisions → *Read first*).
   - [ ] Check dark mode and the unfolded inner screen
   - [ ] A day without data inside the week (all 7 had data): the gap is an x without an entry;
         the design's dashed empty slot comes with the reusable component
-- [ ] Source line names the apps and devices: Health Connect's aggregation returns **no data
-      origins** on this device (all 31 synced days empty), so they must come from the day's
-      records (`Metadata.dataOrigin` + `device`, which the aggregation never gives anyway)
+- [x] Source line names the devices (2026-10-21, `feature.tracker.SourceLine`): the aggregation
+      returns no data origins on this device, so the detail screen reads the headline day's records
+      (`Metadata.dataOrigin` + `device`), again only when that day's values change. Each source is
+      its device ("Garmin Forerunner 265", manufacturer not doubled), else its app; the watch icon
+      when a watch is among them, as designed ("Health Connect · Pixel Watch · synced 09:12"). On
+      device: Garmin writes the watch type but no model, so it reads "Health Connect · Garmin
+      Connect · synced 21:27" with the watch icon
 - [ ] Interim: the detail screen asks for its own metric's permission ("Allow access") and syncs
       on open; replaced by the grant screen and the sync triggers. `PermissionsRationaleActivity`
       (+ activity-alias for Android 14+) is in place: Health Connect showed its prompt with it

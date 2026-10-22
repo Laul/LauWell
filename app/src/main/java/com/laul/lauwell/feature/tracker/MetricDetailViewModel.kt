@@ -9,6 +9,7 @@ import com.laul.lauwell.core.healthconnect.HealthSync
 import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.record.DailySummary
+import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.PeriodStats
 import com.laul.lauwell.core.record.formatValue
 import com.laul.lauwell.core.summary.ago
@@ -16,12 +17,17 @@ import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
 import com.laul.lauwell.core.ui.chart.ChartPeriod
 import com.laul.lauwell.core.ui.chart.chartSpec
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -56,6 +62,8 @@ data class MetricDetailState(
     val latestWhen: String? = null,
     val chart: ChartSpec? = null,
     val stats: PeriodStats? = null,
+    /** Where [latest]'s records come from, read from them: the daily aggregation gives no origins. */
+    val origins: Set<DataOrigin> = emptySet(),
     val lastSyncedAt: Instant? = null,
 )
 
@@ -82,22 +90,45 @@ class MetricDetailViewModel(
         store.summaries(metric.id, today.minusDays(ChartPeriod.entries.maxOf { it.dayCount }.toLong())..today.plusDays(1))
     }
 
+    /**
+     * The origins of the latest day's records, read again only when that day's values change (a
+     * sync that brought nothing new reads nothing). Empty without access, or if the read fails.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val origins = combine(access, summaries.map { latestOf(it, LocalDate.now(clock)) }) { access, latest ->
+        latest.takeIf { access == HealthAccess.Granted }
+    }.distinctUntilChanged().mapLatest { latest ->
+        if (latest == null) return@mapLatest emptySet()
+        val zone = clock.zone
+        try {
+            source.readMeasurements(metric, latest.date.atStartOfDay(zone).toInstant(), latest.date.plusDays(1).atStartOfDay(zone).toInstant())
+                .mapNotNull { it.provenance.origin }
+                .toSet()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            emptySet<DataOrigin>()
+        }
+    }
+
     val state: StateFlow<MetricDetailState> = combine(
         access,
         period,
         summaries,
         store.lastSyncedAt(metric.id),
-    ) { access, period, summaries, syncedAt ->
+        origins,
+    ) { access, period, summaries, syncedAt, origins ->
         val today = LocalDate.now(clock)
+        val latest = latestOf(summaries, today)
         MetricDetailState(
             access = access,
             period = period,
-            latest = summaries.filter { it.date <= today }.maxByOrNull { it.date },
-            latestWhen = summaries.filter { it.date <= today }.maxOfOrNull { it.date }
-                ?.let { ago(it, today).replaceFirstChar { c -> c.uppercase() } },
+            latest = latest,
+            latestWhen = latest?.let { ago(it.date, today).replaceFirstChar { c -> c.uppercase() } },
             chart = chartSpec(metric, summaries, period, today),
             stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, period.days(today)) },
             lastSyncedAt = syncedAt,
+            origins = origins,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MetricDetailState())
 
@@ -154,3 +185,7 @@ internal fun statItems(metric: MetricDefinition, stats: PeriodStats): List<Pair<
         listOf("Lowest" to f(stats.lowest?.value), "Average" to f(stats.average), "Highest" to f(stats.highest?.value))
     }
 }
+
+/** The latest day with data, up to [today]. */
+private fun latestOf(summaries: List<DailySummary>, today: LocalDate): DailySummary? =
+    summaries.filter { it.date <= today }.maxByOrNull { it.date }

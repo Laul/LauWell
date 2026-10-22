@@ -12,16 +12,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.record.DailySummary
-import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.formatValue
 import com.laul.lauwell.core.record.main
@@ -29,15 +30,14 @@ import com.laul.lauwell.core.ui.chart.Chart
 import com.laul.lauwell.core.ui.chart.ChartPeriod
 import com.laul.lauwell.core.ui.components.CategoryLine
 import com.laul.lauwell.core.ui.components.FilledButton
+import com.laul.lauwell.core.ui.components.LauWellIcon
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.ScreenColumn
 import com.laul.lauwell.core.ui.components.SegmentedSelector
 import com.laul.lauwell.core.ui.components.TopBar
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import java.time.Clock
-import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 /**
  * One metric's detail, shared by every metric (`metric/{id}`): today's value, the last 7 days as
@@ -116,10 +116,13 @@ private fun MetricDetail(metric: MetricDefinition) {
         }
         state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
         if (state.access == HealthAccess.Granted) {
-            BasicText(
-                sourceLine(state.latest?.origins.orEmpty(), state.lastSyncedAt),
-                style = type.caption.copy(color = colors.ink2),
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
+                if (fromWatch(state.origins)) LauWellIcon(R.drawable.ic_watch, contentDescription = null, tint = colors.ink2, size = 16.dp)
+                BasicText(
+                    sourceLine(state.origins, state.lastSyncedAt, ZoneId.systemDefault()),
+                    style = type.caption.copy(color = colors.ink2),
+                )
+            }
         }
     }
 }
@@ -160,22 +163,4 @@ private fun headline(day: DailySummary, metric: MetricDefinition): String? {
     } else {
         formatValue(value.main, quantity.precision)
     }
-}
-
-/** "Health Connect · Garmin Connect · synced 21:14". */
-private fun sourceLine(origins: Set<DataOrigin>, syncedAt: Instant?): String = buildList {
-    add("Health Connect")
-    origins.map { appName(it.appPackage) }.sorted().forEach(::add)
-    add(syncedAt?.let { "synced ${TimeFormat.format(it.atZone(ZoneId.systemDefault()))}" } ?: "not synced yet")
-}.joinToString(" · ")
-
-private val TimeFormat = DateTimeFormatter.ofPattern("HH:mm")
-
-/** The writing apps LauWell knows by name; any other shows its package. */
-internal fun appName(appPackage: String): String = when (appPackage) {
-    "com.garmin.android.apps.connectmobile" -> "Garmin Connect"
-    "com.sec.android.app.shealth" -> "Samsung Health"
-    "com.google.android.apps.fitness" -> "Google Fit"
-    "com.google.android.apps.healthdata" -> "Health Connect"
-    else -> appPackage
 }
