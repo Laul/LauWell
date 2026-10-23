@@ -3,10 +3,12 @@ package com.laul.lauwell.core.healthconnect
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.HealthConnectFeatures
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.changes.DeletionChange
 import androidx.health.connect.client.feature.ExperimentalFeatureAvailabilityApi
 import androidx.health.connect.client.changes.UpsertionChange
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ChangesTokenRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -14,6 +16,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.Measurement
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
@@ -58,10 +61,35 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
     override suspend fun dailySummaries(metric: MetricDefinition, days: ClosedRange<LocalDate>): List<DailySummary> {
         val metrics = aggregateMetricsFor(metric)
         if (metrics.isEmpty()) return emptyList()
+        if (metric.nightly) return nightlySummaries(metric, metrics, days)
         // Local times: each record is placed on its own local day, wherever it was recorded.
         val range = TimeRangeFilter.between(days.start.atStartOfDay(), days.endInclusive.plusDays(1).atStartOfDay())
         return client.aggregateGroupByPeriod(AggregateGroupByPeriodRequest(metrics, range, Period.ofDays(1)))
             .mapNotNull { dailySummary(metric, it) }
+    }
+
+    /**
+     * Nights (sleep): aggregated from [NightStart] to [NightStart], so a night isn't cut at midnight,
+     * then completed from the sessions themselves for the stages ([sleepNight]).
+     */
+    private suspend fun nightlySummaries(
+        metric: MetricDefinition,
+        metrics: Set<AggregateMetric<*>>,
+        days: ClosedRange<LocalDate>,
+    ): List<DailySummary> {
+        val from = days.start.minusDays(1).atTime(NightStart)
+        val until = days.endInclusive.atTime(NightStart)
+        val nights = client.aggregateGroupByPeriod(AggregateGroupByPeriodRequest(metrics, TimeRangeFilter.between(from, until), Period.ofDays(1)))
+            .mapNotNull { dailySummary(metric, it) }
+        if (nights.isEmpty()) return emptyList()
+        val zone = ZoneId.systemDefault() // for sessions written without an offset
+        // Half a day either side, so a session overlapping an end is read whole.
+        val range = TimeRangeFilter.between(
+            from.atZone(zone).toInstant().minus(Duration.ofHours(12)),
+            until.atZone(zone).toInstant().plus(Duration.ofHours(12)),
+        )
+        val byNight = readAll(SleepSessionRecord::class, range).groupBy { nightOf(it.endTime, it.endZoneOffset, zone) }
+        return nights.map { sleepNight(it, byNight[it.date].orEmpty()) }
     }
 
     override suspend fun changesToken(metric: MetricDefinition): String {

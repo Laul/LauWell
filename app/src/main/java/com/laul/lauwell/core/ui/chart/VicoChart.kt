@@ -121,6 +121,14 @@ private fun CartesianChart(spec: ChartSpec) {
         producer.runTransaction {
             when (spec.kind) {
                 ChartKind.Bar -> columnSeries { series(x = x, y = points.map { it.value }) }
+                ChartKind.StackedBar -> columnSeries {
+                    // Series 0: slots without a breakdown, as one plain bar; then one series per part.
+                    // Every series has every slot (0 where it has nothing), as stacking expects.
+                    series(x = x, y = points.map { if (it.parts.isEmpty()) it.value else 0.0 })
+                    spec.parts.indices.forEach { part ->
+                        series(x = x, y = points.map { it.parts.getOrElse(part) { 0.0 } })
+                    }
+                }
                 ChartKind.Line -> lineSeries {
                     // One series per run of consecutive slots, so the line breaks at a gap.
                     runs(x).forEach { run -> series(x = run, y = run.map { spec.slots[it].point!!.value }) }
@@ -151,6 +159,7 @@ private fun CartesianChart(spec: ChartSpec) {
     }
     val layers: List<CartesianLayer<*>> = when (spec.kind) {
         ChartKind.Bar -> listOf(barLayer(spec, fg, range))
+        ChartKind.StackedBar -> listOf(stackedLayer(spec, fg, range))
         ChartKind.Line -> listOf(lineLayer(spec, fg, range))
         ChartKind.RangeBar -> listOfNotNull(rangeLayer(spec, fg, range), averageLayer(spec, range).takeIf { spec.markAverage })
     }
@@ -188,7 +197,7 @@ private fun CartesianChart(spec: ChartSpec) {
         chart = rememberCartesianChart(
             *layers.toTypedArray(),
             // Bars read against their goal line, as in the design; values without a goal need a scale.
-            startAxis = if (spec.kind == ChartKind.Bar) null else VerticalAxis.rememberStart(
+            startAxis = if (spec.kind == ChartKind.Bar || spec.kind == ChartKind.StackedBar) null else VerticalAxis.rememberStart(
                 label = axisLabel,
                 line = null,
                 tick = null,
@@ -249,6 +258,23 @@ private fun barLayer(spec: ChartSpec, fg: Color, range: CartesianLayerRangeProvi
         }
     }
     return rememberColumnCartesianLayer(columnProvider = provider, rangeProvider = range)
+}
+
+/**
+ * Stacked bars: each part in the category color at its [partAlpha], a slot without a breakdown in
+ * the plain color. Not dimmed below the goal, nor outlined today: the parts' shades carry the meaning.
+ */
+@Composable
+private fun stackedLayer(spec: ChartSpec, fg: Color, range: CartesianLayerRangeProvider): CartesianLayer<*> {
+    val width = spec.period.barWidth()
+    val shape = RoundedCornerShape(2.dp)
+    val plain = rememberLineComponent(Fill(fg), width, shape)
+    val parts = spec.parts.indices.map { rememberLineComponent(Fill(fg.copy(alpha = partAlpha(it))), width, shape) }
+    return rememberColumnCartesianLayer(
+        columnProvider = remember(plain, parts) { ColumnCartesianLayer.ColumnProvider.series(listOf(plain) + parts) },
+        mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+        rangeProvider = range,
+    )
 }
 
 /** A 2dp line in the category color with a dot per slot; [runs] of the model break it at gaps. */

@@ -5,7 +5,7 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.daySeries
-import com.laul.lauwell.core.record.displayValue
+import com.laul.lauwell.core.record.display
 import com.laul.lauwell.core.record.isMetBy
 import com.laul.lauwell.core.record.main
 import com.laul.lauwell.core.summary.rangeStatus
@@ -38,12 +38,12 @@ fun dayRows(metric: MetricDefinition, summaries: List<DailySummary>, period: Cha
         val atGoal = main != null && metric.goal?.isMetBy(main) == true
         DayRow(
             date = entry.date,
-            label = if (entry.date == today) "Today" else format.format(entry.date),
+            label = if (entry.date == today) (if (metric.nightly) "Last night" else "Today") else format.format(entry.date),
             value = day?.let { valueText(metric, it) },
             note = when {
                 day == null -> "no data"
-                // A total or a range keeps growing until midnight; one daily reading doesn't.
-                entry.date == today && metric.aggregation in GrowingDuringTheDay -> "in progress"
+                // A total or a range keeps growing until midnight; one daily reading, or last night, doesn't.
+                entry.date == today && metric.aggregation in GrowingDuringTheDay && !metric.nightly -> "in progress"
                 atGoal -> "goal met"
                 else -> rangeStatus(metric, day)?.takeIf { it != "in range" }
             },
@@ -68,8 +68,8 @@ internal fun valueText(metric: MetricDefinition, day: DailySummary): String? {
     val parts = metric.quantities.mapNotNull { quantity ->
         when (val value = day.values[quantity.key]) {
             null -> null
-            is DayValue.Range -> "${displayValue(value.min, quantity.precision)}–${displayValue(value.max, quantity.precision)}"
-            else -> displayValue(value.main, quantity.precision)
+            is DayValue.Range -> "${quantity.display(value.min)}–${quantity.display(value.max)}"
+            else -> quantity.display(value.main)
         }
     }
     return parts.takeIf { it.isNotEmpty() }?.joinToString("/")

@@ -16,6 +16,7 @@ import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics.BloodPressure
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics.EcgTrace
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics.HeartRate
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics.RestingHeartRate
+import com.laul.lauwell.core.catalog.metrics.SleepMetrics.SleepDuration
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayValue
 import org.junit.Assert.assertEquals
@@ -154,6 +155,38 @@ class ChartSpecTest {
         val quarter = chartSpec(steps, listOf(steps(0, 6000.0), steps(1, 8000.0)), ChartPeriod.ThreeMonths, today)!!
         assertEquals("14–20 Oct · avg 7,000 steps a day", quarter.tooltip(12, en))
         assertEquals("Tue 20 · 6,000 steps", chartSpec(steps, listOf(steps(0, 6000.0)), ChartPeriod.Week, today)!!.tooltip(6, en))
+    }
+
+    private fun night(daysAgo: Long, asleep: Double, vararg stages: Pair<String, Double>) =
+        DailySummary(SleepDuration.id, today.minusDays(daysAgo), mapOf("value" to DayValue.Total(asleep)) + stages.map { (k, v) -> k to DayValue.Total(v) }, emptySet())
+
+    @Test
+    fun `a stacked bar is the night's length, split in proportion to its stages`() {
+        val spec = chartSpec(
+            SleepDuration,
+            listOf(
+                night(1, 420.0, "deep" to 60.0, "rem" to 90.0, "light" to 250.0, "awake" to 30.0), // stages add up to 400
+                night(0, 400.0),
+            ),
+            ChartPeriod.Week,
+            today,
+        )!!
+
+        assertEquals(listOf("Deep", "REM", "Light"), spec.parts.map { it.label })
+        assertEquals(listOf(63.0, 94.5, 262.5), spec.slots[5].point!!.parts)
+        assertEquals(emptyList<Double>(), spec.slots[6].point!!.parts) // no stages: one plain bar
+        assertEquals("Goal 8h", spec.referenceLabel())
+        assertEquals(0.0, spec.yBounds()!!.start, 0.0)
+        assertEquals("Mon 19 · 7h · Deep 1h 3m · REM 1h 35m · Light 4h 23m", spec.tooltip(5, en))
+    }
+
+    @Test
+    fun `a week of nights averages their split`() {
+        val nights = listOf(night(0, 400.0, "deep" to 100.0, "rem" to 100.0, "light" to 200.0), night(1, 300.0))
+        val point = chartSpec(SleepDuration, nights, ChartPeriod.ThreeMonths, today)!!.slots.last().point!!
+
+        assertEquals(350.0, point.value, 0.0)
+        assertEquals(listOf(87.5, 87.5, 175.0), point.parts)
     }
 
     @Test

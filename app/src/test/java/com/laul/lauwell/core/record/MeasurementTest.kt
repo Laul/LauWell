@@ -2,6 +2,7 @@ package com.laul.lauwell.core.record
 
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
+import com.laul.lauwell.core.catalog.metrics.SleepMetrics
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
@@ -51,6 +52,15 @@ class MeasurementTest {
         assertEquals("1,234.6", displayValue(1234.55, 1))
         assertEquals("73", displayValue(72.5, 0))
         assertEquals("5.0", displayValue(5.0, 1))
+    }
+
+    @Test
+    fun `durations read in hours and minutes`() {
+        assertEquals("7h 12m", durationText(432.0))
+        assertEquals("8h", durationText(480.0))
+        assertEquals("45m", durationText(45.4))
+        assertEquals("1h", durationText(59.6))
+        assertEquals("7h 12m", SleepMetrics.SleepDuration.quantities.single().display(432.0))
     }
 
     @Test(expected = IllegalArgumentException::class)

@@ -40,6 +40,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.text.style.TextAlign
 import com.laul.lauwell.core.ui.components.PanelDivider
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import com.laul.lauwell.core.ui.chart.partAlpha
 
 /**
  * One metric's detail, shared by every metric (`metric/{id}`): today's value, the last 7 days as
@@ -108,6 +116,8 @@ private fun MetricDetail(metric: MetricDefinition) {
             else -> Unit
         }
 
+        if (state.breakdown.isNotEmpty()) Breakdown(state.breakdown, metric, state.latestWhen.orEmpty())
+
         state.chart?.let { chart ->
             SegmentedSelector(
                 options = ChartPeriod.entries.map { it.label },
@@ -136,6 +146,44 @@ private fun AccessPanel(text: String, action: (@Composable () -> Unit)? = null) 
         Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm)) {
             BasicText(text, style = LauWellTheme.typography.body.copy(color = LauWellTheme.colors.ink))
             action?.invoke()
+        }
+    }
+}
+
+/**
+ * The latest day's parts (a night's stages; a provisional design, PLAN.md → M3): one bar split in
+ * the chart's shades, so it doubles as the chart's legend, then a row per part with its share and
+ * value. A part beside the total (awake) is in the neutral line colour, without a share.
+ */
+@Composable
+private fun Breakdown(rows: List<BreakdownRow>, metric: MetricDefinition, title: String) {
+    val colors = LauWellTheme.colors
+    val type = LauWellTheme.typography
+    val fg = colors.forCategory(metric.category).fg
+    fun colorOf(row: BreakdownRow) = row.partIndex?.let { fg.copy(alpha = partAlpha(it)) } ?: colors.lineSoft
+    Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) {
+        Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm)) {
+            BasicText(title, style = type.caption.copy(color = colors.ink2))
+            Row(
+                Modifier.fillMaxWidth().height(10.dp).clip(LauWellTheme.shapes.bar),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                rows.filter { (it.share ?: 0f) > 0f }.forEach { row ->
+                    Box(Modifier.weight(row.share!!).fillMaxHeight().background(colorOf(row)))
+                }
+            }
+            rows.forEach { row ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm)) {
+                    Box(Modifier.size(10.dp).clip(CircleShape).background(colorOf(row)))
+                    BasicText(row.label, style = type.item.copy(color = colors.ink), modifier = Modifier.weight(1f))
+                    row.shareText?.let { BasicText(it, style = type.caption.copy(color = colors.ink2)) }
+                    BasicText(
+                        row.value,
+                        style = type.metricSmall.copy(color = colors.ink, textAlign = TextAlign.End),
+                        modifier = Modifier.widthIn(min = 72.dp),
+                    )
+                }
+            }
         }
     }
 }

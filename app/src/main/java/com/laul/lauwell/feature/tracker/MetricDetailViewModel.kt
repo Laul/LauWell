@@ -7,11 +7,12 @@ import com.laul.lauwell.core.healthconnect.HealthConnectAvailability
 import com.laul.lauwell.core.healthconnect.HealthDataSource
 import com.laul.lauwell.core.healthconnect.HealthSync
 import com.laul.lauwell.core.healthconnect.SummaryStore
+import com.laul.lauwell.core.healthconnect.dayBounds
 import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.PeriodStats
-import com.laul.lauwell.core.record.displayValue
+import com.laul.lauwell.core.record.display
 import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
@@ -63,6 +64,8 @@ data class MetricDetailState(
     val stats: PeriodStats? = null,
     /** The period's days, newest first. */
     val days: List<DayRow> = emptyList(),
+    /** [latest]'s breakdown (a night's stages); empty without one. */
+    val breakdown: List<BreakdownRow> = emptyList(),
     /** Where [latest]'s records come from, read from them: the daily aggregation gives no origins. */
     val origins: Set<DataOrigin> = emptySet(),
     val lastSyncedAt: Instant? = null,
@@ -100,10 +103,13 @@ class MetricDetailViewModel(
         latest.takeIf { access == HealthAccess.Granted }
     }.distinctUntilChanged().mapLatest { latest ->
         if (latest == null) return@mapLatest emptySet()
-        val zone = clock.zone
+        val (from, until) = dayBounds(metric, latest.date, clock.zone)
+        // A summary that names its apps (a night, read from one app) keeps to those apps' records.
+        val apps = latest.origins.map { it.appPackage }.toSet()
         try {
-            source.readMeasurements(metric, latest.date.atStartOfDay(zone).toInstant(), latest.date.plusDays(1).atStartOfDay(zone).toInstant())
+            source.readMeasurements(metric, from, until)
                 .mapNotNull { it.provenance.origin }
+                .filter { apps.isEmpty() || it.appPackage in apps }
                 .toSet()
         } catch (e: CancellationException) {
             throw e
@@ -125,10 +131,11 @@ class MetricDetailViewModel(
             access = access,
             period = period,
             latest = latest,
-            latestWhen = latest?.let { ago(it.date, today).replaceFirstChar { c -> c.uppercase() } },
+            latestWhen = latest?.let { ago(it.date, today, metric.nightly).replaceFirstChar { c -> c.uppercase() } },
             chart = chartSpec(metric, summaries, period, today),
             stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, period.days(today)) },
             days = dayRows(metric, summaries, period, today),
+            breakdown = latest?.let { breakdownRows(metric, it) }.orEmpty(),
             lastSyncedAt = syncedAt,
             origins = origins,
         )
@@ -172,15 +179,16 @@ class MetricDetailViewModel(
 
 /**
  * The stats row: for a metric with a goal (steps), "Daily average · Best day · At goal" as in the
- * design; otherwise "Lowest · Average · Highest". A value without data reads "—".
+ * design ("Average · Longest · At goal" for a night); otherwise "Lowest · Average · Highest". A
+ * value without data reads "—".
  */
 internal fun statItems(metric: MetricDefinition, stats: PeriodStats): List<Pair<String, String>> {
-    val precision = metric.quantities.first().precision
-    fun f(value: Double?) = value?.let { displayValue(it, precision) } ?: "—"
+    val quantity = metric.quantities.first()
+    fun f(value: Double?) = value?.let { quantity.display(it) } ?: "—"
     return if (metric.goal != null) {
         listOf(
-            "Daily average" to f(stats.average),
-            "Best day" to f(stats.highest?.value),
+            (if (metric.nightly) "Average" else "Daily average") to f(stats.average),
+            (if (metric.nightly) "Longest" else "Best day") to f(stats.highest?.value),
             "At goal" to "${stats.daysAtGoal ?: 0} of ${stats.daysWithData}",
         )
     } else {

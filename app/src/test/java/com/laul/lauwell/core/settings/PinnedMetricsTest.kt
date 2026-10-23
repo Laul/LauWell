@@ -4,6 +4,7 @@ import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
+import com.laul.lauwell.core.catalog.metrics.SleepMetrics
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -13,9 +14,9 @@ class PinnedMetricsTest {
 
     @Test
     fun `the defaults show what the registry has, in their order`() {
-        // Sleep, fatigue and ostomy output land with their features.
+        // Fatigue and ostomy output land with their features.
         assertEquals(
-            listOf(ActivityMetrics.Steps, CardiovascularMetrics.RestingHeartRate, CardiovascularMetrics.BloodPressure),
+            listOf(ActivityMetrics.Steps, CardiovascularMetrics.RestingHeartRate, SleepMetrics.SleepDuration, CardiovascularMetrics.BloodPressure),
             pinnedTiles(DefaultPinned, visible),
         )
     }

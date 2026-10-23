@@ -37,6 +37,12 @@ data class MetricDefinition(
     val screens: Set<NavScreen>,
     /** What one record holds. One entry for a single value, several for e.g. blood pressure. */
     val quantities: List<Quantity> = emptyList(),
+    /**
+     * Parts of the first quantity's value, kept in the same daily summary: a night's sleep stages.
+     * The detail screen shows them for the latest day, and a [ChartKind.StackedBar] stacks those
+     * [Quantity.inTotal]. Not shown on Tracker rows or tiles.
+     */
+    val breakdown: List<Quantity> = emptyList(),
     /** How records are summarised per day; null when a daily summary means nothing. */
     val aggregation: Aggregation? = null,
     val chartKind: ChartKind? = null,
@@ -49,6 +55,11 @@ data class MetricDefinition(
      * asks for, and only while it is visible (`core.healthconnect.readPermissions`).
      */
     val healthConnectTypes: Set<KClass<out Record>> = emptySet(),
+    /**
+     * A night's value (sleep): it counts on the day it ends, and that day runs from 18:00 the
+     * evening before to 18:00, so a night is never cut at midnight.
+     */
+    val nightly: Boolean = false,
 ) {
     val category: Category get() = subCategory.category
 
@@ -56,9 +67,11 @@ data class MetricDefinition(
         require(shape != StorageShape.Measurement || quantities.isNotEmpty()) {
             "$id: a Measurement needs at least one quantity"
         }
-        require(quantities.map { it.key }.distinct().size == quantities.size) {
+        require((quantities + breakdown).map { it.key }.distinct().size == quantities.size + breakdown.size) {
             "$id: quantity keys must be unique"
         }
+        require(breakdown.isEmpty() || quantities.size == 1) { "$id: a breakdown splits a single quantity" }
+        require(chartKind != ChartKind.StackedBar || breakdown.any { it.inTotal }) { "$id: a stacked bar needs parts" }
         require(chartKind == null || aggregation != null) { "$id: a chart needs an aggregation" }
         require(sources.isNotEmpty()) { "$id: a metric needs at least one source" }
         require(screens.isNotEmpty()) { "$id: a metric needs at least one screen" }
@@ -98,6 +111,9 @@ enum class NavScreen { Tracker, Records, Care }
  * @param key stable within its metric, e.g. "systolic".
  * @param unit what the user reads, e.g. "bpm", "mmHg".
  * @param precision decimals shown.
+ * @param format how the value reads: a number, or minutes shown as "7h 12m" (then [unit] is empty).
+ * @param inTotal for a breakdown part: whether it adds up to the whole (deep sleep), or sits beside
+ *   it (time awake during the night).
  * @param normalRange generic adult clinical range (Vitals); null when there is no meaningful one.
  *   User-configurable targets are backlog.
  */
@@ -107,10 +123,21 @@ data class Quantity(
     val unit: String,
     val precision: Int = 0,
     val normalRange: ClosedFloatingPointRange<Double>? = null,
+    val format: ValueFormat = ValueFormat.Number,
+    val inTotal: Boolean = true,
 ) {
     init {
         require(precision >= 0) { "precision must be >= 0" }
+        require(format != ValueFormat.Duration || unit.isEmpty()) { "$key: a duration reads \"7h 12m\", without a unit" }
     }
+}
+
+enum class ValueFormat {
+    /** "8,260", followed by the unit. */
+    Number,
+
+    /** A number of minutes, read "7h 12m". */
+    Duration,
 }
 
 /** A personal target: Lifestyle data is measured against a goal you set, not a clinical range. */
@@ -133,7 +160,14 @@ enum class Aggregation {
 }
 
 /** Mapped to an actual chart by the `ChartSpec` layer (M3), the only place that knows Vico. */
-enum class ChartKind { Line, Bar, RangeBar }
+enum class ChartKind {
+    Line,
+    Bar,
+    RangeBar,
+
+    /** A bar split into the metric's [MetricDefinition.breakdown] parts: a night's sleep stages. */
+    StackedBar,
+}
 
 /**
  * The small chart on a Tracker row (7 days, 56 × 24dp) and widget (34dp high), drawn by

@@ -6,6 +6,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
@@ -13,6 +14,7 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
+import com.laul.lauwell.core.catalog.metrics.SleepMetrics
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.DayValue
@@ -23,8 +25,10 @@ import com.laul.lauwell.core.record.RecordId
 import com.laul.lauwell.core.record.RecordingMethod
 import com.laul.lauwell.core.record.Source
 import com.laul.lauwell.core.record.SourceDevice
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
@@ -37,6 +41,7 @@ private val HeartRate = CardiovascularMetrics.HeartRate.id
 private val RestingHeartRate = CardiovascularMetrics.RestingHeartRate.id
 private val BloodPressure = CardiovascularMetrics.BloodPressure.id
 private val Steps = ActivityMetrics.Steps.id
+private val SleepDuration = SleepMetrics.SleepDuration.id
 
 /** [record] as [Measurement]s of [metric]: one per sample for a series, one otherwise. */
 internal fun toMeasurements(metric: MetricId, record: Record): List<Measurement> = when (record) {
@@ -89,6 +94,18 @@ internal fun toMeasurements(metric: MetricId, record: Record): List<Measurement>
         ),
     )
 
+    // Read for the origins of the source line; the night's values come from [sleepNight].
+    is SleepSessionRecord -> listOf(
+        Measurement(
+            id = RecordId(record.metadata.id),
+            metric = metric,
+            time = record.endTime,
+            zoneOffset = record.endZoneOffset,
+            values = mapOf("value" to (minutes(record.startTime, record.endTime) - stageMinutes(record.stages, AwakeStages))),
+            provenance = provenanceOf(record.metadata),
+        ),
+    )
+
     else -> error("No mapping for ${record::class.simpleName} ($metric)")
 }
 
@@ -127,6 +144,7 @@ internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<
     RestingHeartRate -> setOf(RestingHeartRateRecord.BPM_AVG)
     BloodPressure -> setOf(BloodPressureRecord.SYSTOLIC_AVG, BloodPressureRecord.DIASTOLIC_AVG)
     Steps -> setOf(StepsRecord.COUNT_TOTAL)
+    SleepDuration -> setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL)
     else -> {
         check(metric.healthConnectTypes.isEmpty()) { "No aggregation mapping for ${metric.id}" }
         emptySet()
@@ -135,7 +153,8 @@ internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<
 
 /**
  * One day of Health Connect's aggregation as a [DailySummary], or null when the day has no data
- * (Health Connect still returns a group for it, without values).
+ * (Health Connect still returns a group for it, without values). A nightly metric's groups start at
+ * [NightStart] the evening before the day they count on ([nightBounds]).
  */
 internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupedByPeriod): DailySummary? {
     val result = day.result
@@ -166,11 +185,16 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
             mapOf("value" to DayValue.Total(total.toDouble()))
         }
 
+        SleepDuration -> {
+            val total = result[SleepSessionRecord.SLEEP_DURATION_TOTAL]?.takeIf { !it.isZero } ?: return null
+            mapOf("value" to DayValue.Total(total.toMillis() / 60_000.0))
+        }
+
         else -> error("No aggregation mapping for ${metric.id}")
     }
     return DailySummary(
         metric = metric.id,
-        date = day.startTime.toLocalDate(),
+        date = day.startTime.toLocalDate().let { if (metric.nightly) it.plusDays(1) else it },
         values = values,
         origins = result.dataOrigins.mapTo(mutableSetOf()) { DataOrigin(it.packageName) },
     )
@@ -185,6 +209,7 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
 internal fun localDays(record: Record, fallback: ZoneId): Set<LocalDate> = when (record) {
     is HeartRateRecord -> daysOf(record.startTime, record.startZoneOffset, record.endTime, record.endZoneOffset, fallback)
     is StepsRecord -> daysOf(record.startTime, record.startZoneOffset, record.endTime, record.endZoneOffset, fallback)
+    is SleepSessionRecord -> setOf(nightOf(record.endTime, record.endZoneOffset, fallback))
     is RestingHeartRateRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
     is BloodPressureRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
     // Health Connect's instant / interval interfaces are internal, hence one branch per record type.
@@ -200,6 +225,77 @@ private fun daysOf(start: Instant, startOffset: ZoneOffset?, end: Instant, endOf
 
 private fun localDate(time: Instant, offset: ZoneOffset?, fallback: ZoneId): LocalDate =
     time.atZone(offset ?: fallback).toLocalDate()
+
+/** When a nightly metric's day starts, the evening before: a night is never cut at midnight. */
+internal val NightStart: LocalTime = LocalTime.of(18, 0)
+
+/** The day a night ending at [end] counts on: the next day once past [NightStart] (an evening nap). */
+internal fun nightOf(end: Instant, offset: ZoneOffset?, fallback: ZoneId): LocalDate =
+    end.atZone(offset ?: fallback).toLocalDateTime().plusHours(24L - NightStart.hour).toLocalDate()
+
+/**
+ * The instants [date] covers for [metric]: midnight to midnight, or for a nightly metric
+ * [NightStart] the evening before to [NightStart] that day.
+ */
+fun dayBounds(metric: MetricDefinition, date: LocalDate, zone: ZoneId): Pair<Instant, Instant> =
+    if (metric.nightly) {
+        date.minusDays(1).atTime(NightStart).atZone(zone).toInstant() to date.atTime(NightStart).atZone(zone).toInstant()
+    } else {
+        date.atStartOfDay(zone).toInstant() to date.plusDays(1).atStartOfDay(zone).toInstant()
+    }
+
+/**
+ * A night's [summary], from the aggregation (which applies the apps' priority), completed from the
+ * [sessions] that end on that night: several apps may each have written the night. The app whose
+ * sessions last closest to the aggregated total is taken as the one Health Connect counted, and the
+ * night is read from its sessions only, never mixing two apps' stages:
+ * - with stages, time asleep is the sessions' length minus the time awake, split into deep, REM,
+ *   light (when the app tells them apart) and awake;
+ * - without stages, time asleep is the aggregated total, as is.
+ * Its [DailySummary.origins] become that app. Without sessions, [summary] is returned as is.
+ */
+internal fun sleepNight(summary: DailySummary, sessions: List<SleepSessionRecord>): DailySummary {
+    val total = summary.values["value"]?.let { (it as? DayValue.Total)?.value } ?: return summary
+    val chosen = sessions.groupBy { it.metadata.dataOrigin.packageName }.values
+        .minByOrNull { app -> kotlin.math.abs(app.sumOf { minutes(it.startTime, it.endTime) } - total) }
+        ?: return summary
+    val stages = chosen.flatMap { it.stages }
+    val values = if (stages.isEmpty()) {
+        mapOf("value" to DayValue.Total(total))
+    } else {
+        val awake = stageMinutes(stages, AwakeStages)
+        buildMap {
+            put("value", DayValue.Total(chosen.sumOf { minutes(it.startTime, it.endTime) } - awake))
+            put("awake", DayValue.Total(awake))
+            if (stages.any { it.stage in SplitStages.values.flatten() }) {
+                SplitStages.forEach { (key, types) -> put(key, DayValue.Total(stageMinutes(stages, types))) }
+            }
+        }
+    }
+    return summary.copy(
+        values = values,
+        origins = chosen.mapTo(mutableSetOf()) { DataOrigin(it.metadata.dataOrigin.packageName) },
+    )
+}
+
+/** Health Connect's stage types for time awake during a night. */
+private val AwakeStages = setOf(
+    SleepSessionRecord.STAGE_TYPE_AWAKE,
+    SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED,
+    SleepSessionRecord.STAGE_TYPE_OUT_OF_BED,
+)
+
+/** The breakdown keys of [SleepMetrics.SleepDuration] and their stage types. "Sleeping" (stage unknown) is in none. */
+private val SplitStages = mapOf(
+    "deep" to setOf(SleepSessionRecord.STAGE_TYPE_DEEP),
+    "rem" to setOf(SleepSessionRecord.STAGE_TYPE_REM),
+    "light" to setOf(SleepSessionRecord.STAGE_TYPE_LIGHT),
+)
+
+private fun stageMinutes(stages: List<SleepSessionRecord.Stage>, types: Set<Int>): Double =
+    stages.filter { it.stage in types }.sumOf { minutes(it.startTime, it.endTime) }
+
+private fun minutes(start: Instant, end: Instant): Double = Duration.between(start, end).toMillis() / 60_000.0
 
 /** Reads every page: [fetch] gets the previous page's token (null first) and returns its items and the next token. */
 internal suspend fun <T> readAllPages(fetch: suspend (pageToken: String?) -> Pair<List<T>, String?>): List<T> {

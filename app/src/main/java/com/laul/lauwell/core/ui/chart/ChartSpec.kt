@@ -5,11 +5,12 @@ import com.laul.lauwell.core.catalog.Category
 import com.laul.lauwell.core.catalog.ChartKind
 import com.laul.lauwell.core.catalog.Goal
 import com.laul.lauwell.core.catalog.MetricDefinition
+import com.laul.lauwell.core.catalog.Quantity
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayEntry
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.daySeries
-import com.laul.lauwell.core.record.displayValue
+import com.laul.lauwell.core.record.display
 import com.laul.lauwell.core.record.isMetBy
 import com.laul.lauwell.core.record.main
 import java.time.LocalDate
@@ -38,8 +39,11 @@ enum class ChartPeriod(val label: String, val slotCount: Int, val daysPerSlot: I
 /**
  * One slot's value: [low] to [high] for a range bar, [value] for a bar or a line (and a range's
  * average). A bar or a line point has low = value = high.
+ *
+ * @param parts a stacked bar's segments from the bottom, one per [ChartSpec.parts], adding up to
+ *   [value]; empty when the slot has no breakdown (drawn as one plain bar).
  */
-data class ChartPoint(val low: Double, val value: Double, val high: Double)
+data class ChartPoint(val low: Double, val value: Double, val high: Double, val parts: List<Double> = emptyList())
 
 /** A day, or a week in [ChartPeriod.ThreeMonths]; [point] null when it holds no data (a gap, never 0). */
 data class ChartSlot(val days: ClosedRange<LocalDate>, val point: ChartPoint?)
@@ -51,6 +55,8 @@ data class ChartSlot(val days: ClosedRange<LocalDate>, val point: ChartPoint?)
  *
  * @param band the quantity's normal range, drawn behind; null for none or for several quantities.
  * @param markAverage whether a range bar carries its average as a dot (heart rate, not blood pressure).
+ * @param quantity the charted value's quantity, for its labels ("8,260 steps", "7h 12m").
+ * @param parts a stacked bar's parts, from the bottom (deep, REM, light sleep); empty otherwise.
  */
 data class ChartSpec(
     val kind: ChartKind,
@@ -60,8 +66,8 @@ data class ChartSpec(
     val band: ClosedFloatingPointRange<Double>?,
     val goal: Goal?,
     val markAverage: Boolean,
-    val unit: String,
-    val precision: Int,
+    val quantity: Quantity,
+    val parts: List<Quantity> = emptyList(),
 ) {
     init {
         require(slots.size == period.slotCount) { "${period.slotCount} slots expected, got ${slots.size}" }
@@ -74,29 +80,32 @@ data class ChartSpec(
 /**
  * [metric]'s chart over [period] ending [today], from its daily [summaries]; null for a metric
  * without a chart kind. A range bar spans a day's own min–max (heart rate) or its quantities
- * (blood pressure: diastolic to systolic); a bar or a line uses the day's value. A week slot holds
- * the mean of its days' values and the extremes of their lows and highs.
+ * (blood pressure: diastolic to systolic); a bar or a line uses the day's value. A stacked bar is
+ * as tall as the day's value, split in proportion to its parts (the stages of one app's night may
+ * not add up exactly to the night's value). A week slot holds the mean of its days' values and
+ * parts, and the extremes of their lows and highs.
  */
 fun chartSpec(metric: MetricDefinition, summaries: List<DailySummary>, period: ChartPeriod, today: LocalDate): ChartSpec? {
     val kind = metric.chartKind ?: return null
     val first = metric.quantities.firstOrNull() ?: return null
     val series = daySeries(metric, summaries, period.days(today))
+    val parts = if (kind == ChartKind.StackedBar) metric.breakdown.filter { it.inTotal } else emptyList()
     return ChartSpec(
         kind = kind,
         category = metric.category,
         period = period,
         slots = series.chunked(period.daysPerSlot).map { days ->
-            ChartSlot(days.first().date..days.last().date, slotPoint(days.mapNotNull { dayPoint(kind, metric, it) }))
+            ChartSlot(days.first().date..days.last().date, slotPoint(days.mapNotNull { dayPoint(kind, metric, parts, it) }))
         },
         band = metric.quantities.singleOrNull()?.normalRange,
         goal = metric.goal,
         markAverage = metric.aggregation == Aggregation.MinAverageMax,
-        unit = first.unit,
-        precision = first.precision,
+        quantity = first,
+        parts = parts,
     )
 }
 
-private fun dayPoint(kind: ChartKind, metric: MetricDefinition, entry: DayEntry): ChartPoint? {
+private fun dayPoint(kind: ChartKind, metric: MetricDefinition, parts: List<Quantity>, entry: DayEntry): ChartPoint? {
     val values = entry.summary?.values ?: return null
     if (kind == ChartKind.RangeBar) {
         (values.values.singleOrNull() as? DayValue.Range)?.let { return ChartPoint(it.min, it.average, it.max) }
@@ -104,11 +113,32 @@ private fun dayPoint(kind: ChartKind, metric: MetricDefinition, entry: DayEntry)
         return ChartPoint(mains.min(), mains.average(), mains.max())
     }
     val value = values[metric.quantities.first().key]?.main ?: return null
-    return ChartPoint(value, value, value)
+    return ChartPoint(value, value, value, scaledParts(parts.map { values[it.key]?.main }, value))
 }
 
-private fun slotPoint(days: List<ChartPoint>): ChartPoint? =
-    days.takeIf { it.isNotEmpty() }?.let { ChartPoint(it.minOf { p -> p.low }, it.map { p -> p.value }.average(), it.maxOf { p -> p.high }) }
+/** [parts] rescaled to add up to [total]; empty when one is missing or they add up to nothing. */
+private fun scaledParts(parts: List<Double?>, total: Double): List<Double> {
+    if (parts.isEmpty() || parts.any { it == null }) return emptyList()
+    val sum = parts.sumOf { it!! }
+    return if (sum <= 0.0) emptyList() else parts.map { it!! * total / sum }
+}
+
+private fun slotPoint(days: List<ChartPoint>): ChartPoint? {
+    if (days.isEmpty()) return null
+    val value = days.map { it.value }.average()
+    // A week's parts: the average split of its days that have one, scaled to the week's value.
+    val split = days.filter { it.parts.isNotEmpty() }
+    val parts = split.firstOrNull()?.parts?.indices?.map { i -> split.map { it.parts[i] }.average() }.orEmpty()
+    return ChartPoint(days.minOf { it.low }, value, days.maxOf { it.high }, scaledParts(parts, value))
+}
+
+/**
+ * The opacity of stacked part [index] over the category fg, darkest at the bottom (deep sleep);
+ * the breakdown on the detail screen uses the same, so it reads as the chart's legend.
+ */
+fun partAlpha(index: Int): Float = PartAlphas.getOrElse(index) { PartAlphas.last() }
+
+private val PartAlphas = listOf(1f, 0.6f, 0.3f)
 
 /** Whether slot [index] meets the goal; null without a goal or data. Below-goal bars are dimmed. */
 fun ChartSpec.meetsGoal(index: Int): Boolean? {
@@ -122,7 +152,7 @@ fun ChartSpec.meetsGoal(index: Int): Boolean? {
  */
 fun ChartSpec.yBounds(): ClosedFloatingPointRange<Double>? {
     val points = slots.mapNotNull { it.point }.takeIf { it.isNotEmpty() } ?: return null
-    if (kind == ChartKind.Bar) {
+    if (kind == ChartKind.Bar || kind == ChartKind.StackedBar) {
         val top = maxOf(points.maxOf { it.high }, goal?.value ?: 0.0) * 1.1
         val step = niceStep(top)
         return 0.0..(ceil(top / step) * step).coerceAtLeast(step)
@@ -176,10 +206,10 @@ fun ChartSpec.rangeLabel(locale: Locale = Locale.getDefault()): String {
     return "$startText – ${end.dayOfMonth} ${end.format(month)}"
 }
 
-/** The chart header's reference line: "Goal 8,000" or "Normal 60–100"; null for neither. */
+/** The chart header's reference line: "Goal 8,000", "Goal 8h" or "Normal 60–100"; null for neither. */
 fun ChartSpec.referenceLabel(): String? = when {
-    goal != null -> "Goal ${displayValue(goal.value, precision)}"
-    band != null -> "Normal ${displayValue(band.start, precision)}–${displayValue(band.endInclusive, precision)}"
+    goal != null -> "Goal ${quantity.display(goal.value)}"
+    band != null -> "Normal ${quantity.display(band.start)}–${quantity.display(band.endInclusive)}"
     else -> null
 }
 
@@ -200,11 +230,15 @@ fun ChartSpec.tooltip(index: Int, locale: Locale = Locale.getDefault()): String?
     } else {
         "${day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale)} ${day.dayOfMonth}"
     }
-    fun f(value: Double) = displayValue(value, precision)
+    fun f(value: Double) = quantity.display(value)
+    val unit = if (quantity.unit.isEmpty()) "" else " ${quantity.unit}"
     val value = when (kind) {
-        ChartKind.RangeBar -> "${f(point.low)}–${f(point.high)} $unit" + if (markAverage) " · avg ${f(point.value)}" else ""
-        ChartKind.Bar -> if (weekly) "avg ${f(point.value)} $unit a day" else "${f(point.value)} $unit"
-        ChartKind.Line -> if (weekly) "avg ${f(point.value)} $unit" else "${f(point.value)} $unit"
+        ChartKind.RangeBar -> "${f(point.low)}–${f(point.high)}$unit" + if (markAverage) " · avg ${f(point.value)}" else ""
+        ChartKind.Bar -> if (weekly) "avg ${f(point.value)}$unit a day" else "${f(point.value)}$unit"
+        // "Tue 14 · 7h 12m · Deep 1h 30m · REM 1h 40m · Light 4h 2m"
+        ChartKind.StackedBar -> (if (weekly) "avg ${f(point.value)}" else f(point.value)) +
+            parts.zip(point.parts).joinToString("") { (part, length) -> " · ${part.label} ${part.display(length)}" }
+        ChartKind.Line -> if (weekly) "avg ${f(point.value)}$unit" else "${f(point.value)}$unit"
     }
     return "$label · $value"
 }

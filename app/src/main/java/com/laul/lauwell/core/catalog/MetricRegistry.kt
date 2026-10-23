@@ -2,6 +2,7 @@ package com.laul.lauwell.core.catalog
 
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
+import com.laul.lauwell.core.catalog.metrics.SleepMetrics
 
 /**
  * Every metric the app knows about. Adding a tracker means adding its [MetricDefinition] to one
@@ -12,7 +13,7 @@ import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
  */
 object MetricRegistry {
 
-    val all: List<MetricDefinition> = CardiovascularMetrics.all + ActivityMetrics.all
+    val all: List<MetricDefinition> = CardiovascularMetrics.all + ActivityMetrics.all + SleepMetrics.all
 
     private val byId: Map<MetricId, MetricDefinition> = all.associateBy { it.id }
 

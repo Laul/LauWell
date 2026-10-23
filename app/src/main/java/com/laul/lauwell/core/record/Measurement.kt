@@ -2,7 +2,9 @@ package com.laul.lauwell.core.record
 
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
+import com.laul.lauwell.core.catalog.Quantity
 import com.laul.lauwell.core.catalog.StorageShape
+import com.laul.lauwell.core.catalog.ValueFormat
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -73,3 +75,21 @@ fun displayValue(value: Double, precision: Int): String =
     DecimalFormat("#,##0" + if (precision > 0) "." + "0".repeat(precision) else "", DecimalFormatSymbols(Locale.ENGLISH))
         .apply { roundingMode = RoundingMode.HALF_UP }
         .format(value.toBigDecimal().setScale(precision, RoundingMode.HALF_UP))
+
+/** [value] of this quantity as the UI shows it: "8,260", or "7h 12m" for a duration. */
+fun Quantity.display(value: Double): String = when (format) {
+    ValueFormat.Number -> displayValue(value, precision)
+    ValueFormat.Duration -> durationText(value)
+}
+
+/** Minutes as "7h 12m", "8h", "45m" (rounded to the minute). */
+internal fun durationText(minutes: Double): String {
+    val total = minutes.toBigDecimal().setScale(0, RoundingMode.HALF_UP).toLong()
+    val hours = total / 60
+    val rest = total % 60
+    return when {
+        hours == 0L -> "${rest}m"
+        rest == 0L -> "${hours}h"
+        else -> "${hours}h ${rest}m"
+    }
+}

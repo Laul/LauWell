@@ -712,7 +712,32 @@ until 2026-10-18, see Decisions → *Read first*).
   - [ ] Check the total against the app ranked first in Health Connect's priority for steps (a
         mismatch would mean a duplicate counted)
   - [ ] Phone models show as codes ("Samsung SM-F971W"): a short model → name table if it matters
-- [ ] Then sleep
+- [ ] Sleep, on a **provisional design by Claude** (2026-10-22; Lauranne has no design yet and will
+      review market sleep trackers, then revise it with the chart visuals). Seen on device 2026-10-22
+      (Garmin is the only app writing sleep on Lauranne's phone; a week of nights with stages):
+  - One metric `sleep_duration` (time asleep, minutes, read "7h 12m": `ValueFormat.Duration`) whose
+    `breakdown` holds the night's stages (deep, REM, light, and awake beside them, `inTotal = false`).
+    This also covers the data map's *Sleep stages* row. Decided (Lauranne, 2026-10-22): two rows in
+    the data model don't mean two screens; one sleep screen with its stages is right
+  - Nights (`MetricDefinition.nightly`): a night counts on the day it ends, days run 18:00 → 18:00,
+    so no night is cut at midnight; an evening nap after 18:00 counts on the next night
+  - Duplicates: the night's total is Health Connect's aggregation (`SLEEP_DURATION_TOTAL`, the apps'
+    priority) over that window; the app whose sessions last closest to it is taken as the one
+    counted, and time asleep and stages come from its sessions only (`sleepNight`), never mixed
+    with another app's. Without stages, the aggregated total as is. The source line keeps to that app
+  - Screens: pinned tile ("7h 12m · of 8h"), Tracker row (bars + 8 h goal), detail: "Last night"
+    breakdown panel (a bar split by stage, then stage · share · time; it is also the chart's legend),
+    stacked bars (deep darkest → light palest, the category colour at decreasing opacity), stats
+    "Average · Longest · At goal", per-night list ("Last night", "goal met"), source line
+  - [ ] Check whether `SLEEP_DURATION_TOTAL` includes time awake (only the choice of app depends
+        on it, and only once a second app writes sleep)
+  - [ ] Later, if the review asks for it: last night's hypnogram (stages over time), bed and wake
+        times, sleep schedule consistency; storing stage intervals, not only their totals
+- [ ] Idea, not decided (Lauranne, 2026-10-22, to iterate on): **grouped detail screens**, more than
+      one metric or chart on one screen. Today each metric has its own detail, so following the
+      cardiovascular metrics (heart rate, resting heart rate, blood pressure…) means opening each one.
+      A grouping (by sub-category, or a defined set) could show their charts and stats together.
+      Sleep's breakdown is a first step in that direction (several values on one screen)
 - [ ] Data conventions (moved from M2): one Firestore collection `users/{uid}/records/{docId}` with a
       `type` field (Decisions → *Records → History*), FHIR-inspired common fields, one typed model
       per feature, repositories returning `Flow<AppResult<…>>`
