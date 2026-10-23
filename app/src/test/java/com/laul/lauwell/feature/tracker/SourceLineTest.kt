@@ -28,6 +28,12 @@ class SourceLineTest {
     }
 
     @Test
+    fun `a lowercase manufacturer is capitalised`() {
+        val phone = SourceDevice("samsung", "SM-F971W", DeviceType.Phone)
+        assertEquals("Samsung SM-F971W", deviceName(DataOrigin(samsung, phone)))
+    }
+
+    @Test
     fun `without a model there is no device name`() {
         assertEquals(null, deviceName(DataOrigin(garmin, watch("Garmin", " "))))
         assertEquals(null, deviceName(DataOrigin(garmin)))

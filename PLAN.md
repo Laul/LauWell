@@ -655,7 +655,9 @@ until 2026-10-18, see Decisions → *Read first*).
       from the spec by slot. Stats row: "Daily average · Best day · At goal" with a goal, else
       "Lowest · Average · Highest". Headline: the latest day with data ("76 bpm · Yesterday").
       Seen on device: heart rate range bars (all periods), resting heart rate line with its gaps
-  - [ ] Bars seen on device (no bar metric until steps) and the dashed empty slot of a range bar
+  - [x] Bars seen on device with steps (2026-10-22): goal line, days under goal dimmed, today
+        outlined (transparent, 2dp border: as in the design source)
+  - [ ] The dashed empty slot of a range bar, seen on device
   - Note: Vico refuses blank axis labels (crash): labeled slots are chosen with its `ItemPlacer`,
         and `slotLabel` gives a label for any index, also outside the slots — keep it that way
   - [ ] "Compare with" (design v18, Fold inner screen 16b): a second metric as a dashed overlay
@@ -699,11 +701,17 @@ until 2026-10-18, see Decisions → *Read first*).
         sync refreshes the whole window, since no change event brings the older days (a first
         version ran it from the grant screen and was cancelled when the screen closed). Verified
         on device 2026-10-21: heart rate's 3 months now go back to early August
-- [ ] Then steps, with the duplicates rule (Decisions → *Read first*: Garmin, Samsung Health and
-      Google Health all write steps; daily totals from Health Connect's aggregation): pinned tile,
-      Tracker hub row, and the detail screen as designed (big Mono value + goal progress, chart,
-      stats row, per-day list with notes, source line). The design assumes a default goal of 8,000
-      steps (sleep: 8 h) until user-configurable targets exist
+- [x] Steps (2026-10-22, `ActivityMetrics.Steps`, `READ_STEPS`): pinned tile ("2,669 · of 8,000"
+      with progress), Tracker row (bars + dashed goal), detail screen (bars, "Goal 8,000", "Daily
+      average · Best day · At goal", per-day list with "in progress" / "goal met", source line).
+      Default goal 8,000 until user-configurable targets exist. Daily totals come only from Health
+      Connect's aggregation (`StepsRecord.COUNT_TOTAL`, the user's app priority); records are read
+      for their origins only, never summed. On-screen numbers group thousands (`displayValue`:
+      "8,260", same on every phone). Seen on device: four apps write steps on Lauranne's phone
+      (Fitbit, Garmin Connect, Samsung Health, and Samsung Health again with the phone itself)
+  - [ ] Check the total against the app ranked first in Health Connect's priority for steps (a
+        mismatch would mean a duplicate counted)
+  - [ ] Phone models show as codes ("Samsung SM-F971W"): a short model → name table if it matters
 - [ ] Then sleep
 - [ ] Data conventions (moved from M2): one Firestore collection `users/{uid}/records/{docId}` with a
       `type` field (Decisions → *Records → History*), FHIR-inspired common fields, one typed model

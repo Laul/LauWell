@@ -45,6 +45,14 @@ class MeasurementTest {
         assertEquals("5.3", formatValue(5.25, 1))
     }
 
+    @Test
+    fun `values on screen group thousands, the same on every phone`() {
+        assertEquals("8,260", displayValue(8260.0, 0))
+        assertEquals("1,234.6", displayValue(1234.55, 1))
+        assertEquals("73", displayValue(72.5, 0))
+        assertEquals("5.0", displayValue(5.0, 1))
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun `a record must match its metric's quantities`() {
         measurement("blood_pressure", mapOf("systolic" to 118.0))

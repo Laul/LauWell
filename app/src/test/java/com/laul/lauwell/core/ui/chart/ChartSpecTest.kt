@@ -116,7 +116,7 @@ class ChartSpecTest {
         assertEquals(true, spec.meetsGoal(4))
         assertEquals(false, spec.meetsGoal(5))
         assertNull(spec.meetsGoal(6))
-        assertEquals("Goal 8000", spec.referenceLabel())
+        assertEquals("Goal 8,000", spec.referenceLabel())
     }
 
     @Test
@@ -152,8 +152,8 @@ class ChartSpecTest {
         assertNull(week.tooltip(1, en))
 
         val quarter = chartSpec(steps, listOf(steps(0, 6000.0), steps(1, 8000.0)), ChartPeriod.ThreeMonths, today)!!
-        assertEquals("14–20 Oct · avg 7000 steps a day", quarter.tooltip(12, en))
-        assertEquals("Tue 20 · 6000 steps", chartSpec(steps, listOf(steps(0, 6000.0)), ChartPeriod.Week, today)!!.tooltip(6, en))
+        assertEquals("14–20 Oct · avg 7,000 steps a day", quarter.tooltip(12, en))
+        assertEquals("Tue 20 · 6,000 steps", chartSpec(steps, listOf(steps(0, 6000.0)), ChartPeriod.Week, today)!!.tooltip(6, en))
     }
 
     @Test

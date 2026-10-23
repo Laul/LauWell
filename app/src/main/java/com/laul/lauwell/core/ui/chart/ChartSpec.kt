@@ -9,7 +9,7 @@ import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayEntry
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.daySeries
-import com.laul.lauwell.core.record.formatValue
+import com.laul.lauwell.core.record.displayValue
 import com.laul.lauwell.core.record.isMetBy
 import com.laul.lauwell.core.record.main
 import java.time.LocalDate
@@ -178,8 +178,8 @@ fun ChartSpec.rangeLabel(locale: Locale = Locale.getDefault()): String {
 
 /** The chart header's reference line: "Goal 8,000" or "Normal 60–100"; null for neither. */
 fun ChartSpec.referenceLabel(): String? = when {
-    goal != null -> "Goal ${formatValue(goal.value, precision)}"
-    band != null -> "Normal ${formatValue(band.start, precision)}–${formatValue(band.endInclusive, precision)}"
+    goal != null -> "Goal ${displayValue(goal.value, precision)}"
+    band != null -> "Normal ${displayValue(band.start, precision)}–${displayValue(band.endInclusive, precision)}"
     else -> null
 }
 
@@ -200,7 +200,7 @@ fun ChartSpec.tooltip(index: Int, locale: Locale = Locale.getDefault()): String?
     } else {
         "${day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale)} ${day.dayOfMonth}"
     }
-    fun f(value: Double) = formatValue(value, precision)
+    fun f(value: Double) = displayValue(value, precision)
     val value = when (kind) {
         ChartKind.RangeBar -> "${f(point.low)}–${f(point.high)} $unit" + if (markAverage) " · avg ${f(point.value)}" else ""
         ChartKind.Bar -> if (weekly) "avg ${f(point.value)} $unit a day" else "${f(point.value)} $unit"

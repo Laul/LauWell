@@ -5,10 +5,12 @@ import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Pressure
 import com.laul.lauwell.core.catalog.MetricRegistry
+import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.DayValue
@@ -127,6 +129,30 @@ class HealthConnectMappingTest {
         )!!
 
         assertEquals(mapOf("systolic" to DayValue.Mean(119.5), "diastolic" to DayValue.Mean(77.0)), summary.values)
+    }
+
+    @Test
+    fun `steps summarise a day as Health Connect's total`() {
+        val summary = dailySummary(
+            ActivityMetrics.Steps,
+            day(LocalDate.of(2026, 10, 18), longs = mapOf(StepsRecord.COUNT_TOTAL.metricKey to 8260)),
+        )!!
+
+        assertEquals(mapOf("value" to DayValue.Total(8260.0)), summary.values)
+    }
+
+    @Test
+    fun `a walk across midnight falls on both days`() {
+        val record = StepsRecord(
+            startTime = Instant.parse("2026-10-19T03:50:00Z"),
+            startZoneOffset = offset,
+            endTime = Instant.parse("2026-10-19T04:10:00Z"),
+            endZoneOffset = offset,
+            count = 1200,
+            metadata = metadata("steps-1"),
+        )
+        assertEquals(setOf(LocalDate.of(2026, 10, 18), LocalDate.of(2026, 10, 19)), localDays(record, ZoneOffset.UTC))
+        assertEquals(1200.0, toMeasurements(ActivityMetrics.Steps.id, record).single().values.getValue("value"), 0.0)
     }
 
     @Test

@@ -37,7 +37,8 @@ internal fun fromWatch(origins: Set<DataOrigin>): Boolean = origins.any { it.dev
  */
 internal fun deviceName(origin: DataOrigin): String? {
     val model = origin.device?.model?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-    val maker = origin.device.manufacturer?.trim()?.takeIf { it.isNotEmpty() }
+    // Some devices report a lowercase manufacturer ("samsung").
+    val maker = origin.device.manufacturer?.trim()?.takeIf { it.isNotEmpty() }?.replaceFirstChar { it.uppercase() }
     return if (maker == null || model.startsWith(maker, ignoreCase = true)) model else "$maker $model"
 }
 
@@ -46,6 +47,7 @@ internal fun appName(appPackage: String): String = when (appPackage) {
     "com.garmin.android.apps.connectmobile" -> "Garmin Connect"
     "com.sec.android.app.shealth" -> "Samsung Health"
     "com.google.android.apps.fitness" -> "Google Fit"
+    "com.fitbit.FitbitMobile" -> "Fitbit"
     "com.google.android.apps.healthdata" -> "Health Connect"
     else -> appPackage
 }

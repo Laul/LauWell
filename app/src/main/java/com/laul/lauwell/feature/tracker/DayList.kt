@@ -5,7 +5,7 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.daySeries
-import com.laul.lauwell.core.record.formatValue
+import com.laul.lauwell.core.record.displayValue
 import com.laul.lauwell.core.record.isMetBy
 import com.laul.lauwell.core.record.main
 import com.laul.lauwell.core.summary.rangeStatus
@@ -68,8 +68,8 @@ internal fun valueText(metric: MetricDefinition, day: DailySummary): String? {
     val parts = metric.quantities.mapNotNull { quantity ->
         when (val value = day.values[quantity.key]) {
             null -> null
-            is DayValue.Range -> "${formatValue(value.min, quantity.precision)}–${formatValue(value.max, quantity.precision)}"
-            else -> formatValue(value.main, quantity.precision)
+            is DayValue.Range -> "${displayValue(value.min, quantity.precision)}–${displayValue(value.max, quantity.precision)}"
+            else -> displayValue(value.main, quantity.precision)
         }
     }
     return parts.takeIf { it.isNotEmpty() }?.joinToString("/")

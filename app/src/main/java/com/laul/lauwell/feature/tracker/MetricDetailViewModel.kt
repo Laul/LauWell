@@ -11,7 +11,7 @@ import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.PeriodStats
-import com.laul.lauwell.core.record.formatValue
+import com.laul.lauwell.core.record.displayValue
 import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
@@ -176,7 +176,7 @@ class MetricDetailViewModel(
  */
 internal fun statItems(metric: MetricDefinition, stats: PeriodStats): List<Pair<String, String>> {
     val precision = metric.quantities.first().precision
-    fun f(value: Double?) = value?.let { formatValue(it, precision) } ?: "—"
+    fun f(value: Double?) = value?.let { displayValue(it, precision) } ?: "—"
     return if (metric.goal != null) {
         listOf(
             "Daily average" to f(stats.average),

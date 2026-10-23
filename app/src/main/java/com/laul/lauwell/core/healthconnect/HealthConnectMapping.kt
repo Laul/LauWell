@@ -6,10 +6,12 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.RestingHeartRateRecord
+import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
+import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
@@ -34,6 +36,7 @@ import java.time.ZoneOffset
 private val HeartRate = CardiovascularMetrics.HeartRate.id
 private val RestingHeartRate = CardiovascularMetrics.RestingHeartRate.id
 private val BloodPressure = CardiovascularMetrics.BloodPressure.id
+private val Steps = ActivityMetrics.Steps.id
 
 /** [record] as [Measurement]s of [metric]: one per sample for a series, one otherwise. */
 internal fun toMeasurements(metric: MetricId, record: Record): List<Measurement> = when (record) {
@@ -69,6 +72,19 @@ internal fun toMeasurements(metric: MetricId, record: Record): List<Measurement>
                 "systolic" to record.systolic.inMillimetersOfMercury,
                 "diastolic" to record.diastolic.inMillimetersOfMercury,
             ),
+            provenance = provenanceOf(record.metadata),
+        ),
+    )
+
+    // Raw records are read only for their origins: a day's total comes from the aggregation, which
+    // keeps the apps' priority (Decisions → Read first: steps and duplicates).
+    is StepsRecord -> listOf(
+        Measurement(
+            id = RecordId(record.metadata.id),
+            metric = metric,
+            time = record.startTime,
+            zoneOffset = record.startZoneOffset,
+            values = mapOf("value" to record.count.toDouble()),
             provenance = provenanceOf(record.metadata),
         ),
     )
@@ -110,6 +126,7 @@ internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<
     HeartRate -> setOf(HeartRateRecord.BPM_MIN, HeartRateRecord.BPM_AVG, HeartRateRecord.BPM_MAX)
     RestingHeartRate -> setOf(RestingHeartRateRecord.BPM_AVG)
     BloodPressure -> setOf(BloodPressureRecord.SYSTOLIC_AVG, BloodPressureRecord.DIASTOLIC_AVG)
+    Steps -> setOf(StepsRecord.COUNT_TOTAL)
     else -> {
         check(metric.healthConnectTypes.isEmpty()) { "No aggregation mapping for ${metric.id}" }
         emptySet()
@@ -144,6 +161,11 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
             )
         }
 
+        Steps -> {
+            val total = result[StepsRecord.COUNT_TOTAL] ?: return null
+            mapOf("value" to DayValue.Total(total.toDouble()))
+        }
+
         else -> error("No aggregation mapping for ${metric.id}")
     }
     return DailySummary(
@@ -156,19 +178,24 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
 
 /**
  * The local days [record] falls on, each end in its own offset, as the daily aggregation places
- * it: one for a reading, every day from start to end for a series (a night's heart rate spans two).
+ * it: one for a reading, every day from start to end for an interval (a night's heart rate, or a
+ * walk across midnight, spans two).
  * [fallback] is used when the writing app gave no offset.
  */
 internal fun localDays(record: Record, fallback: ZoneId): Set<LocalDate> = when (record) {
-    is HeartRateRecord -> {
-        val first = localDate(record.startTime, record.startZoneOffset, fallback)
-        val last = localDate(record.endTime, record.endZoneOffset, fallback)
-        generateSequence(first) { it.plusDays(1) }.takeWhile { it <= last }.toSet()
-    }
+    is HeartRateRecord -> daysOf(record.startTime, record.startZoneOffset, record.endTime, record.endZoneOffset, fallback)
+    is StepsRecord -> daysOf(record.startTime, record.startZoneOffset, record.endTime, record.endZoneOffset, fallback)
     is RestingHeartRateRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
     is BloodPressureRecord -> setOf(localDate(record.time, record.zoneOffset, fallback))
     // Health Connect's instant / interval interfaces are internal, hence one branch per record type.
     else -> error("No mapping for ${record::class.simpleName}")
+}
+
+/** Every local day from an interval's start to its end, each end in its own offset. */
+private fun daysOf(start: Instant, startOffset: ZoneOffset?, end: Instant, endOffset: ZoneOffset?, fallback: ZoneId): Set<LocalDate> {
+    val first = localDate(start, startOffset, fallback)
+    val last = localDate(end, endOffset, fallback)
+    return generateSequence(first) { it.plusDays(1) }.takeWhile { it <= last }.toSet()
 }
 
 private fun localDate(time: Instant, offset: ZoneOffset?, fallback: ZoneId): LocalDate =

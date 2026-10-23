@@ -4,8 +4,11 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.StorageShape
 import java.math.RoundingMode
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.Locale
 
 /**
  * The `Measurement` shape: value · unit · instant (PLAN.md → Decisions → Storage shapes). One heart
@@ -61,3 +64,12 @@ private fun unitSuffix(unit: String) = if (unit.isEmpty()) "" else " $unit"
 /** Rounded half-up to [precision] decimals, no grouping: a value, not a display string of the UI. */
 internal fun formatValue(value: Double, precision: Int): String =
     value.toBigDecimal().setScale(precision, RoundingMode.HALF_UP).toPlainString()
+
+/**
+ * A value as the UI shows it: [formatValue] with thousands grouped ("8,260"), the same on every
+ * phone (the app is in English, so the separator doesn't follow the phone's locale).
+ */
+fun displayValue(value: Double, precision: Int): String =
+    DecimalFormat("#,##0" + if (precision > 0) "." + "0".repeat(precision) else "", DecimalFormatSymbols(Locale.ENGLISH))
+        .apply { roundingMode = RoundingMode.HALF_UP }
+        .format(value.toBigDecimal().setScale(precision, RoundingMode.HALF_UP))

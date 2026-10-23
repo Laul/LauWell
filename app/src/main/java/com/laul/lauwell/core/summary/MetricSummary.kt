@@ -8,11 +8,10 @@ import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DayEntry
 import com.laul.lauwell.core.record.DayValue
 import com.laul.lauwell.core.record.daySeries
-import com.laul.lauwell.core.record.formatValue
+import com.laul.lauwell.core.record.displayValue
 import com.laul.lauwell.core.record.main
 import com.laul.lauwell.core.ui.components.MiniChartData
 import com.laul.lauwell.core.ui.components.MiniChartDays
-import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -53,7 +52,7 @@ fun metricSummary(metric: MetricDefinition, summaries: List<DailySummary>, today
     val firstValue = latest.values[first.key]
     val ago = ago(latest.date, today)
     val takeaway = listOfNotNull(
-        (firstValue as? DayValue.Range)?.let { "${formatValue(it.min, first.precision)}–${formatValue(it.max, first.precision)}" },
+        (firstValue as? DayValue.Range)?.let { "${displayValue(it.min, first.precision)}–${displayValue(it.max, first.precision)}" },
         ago,
         rangeStatus(metric, latest),
     ).joinToString(" · ").replaceFirstChar { it.uppercase() }
@@ -62,7 +61,7 @@ fun metricSummary(metric: MetricDefinition, summaries: List<DailySummary>, today
         value = displayValue(metric, latest),
         takeaway = takeaway,
         chart = metric.miniChart?.let { miniChart(it, metric, series) },
-        context = goal?.let { "of ${NumberFormat.getIntegerInstance().format(it.value)}" } ?: ago.replaceFirstChar { it.uppercase() },
+        context = goal?.let { "of ${displayValue(it.value, 0)}" } ?: ago.replaceFirstChar { it.uppercase() },
         progress = firstValue?.main?.takeIf { goal?.direction == Goal.Direction.AtLeast }
             ?.let { (it / goal!!.value).coerceIn(0.0, 1.0).toFloat() },
     )
@@ -72,7 +71,7 @@ fun metricSummary(metric: MetricDefinition, summaries: List<DailySummary>, today
 private fun displayValue(metric: MetricDefinition, day: DailySummary): String? {
     val shared = metric.quantities.map { it.unit }.distinct().size == 1
     val shown = if (shared) metric.quantities else metric.quantities.take(1)
-    val parts = shown.map { q -> day.values[q.key]?.let { formatValue(it.main, q.precision) } ?: return null }
+    val parts = shown.map { q -> day.values[q.key]?.let { displayValue(it.main, q.precision) } ?: return null }
     return parts.joinToString("/")
 }
 

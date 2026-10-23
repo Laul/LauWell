@@ -129,7 +129,7 @@ class MetricSummaryTest {
         )
         val summary = metricSummary(steps, listOf(day(steps.id, 0, "value" to DayValue.Total(6000.0))), today)
 
-        assertEquals("6000", summary.value)
+        assertEquals("6,000", summary.value)
         assertEquals(0.75f, summary.progress!!, 1e-6f)
         assertTrue(summary.context.startsWith("of 8"))
         assertEquals(8000.0, (summary.chart as MiniChartData.Bars).goal!!, 0.0)
