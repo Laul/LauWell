@@ -21,6 +21,7 @@ import com.laul.lauwell.core.record.Source
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Instant
 import java.time.LocalDate
@@ -115,20 +116,41 @@ class HealthConnectMappingTest {
         assertEquals(setOf(DataOrigin(garmin)), summary.origins)
     }
 
-    @Test
-    fun `blood pressure summarises a day as the mean of each value`() {
-        val summary = dailySummary(
-            CardiovascularMetrics.BloodPressure,
-            day(
-                LocalDate.of(2026, 10, 18),
-                doubles = mapOf(
-                    BloodPressureRecord.SYSTOLIC_AVG.metricKey to 119.5,
-                    BloodPressureRecord.DIASTOLIC_AVG.metricKey to 77.0,
-                ),
-            ),
-        )!!
+    private fun bloodPressure(id: String, time: Instant, systolic: Double, diastolic: Double) = toMeasurements(
+        CardiovascularMetrics.BloodPressure.id,
+        BloodPressureRecord(
+            time = time,
+            zoneOffset = offset,
+            systolic = Pressure.millimetersOfMercury(systolic),
+            diastolic = Pressure.millimetersOfMercury(diastolic),
+            metadata = metadata(id),
+        ),
+    ).single()
 
-        assertEquals(mapOf("systolic" to DayValue.Mean(119.5), "diastolic" to DayValue.Mean(77.0)), summary.values)
+    @Test
+    fun `blood pressure averages each value over the day's readings, with their count`() {
+        val days = LocalDate.of(2026, 10, 17)..LocalDate.of(2026, 10, 18)
+        val readings = listOf(
+            bloodPressure("bp-1", Instant.parse("2026-10-18T12:00:00Z"), 120.0, 80.0),
+            bloodPressure("bp-2", Instant.parse("2026-10-18T22:00:00Z"), 116.0, 74.0),
+            // 23:30 on the 17th in its own offset (UTC-4), though already the 18th in UTC.
+            bloodPressure("bp-3", Instant.parse("2026-10-18T03:30:00Z"), 130.0, 85.0),
+            // The 16th: outside the days asked for.
+            bloodPressure("bp-4", Instant.parse("2026-10-16T12:00:00Z"), 140.0, 90.0),
+        )
+
+        val summaries = averagedDays(CardiovascularMetrics.BloodPressure, readings, days, ZoneOffset.UTC)
+
+        assertEquals(listOf(LocalDate.of(2026, 10, 17), LocalDate.of(2026, 10, 18)), summaries.map { it.date })
+        assertEquals(mapOf("systolic" to DayValue.Mean(130.0, 1), "diastolic" to DayValue.Mean(85.0, 1)), summaries[0].values)
+        assertEquals(mapOf("systolic" to DayValue.Mean(118.0, 2), "diastolic" to DayValue.Mean(77.0, 2)), summaries[1].values)
+        assertEquals(setOf(DataOrigin(garmin)), summaries[1].origins)
+    }
+
+    @Test
+    fun `blood pressure isn't asked of Health Connect's aggregation, which rejects it on Android 14+`() {
+        assertTrue(averagedFromRecords(CardiovascularMetrics.BloodPressure))
+        assertEquals(emptySet<Any>(), aggregateMetricsFor(CardiovascularMetrics.BloodPressure))
     }
 
     @Test
@@ -162,7 +184,7 @@ class HealthConnectMappingTest {
 
     @Test
     fun `every registered metric with Health Connect types has an aggregation mapping`() {
-        MetricRegistry.all.filter { it.healthConnectTypes.isNotEmpty() }.forEach { metric ->
+        MetricRegistry.all.filter { it.healthConnectTypes.isNotEmpty() && !averagedFromRecords(it) }.forEach { metric ->
             assert(aggregateMetricsFor(metric).isNotEmpty()) { "${metric.id} has no aggregation mapping" }
         }
         assertEquals(emptySet<Any>(), aggregateMetricsFor(CardiovascularMetrics.EcgTrace))

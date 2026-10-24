@@ -42,7 +42,7 @@ sealed interface DayValue {
 
     /**
      * Mean of the day's records. [count] is null when the source doesn't say: Health Connect's
-     * aggregation gives none for blood pressure or resting heart rate.
+     * aggregation gives none (resting heart rate); blood pressure, averaged from its readings, has one.
      */
     data class Mean(val value: Double, val count: Int? = null) : DayValue {
         init {

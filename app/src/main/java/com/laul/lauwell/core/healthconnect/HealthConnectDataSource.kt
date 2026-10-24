@@ -65,6 +65,7 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
     }
 
     override suspend fun dailySummaries(metric: MetricDefinition, days: ClosedRange<LocalDate>): List<DailySummary> {
+        if (averagedFromRecords(metric)) return averagedSummaries(metric, days)
         val metrics = aggregateMetricsFor(metric)
         if (metrics.isEmpty()) return emptyList()
         if (metric.nightly) return nightlySummaries(metric, metrics, days)
@@ -96,6 +97,15 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
         )
         val byNight = readAll(SleepSessionRecord::class, range).groupBy { nightOf(it.endTime, it.endZoneOffset, zone) }
         return nights.map { sleepNight(it, byNight[it.date].orEmpty()) }
+    }
+
+    /** Days averaged from the records themselves, for what Health Connect can't aggregate. */
+    private suspend fun averagedSummaries(metric: MetricDefinition, days: ClosedRange<LocalDate>): List<DailySummary> {
+        val zone = ZoneId.systemDefault() // for readings written without an offset
+        // Fourteen hours either side, so a reading that its own offset places inside the days is read.
+        val from = days.start.atStartOfDay(zone).toInstant().minus(Duration.ofHours(14))
+        val until = days.endInclusive.plusDays(1).atStartOfDay(zone).toInstant().plus(Duration.ofHours(14))
+        return averagedDays(metric, readMeasurements(metric, from, until), days, zone)
     }
 
     override suspend fun changesToken(metric: MetricDefinition): String {

@@ -34,8 +34,9 @@ import java.time.ZoneOffset
 
 // Health Connect records and aggregates → our record model. Pure functions, so they are unit-tested
 // without a device; [HealthConnectDataSource] only adds the client calls. A new synced metric adds a
-// branch to [toMeasurements], [localDays], [aggregateMetricsFor] and [dailySummary]; `HealthConnectMappingTest`
-// fails for a registered metric that has Health Connect types but no mapping.
+// branch to [toMeasurements], [localDays], and either [aggregateMetricsFor] and [dailySummary] or
+// [averagedFromRecords]; `HealthConnectMappingTest` fails for a registered metric that has Health
+// Connect types but no mapping.
 
 private val HeartRate = CardiovascularMetrics.HeartRate.id
 private val RestingHeartRate = CardiovascularMetrics.RestingHeartRate.id
@@ -142,14 +143,48 @@ private fun Device.toSourceDevice() = SourceDevice(
 internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<*>> = when (metric.id) {
     HeartRate -> setOf(HeartRateRecord.BPM_MIN, HeartRateRecord.BPM_AVG, HeartRateRecord.BPM_MAX)
     RestingHeartRate -> setOf(RestingHeartRateRecord.BPM_AVG)
-    BloodPressure -> setOf(BloodPressureRecord.SYSTOLIC_AVG, BloodPressureRecord.DIASTOLIC_AVG)
     Steps -> setOf(StepsRecord.COUNT_TOTAL)
     SleepDuration -> setOf(SleepSessionRecord.SLEEP_DURATION_TOTAL)
     else -> {
-        check(metric.healthConnectTypes.isEmpty()) { "No aggregation mapping for ${metric.id}" }
+        check(metric.healthConnectTypes.isEmpty() || averagedFromRecords(metric)) { "No aggregation mapping for ${metric.id}" }
         emptySet()
     }
 }
+
+/**
+ * Metrics whose days are averaged from their records ([averagedDays]) instead of Health Connect's
+ * aggregation: the Health Connect built into Android 14+ rejects blood pressure's averages
+ * ("Unsupported metric type BloodPressure_diastolic_avg"), seen on the Fold 2026-10-23. Readings
+ * written by several apps then all count, without the app priority.
+ */
+internal fun averagedFromRecords(metric: MetricDefinition): Boolean = metric.id == BloodPressure
+
+/**
+ * The days of an [averagedFromRecords] metric: per quantity, the mean of the day's [readings], with
+ * how many there were. Each reading falls on its own local day ([fallback] when it has no offset);
+ * days outside [days] are left out, and a day without readings has no summary.
+ */
+internal fun averagedDays(
+    metric: MetricDefinition,
+    readings: List<Measurement>,
+    days: ClosedRange<LocalDate>,
+    fallback: ZoneId,
+): List<DailySummary> =
+    readings.groupBy { localDate(it.time, it.zoneOffset, fallback) }
+        .filterKeys { it in days }
+        .toSortedMap()
+        .map { (date, dayReadings) ->
+            DailySummary(
+                metric = metric.id,
+                date = date,
+                values = metric.quantities.associate { quantity ->
+                    quantity.key to DayValue.Mean(dayReadings.map { it.values.getValue(quantity.key) }.average(), dayReadings.size)
+                },
+                origins = dayReadings.mapNotNullTo(mutableSetOf()) { reading ->
+                    reading.provenance.origin?.let { DataOrigin(it.appPackage) }
+                },
+            )
+        }
 
 /**
  * One day of Health Connect's aggregation as a [DailySummary], or null when the day has no data
@@ -169,15 +204,6 @@ internal fun dailySummary(metric: MetricDefinition, day: AggregationResultGroupe
         RestingHeartRate -> {
             val avg = result[RestingHeartRateRecord.BPM_AVG] ?: return null
             mapOf("value" to DayValue.Mean(avg.toDouble()))
-        }
-
-        BloodPressure -> {
-            val systolic = result[BloodPressureRecord.SYSTOLIC_AVG] ?: return null
-            val diastolic = result[BloodPressureRecord.DIASTOLIC_AVG] ?: return null
-            mapOf(
-                "systolic" to DayValue.Mean(systolic.inMillimetersOfMercury),
-                "diastolic" to DayValue.Mean(diastolic.inMillimetersOfMercury),
-            )
         }
 
         Steps -> {
