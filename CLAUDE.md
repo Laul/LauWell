@@ -6,7 +6,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 ## Layout
 
 - `CLAUDE.md` — this file: project context and conventions. Read first.
-- `PLAN.md` — milestones and the current task sequence. Update it as tasks complete.
+- `PLAN.md` — decisions and their rationale (the *Decisions* section). Its *Milestones* section is a frozen
+  archive (2026-10-23): tasks now live in Notion, see **Planning** below.
 - `app/` — the `:app` Gradle module (standard Android Studio layout: `app/src/main/...`).
   The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
 - `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
@@ -40,10 +41,44 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   line under its title saying so and giving its status — keep that line accurate when editing.
 - `tmp/` — scratch, gitignored. Never put deliverables here.
 
+## Planning
+
+Tasks, bugs and milestones live in the Notion database **LauWell Planning** (source of truth since 2026-10-23).
+`PLAN.md` keeps only decisions; its old *Milestones* section is read-only history.
+
+- Database: https://app.notion.com/p/4019d84e94a18017b8a2f52244cc9ca9 — data source `collection://4019d84e-94a1-8099-883e-000beeeb2768`.
+- Use the Notion MCP tools (`notion-query-data-sources`, `notion-fetch`, `notion-update-page`, `notion-create-pages`).
+  If they are not available in the session, say so and stop: do not fall back to editing tasks in `PLAN.md`.
+- Two levels only. **Parent** = a milestone (`Type = Milestone`), closed when all its children are Done.
+  **Child** = one capability, bug or feature (`Parent item` set). Not a checklist item: group small steps into one row.
+- Columns (exact names): `Task Name`, `Type` (Milestone, Feature, Bug, Design, Tech, Verify on device),
+  `Status` (Not started, Next up, In progress, Done), `Priority` (`P0 • Critical`, `P1 • High`, `P2 • Medium`,
+  `P3. Low` — note the dot on P3), `Effort (days count)` (number of days, estimate), `Screens relation`
+  (multi-select: `01. Sign in`, `02. Today`, `03. Tracker`, `04. Care`, `05. Records`, `06. Settings`),
+  `Parent item`, `Blocked by` / `Blocking`, `Start Date` (a date or a start–end range; property key `date:Start Date:start` / `:end`),
+  `Description`, `PLAN.md ref` (where the item came from in the old plan, may be empty).
+
+**"What's next?"** — query the database for rows with `Type != Milestone` and `Status != Done`, then answer with:
+1. anything `In progress`; then
+2. tasks marked `Next up`; then
+3. the rest by `Priority` (P0 first), then smaller `Effort` first.
+Skip a task whose `Blocked by` contains a task that is not Done (fetch the blockers to check) and say which blocker it waits on.
+Give the top 3 with parent milestone, effort and one line of why, and ask before starting if several are close.
+
+**While working**
+- Starting a task: set `Status = In progress` (and `Start Date` to today if empty).
+- Finishing a task: set `Status = Done` and put today as the end of its `Start Date` range. When the last child of a
+  milestone is Done, set the milestone to Done too.
+- Follow-ups found along the way: create a new child row (set `Parent item`, `Type`, `Priority`, `Effort`, `Screens relation`,
+  and `Blocked by` where it applies) instead of adding a TODO to code or docs. Ask before creating a new milestone.
+- Put the detail a future reader needs (what was decided, how it was verified, what is left) in the row's `Description`
+  or page body, as the old PLAN.md checklist notes did. Decisions with rationale still go to `PLAN.md` → Decisions.
+
 ## Conventions
 
 - Language: English for code, comments, and docs.
-- Keep `PLAN.md` current: mark tasks done, add follow-ups discovered along the way.
+- Keep the Notion planning database current (see **Planning**): status when work starts and ends, follow-ups as new rows.
+  `PLAN.md` is edited only to record a decision (or revise one) in *Decisions*, never to track tasks.
 - Prefer small, reviewable changes; explain trade-offs before large refactors.
 - Every new data point gets a category, a sub-category, a storage shape and the screen(s) it shows on
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.

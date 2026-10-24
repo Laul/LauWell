@@ -1,5 +1,10 @@
 # LauWell — Plan
 
+> **Tasks moved to Notion on 2026-10-23.** The database *LauWell Planning* (see `CLAUDE.md` → Planning) is the source of
+> truth for milestones, tasks and their status. This file keeps the **Decisions** below, which stay current, and the
+> *Milestones* section, now a frozen archive of what was done and why (kept for its implementation notes). Do not tick
+> or add tasks here.
+
 ## Decisions
 
 Full rationale lives in Notion (LauWell App • Home → Table of Content). Summary:
@@ -404,7 +409,9 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
     "Later (n)" and "To complete", encounter detail with its linked records, Records → History, Care
     and Records on the inner screen.
 
-## Milestones
+## Milestones — archive (frozen 2026-10-23, tracked in Notion)
+
+Status below is as of the freeze; later progress is in the Notion database only.
 
 ### M0 — Lock the foundations
 - [x] Fill in the Stack section of CLAUDE.md (DI still open, see next task)
