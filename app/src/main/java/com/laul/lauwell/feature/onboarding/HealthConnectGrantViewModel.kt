@@ -6,6 +6,8 @@ import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.catalog.ToggleRepository
+import com.laul.lauwell.core.healthconnect.BackgroundPermission
+import com.laul.lauwell.core.healthconnect.BackgroundSync
 import com.laul.lauwell.core.healthconnect.HealthConnectAvailability
 import com.laul.lauwell.core.healthconnect.HealthDataSource
 import com.laul.lauwell.core.healthconnect.HistoryPermission
@@ -27,24 +29,31 @@ data class GrantState(
     val rows: List<GrantRow> = emptyList(),
     val supportsHistory: Boolean = false,
     val historyGranted: Boolean = false,
+    val supportsBackground: Boolean = false,
+    val backgroundGranted: Boolean = false,
 ) {
     /** The metrics the button asks for: selected and not granted yet. */
     val toAsk: List<MetricDefinition> get() = rows.filter { it.selected && !it.granted }.map { it.metric }
 
     /** Whether the prompt also asks for reading history (data from before the first grant). */
     val historyToAsk: Boolean get() = supportsHistory && !historyGranted && rows.any { it.selected }
+
+    /** Whether the prompt also asks for reading in the background (the periodic sync). */
+    val backgroundToAsk: Boolean get() = supportsBackground && !backgroundGranted && rows.any { it.selected }
 }
 
 /**
  * The Health Connect grant screen (design: "Connect Health Connect"): one row per visible metric
  * read from Health Connect, on by default; "Allow N permissions" asks for the selected ones, plus
- * reading history when Health Connect supports it, so the charts can go back past 30 days.
+ * reading history and reading in the background when Health Connect supports them, so the charts
+ * can go back past 30 days and are up to date when the app opens.
  * Partial grants are fine: each metric works with its own permission.
  */
 class HealthConnectGrantViewModel(
     private val toggleRepository: ToggleRepository,
     private val source: HealthDataSource,
     private val onboarding: Onboarding,
+    private val backgroundSync: BackgroundSync,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(GrantState())
@@ -76,6 +85,8 @@ class HealthConnectGrantViewModel(
                 },
                 supportsHistory = source.supportsHistory(),
                 historyGranted = HistoryPermission in granted,
+                supportsBackground = source.supportsBackgroundReads(),
+                backgroundGranted = BackgroundPermission in granted,
             )
         }
     }
@@ -89,16 +100,24 @@ class HealthConnectGrantViewModel(
     /** What the Health Connect prompt asks for. */
     fun permissionsToRequest(): Set<String> {
         val state = _state.value
-        return readPermissions(state.toAsk) + if (state.historyToAsk) setOf(HistoryPermission) else emptySet()
+        return readPermissions(state.toAsk) +
+            listOfNotNull(
+                HistoryPermission.takeIf { state.historyToAsk },
+                BackgroundPermission.takeIf { state.backgroundToAsk },
+            )
     }
 
     /**
-     * After the prompt: remember the screen was answered. Syncing what is now allowed (the whole
-     * window when past data just became readable) is `HealthSync`'s job, on the next screen's resume,
-     * so it doesn't depend on this screen staying open.
+     * After the prompt: remember the screen was answered, and start the periodic sync if background
+     * reads were just allowed. Syncing what is now allowed (the whole window when past data just
+     * became readable) is `HealthSync`'s job, on the next screen's resume, so it doesn't depend on
+     * this screen staying open.
      */
     fun onPermissionsResult() {
-        viewModelScope.launch { onboarding.markHealthConnectPromptSeen() }
+        viewModelScope.launch {
+            onboarding.markHealthConnectPromptSeen()
+            backgroundSync.updateSchedule()
+        }
     }
 
     fun notNow() {

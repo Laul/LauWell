@@ -16,7 +16,7 @@ class HealthConnectPermissionsTest {
             .findAll(File("src/main/AndroidManifest.xml").readText())
             .map { it.groupValues[1] }
             .toSet()
-        assertEquals(readPermissions(MetricRegistry.all) + HistoryPermission, declared)
+        assertEquals(readPermissions(MetricRegistry.all) + HistoryPermission + BackgroundPermission, declared)
     }
 
     @Test

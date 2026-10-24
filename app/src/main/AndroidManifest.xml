@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <!-- Data older than 30 days before the first grant (HealthConnectPermissions.HistoryPermission). -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <!-- Reads while no screen is open: the periodic sync (HealthConnectPermissions.BackgroundPermission). -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
 
     <!-- Android 13 and below: Health Connect is an app, which LauWell must be able to see. -->
     <queries>
@@ -69,6 +71,21 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
+        <!--
+            WorkManager is set up by LauWellApplication (Configuration.Provider), so its workers get
+            their dependencies from the AppContainer: drop the default initializer, keep the others.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
     </application>
 

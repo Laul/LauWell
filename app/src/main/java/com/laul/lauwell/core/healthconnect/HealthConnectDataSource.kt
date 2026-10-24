@@ -50,6 +50,12 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
             client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
             HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
 
+    @OptIn(ExperimentalFeatureAvailabilityApi::class)
+    override fun supportsBackgroundReads(): Boolean =
+        availability() == HealthConnectAvailability.Available &&
+            client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) ==
+            HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+
     override suspend fun readMeasurements(metric: MetricDefinition, from: Instant, until: Instant): List<Measurement> {
         val range = TimeRangeFilter.between(from, until)
         return metric.healthConnectTypes

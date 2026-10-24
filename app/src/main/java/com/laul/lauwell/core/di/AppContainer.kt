@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import androidx.work.WorkManager
+import androidx.work.WorkerFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.laul.lauwell.BuildConfig
@@ -16,10 +18,13 @@ import com.laul.lauwell.core.catalog.EverythingOnToggleRepository
 import com.laul.lauwell.core.catalog.ToggleRepository
 import com.laul.lauwell.core.data.LauWellDatabase
 import com.laul.lauwell.core.data.RoomSummaryStore
+import com.laul.lauwell.core.healthconnect.BackgroundSync
 import com.laul.lauwell.core.healthconnect.HealthConnectDataSource
 import com.laul.lauwell.core.healthconnect.HealthDataSource
 import com.laul.lauwell.core.healthconnect.HealthSync
+import com.laul.lauwell.core.healthconnect.HealthSyncWorkerFactory
 import com.laul.lauwell.core.healthconnect.SummaryStore
+import com.laul.lauwell.core.healthconnect.WorkManagerSyncSchedule
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
 import com.laul.lauwell.core.settings.DataStoreOnboarding
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
@@ -83,4 +88,20 @@ class AppContainer(context: Context) {
     val summaryStore: SummaryStore by lazy { RoomSummaryStore(database.healthCacheDao()) }
 
     val healthSync: HealthSync by lazy { HealthSync(healthDataSource, summaryStore, Clock.systemDefaultZone()) }
+
+    /** WorkManager's own singleton, set up with [workerFactory] (see [com.laul.lauwell.LauWellApplication]). */
+    private val workManager: WorkManager by lazy { WorkManager.getInstance(appContext) }
+
+    val backgroundSync: BackgroundSync by lazy {
+        BackgroundSync(
+            healthSync,
+            healthDataSource,
+            toggleRepository,
+            authRepository.session,
+            WorkManagerSyncSchedule(workManager),
+        )
+    }
+
+    /** Lets WorkManager build our workers; [backgroundSync] is only built when a worker runs. */
+    val workerFactory: WorkerFactory = HealthSyncWorkerFactory { backgroundSync }
 }

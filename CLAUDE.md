@@ -52,10 +52,12 @@ Tasks, bugs and milestones live in the Notion database **LauWell Planning** (sou
 - Two levels only. **Parent** = a milestone (`Type = Milestone`), closed when all its children are Done.
   **Child** = one capability, bug or feature (`Parent item` set). Not a checklist item: group small steps into one row.
 - Columns (exact names): `Task Name`, `Type` (Milestone, Feature, Bug, Design, Tech, Verify on device),
-  `Status` (Not started, Next up, In progress, Done), `Priority` (`P0 • Critical`, `P1 • High`, `P2 • Medium`,
+  `Status` (Not started, Next up, In progress, Blocked, Done — `Blocked` flags a task put on hold because something
+  is missing, e.g. a design still to do or another feature not finished; it is a flag, unlike the `Blocked by` /
+  `Blocking` relations, which set the implementation order), `Priority` (`P0 • Critical`, `P1 • High`, `P2 • Medium`,
   `P3. Low` — note the dot on P3), `Effort (days count)` (number of days, estimate), `Screens relation`
   (multi-select: `01. Sign in`, `02. Today`, `03. Tracker`, `04. Care`, `05. Records`, `06. Settings`),
-  `Parent item`, `Blocked by` / `Blocking`, `Start Date` (a date or a start–end range; property key `date:Start Date:start` / `:end`),
+  `Parent item`, `Blocked by` / `Blocking`, `[Start - End] Dates` (a date or a start–end range; property keys `date:[Start - End] Dates:start` / `:end`),
   `Description`, `PLAN.md ref` (where the item came from in the old plan, may be empty).
 
 **"What's next?"** — query the database for rows with `Type != Milestone` and `Status != Done`, then answer with:
@@ -66,13 +68,18 @@ Skip a task whose `Blocked by` contains a task that is not Done (fetch the block
 Give the top 3 with parent milestone, effort and one line of why, and ask before starting if several are close.
 
 **While working**
-- Starting a task: set `Status = In progress` (and `Start Date` to today if empty).
-- Finishing a task: set `Status = Done` and put today as the end of its `Start Date` range. When the last child of a
+- Starting a task: set `Status = In progress` (and the start of `[Start - End] Dates` to today if empty).
+- Finishing a task: set `Status = Done` and put today as the end of its `[Start - End] Dates` range. When closing a
+  task late (already committed, box not ticked), use the date of its last commit instead of today. When the last child of a
   milestone is Done, set the milestone to Done too.
 - Follow-ups found along the way: create a new child row (set `Parent item`, `Type`, `Priority`, `Effort`, `Screens relation`,
   and `Blocked by` where it applies) instead of adding a TODO to code or docs. Ask before creating a new milestone.
 - Put the detail a future reader needs (what was decided, how it was verified, what is left) in the row's `Description`
   or page body, as the old PLAN.md checklist notes did. Decisions with rationale still go to `PLAN.md` → Decisions.
+- Decisions taken during implementation are also logged in the Notion database **LauWell • Decisions Tracker**
+  (https://app.notion.com/p/4039d84e94a180178fe4fc6a285c7b82 — data source `collection://4039d84e-94a1-807f-9268-000b21f2af0a`):
+  one row per decision, `Name` = the decision in a line, `Related task(s)` = the Planning row(s) it came from;
+  the page body holds the date, the decision, why, and where it is recorded in `PLAN.md` / the code.
 
 ## Conventions
 

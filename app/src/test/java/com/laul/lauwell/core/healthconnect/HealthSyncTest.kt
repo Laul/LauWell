@@ -185,6 +185,7 @@ class HealthSyncTest {
         override fun availability() = availability
         override suspend fun grantedPermissions() = granted
         override fun supportsHistory() = true
+        override fun supportsBackgroundReads() = true
         override suspend fun readMeasurements(metric: MetricDefinition, from: Instant, until: Instant) =
             emptyList<Measurement>()
 

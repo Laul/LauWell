@@ -16,6 +16,13 @@ import com.laul.lauwell.core.catalog.MetricDefinition
  */
 const val HistoryPermission: String = HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY
 
+/**
+ * Reading while no screen of the app is open: the periodic sync (`BackgroundSync`). Without it,
+ * Health Connect only answers while the app is in the foreground. Asked with the metrics'
+ * permissions when [HealthDataSource.supportsBackgroundReads].
+ */
+const val BackgroundPermission: String = HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+
 fun readPermissions(metrics: Iterable<MetricDefinition>): Set<String> =
     metrics.flatMap { it.healthConnectTypes }
         .mapTo(mutableSetOf()) { HealthPermission.getReadPermission(it) }

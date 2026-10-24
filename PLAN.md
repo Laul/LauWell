@@ -53,6 +53,15 @@ Full rationale lives in Notion (LauWell App • Home → Table of Content). Summ
   - **Two sources for one metric** (the open rule of the provenance task), for now: between apps,
     Health Connect's priority list decides and we keep each record's data origin; manual vs device
     is decided with M4.
+- **Health Connect sync triggers** (decided 2026-10-23). Besides the screens' own syncs (Today and
+  Tracker on resume, a metric's detail every minute while open), the visible metrics sync **each time
+  the app comes to the foreground** and **every 20 minutes in the background** (WorkManager, battery
+  not low), only while signed in. Why 20 min: fresh enough that Today is current when opened, while
+  staying well inside Health Connect's background read quota and WorkManager's 15-minute floor.
+  Background reads need Health Connect's **read-in-background permission**: it is asked on the grant
+  screen with the metrics and past data, one caption saying why; without it the periodic sync is
+  cancelled and only foreground syncs run. Re-evaluate the extra prompt if it proves confusing.
+  → Notion: *Decisions Tracker*.
 - **Charts:** Vico 3.x (`compose` module, no Material), behind our own `ChartSpec` layer; only one
   mapper file imports Vico (`core.ui.chart.VicoChart`). Pinned to **3.2.3**: 3.3.x needs compileSdk 37
   and AGP 9.1, and every Vico 3 needs Compose ≥ 1.10 (Compose BOM 2026.06.01, Compose 1.11, since

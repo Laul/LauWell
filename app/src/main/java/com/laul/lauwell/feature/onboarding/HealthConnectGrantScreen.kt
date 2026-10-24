@@ -50,7 +50,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
  */
 @Composable
 fun HealthConnectGrantScreen(onDone: () -> Unit) {
-    val viewModel = appViewModel { HealthConnectGrantViewModel(toggleRepository, healthDataSource, onboarding) }
+    val viewModel = appViewModel { HealthConnectGrantViewModel(toggleRepository, healthDataSource, onboarding, backgroundSync) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     val requestPermissions = rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) {
@@ -86,6 +86,12 @@ fun HealthConnectGrantScreen(onDone: () -> Unit) {
                         BasicText(
                             "Health Connect will also ask to read your past data, so charts can go back three months " +
                                 "instead of starting today.",
+                            style = type.caption.copy(color = colors.ink2),
+                        )
+                    }
+                    if (state.backgroundToAsk) {
+                        BasicText(
+                            "It will also ask to read in the background, so your data is up to date when you open LauWell.",
                             style = type.caption.copy(color = colors.ink2),
                         )
                     }
@@ -161,8 +167,10 @@ private fun ColumnScope.Actions(state: GrantState, onAllow: () -> Unit, onNotNow
                 val count = state.toAsk.size
                 when {
                     count > 0 -> FilledButton(if (count == 1) "Allow 1 permission" else "Allow $count permissions", onClick = onAllow)
-                    // Every metric allowed, only the past is left: ask for it on its own.
+                    // Every metric allowed, only past data and/or background reads are left: ask on their own.
+                    state.historyToAsk && state.backgroundToAsk -> FilledButton("Allow 2 permissions", onClick = onAllow)
                     state.historyToAsk -> FilledButton("Allow past data", onClick = onAllow)
+                    state.backgroundToAsk -> FilledButton("Allow background updates", onClick = onAllow)
                     else -> FilledButton("Done", onClick = onNotNow)
                 }
             }
@@ -172,7 +180,8 @@ private fun ColumnScope.Actions(state: GrantState, onAllow: () -> Unit, onNotNow
             )
             else -> Unit
         }
-        val nothingToAsk = state.availability == HealthConnectAvailability.Available && state.toAsk.isEmpty() && !state.historyToAsk
+        val nothingToAsk = state.availability == HealthConnectAvailability.Available && state.toAsk.isEmpty() &&
+            !state.historyToAsk && !state.backgroundToAsk
         if (!nothingToAsk) QuietButton(text = "Not now", onClick = onNotNow, modifier = Modifier.fillMaxWidth())
     }
 }

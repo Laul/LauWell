@@ -26,6 +26,9 @@ interface HealthDataSource {
     /** Whether this Health Connect can grant [HistoryPermission] (data from before the first grant). */
     fun supportsHistory(): Boolean
 
+    /** Whether this Health Connect can grant [BackgroundPermission] (reads while the app isn't open). */
+    fun supportsBackgroundReads(): Boolean
+
     /**
      * Every record of [metric] from [from] (inclusive) to [until] (exclusive), oldest first, all
      * pages read. A heart-rate series becomes one [Measurement] per sample.
