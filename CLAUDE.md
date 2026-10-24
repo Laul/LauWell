@@ -6,7 +6,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 ## Layout
 
 - `CLAUDE.md` — this file: project context and conventions. Read first.
-- `PLAN.md` — decisions and their rationale (the *Decisions* section). Its *Milestones* section is a frozen
+- `PLAN.md` — a one-line index of the decisions (the *Decisions* section), each linking to its entry in the
+  Notion *Decisions Tracker*, which holds the rationale (see **Planning**). Its *Milestones* section is a frozen
   archive (2026-10-23): tasks now live in Notion, see **Planning** below.
 - `app/` — the `:app` Gradle module (standard Android Studio layout: `app/src/main/...`).
   The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
@@ -27,7 +28,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
-  PLAN.md → Decisions → *Visual design* is the tracked record. **`Design • Full Experience - v02.html` is
+  the Notion Decisions Tracker entry *Visual design* (indexed in PLAN.md → Decisions) is the tracked record. **`Design • Full Experience - v02.html` is
   the reference** (2026-10-20): the Galaxy Z Fold closed (cover screen = the phone design, for any
   phone, nine screens) and open (inner screen: Today dashboard, Tracker week board, list + detail),
   each in light and dark; the app switches layout when the phone is unfolded. Its written spec is
@@ -44,7 +45,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 ## Planning
 
 Tasks, bugs and milestones live in the Notion database **LauWell Planning** (source of truth since 2026-10-23).
-`PLAN.md` keeps only decisions; its old *Milestones* section is read-only history.
+Decisions live in the Notion database **LauWell • Decisions Tracker** (below). `PLAN.md` keeps only a one-line
+index of them; its old *Milestones* section is read-only history.
 
 - Database: https://app.notion.com/p/4019d84e94a18017b8a2f52244cc9ca9 — data source `collection://4019d84e-94a1-8099-883e-000beeeb2768`.
 - Use the Notion MCP tools (`notion-query-data-sources`, `notion-fetch`, `notion-update-page`, `notion-create-pages`).
@@ -75,17 +77,20 @@ Give the top 3 with parent milestone, effort and one line of why, and ask before
 - Follow-ups found along the way: create a new child row (set `Parent item`, `Type`, `Priority`, `Effort`, `Screens relation`,
   and `Blocked by` where it applies) instead of adding a TODO to code or docs. Ask before creating a new milestone.
 - Put the detail a future reader needs (what was decided, how it was verified, what is left) in the row's `Description`
-  or page body, as the old PLAN.md checklist notes did. Decisions with rationale still go to `PLAN.md` → Decisions.
-- Decisions taken during implementation are also logged in the Notion database **LauWell • Decisions Tracker**
+  or page body, as the old PLAN.md checklist notes did.
+- Decisions (with their rationale) go to the Notion database **LauWell • Decisions Tracker**, the source of truth for them since 2026-10-23
   (https://app.notion.com/p/4039d84e94a180178fe4fc6a285c7b82 — data source `collection://4039d84e-94a1-807f-9268-000b21f2af0a`):
-  one row per decision, `Name` = the decision in a line, `Related task(s)` = the Planning row(s) it came from;
-  the page body holds the date, the decision, why, and where it is recorded in `PLAN.md` / the code.
+  one row per decision. Columns: `Name` (the decision in a line), `Date` (when taken), `Status` (`Active`, or
+  `Superseded` when a later decision replaced it — keep the row for its reasoning and name the successor in the body),
+  `Related task(s)` (the Planning row(s) it came from or drives). The page body holds the decision, why, what was
+  considered, and where it shows in the code. Then add or update its one-line summary in `PLAN.md` → Decisions,
+  linking to the entry. Revising a decision: edit the Notion entry first, then its line.
 
 ## Conventions
 
 - Language: English for code, comments, and docs.
 - Keep the Notion planning database current (see **Planning**): status when work starts and ends, follow-ups as new rows.
-  `PLAN.md` is edited only to record a decision (or revise one) in *Decisions*, never to track tasks.
+  Decisions go to the Decisions Tracker; `PLAN.md` gets only their one-line index entry, never tasks.
 - Prefer small, reviewable changes; explain trade-offs before large refactors.
 - Every new data point gets a category, a sub-category, a storage shape and the screen(s) it shows on
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
@@ -109,7 +114,7 @@ Give the top 3 with parent milestone, effort and one line of why, and ask before
 
 ## Stack
 
-Decisions and rationale: `PLAN.md` → Decisions, and the Notion pages it links to.
+Decisions and rationale: the Notion Decisions Tracker, indexed in `PLAN.md` → Decisions.
 
 - Kotlin 2.4, Jetpack Compose (BOM), JDK 17. Native Android only.
 - minSdk 26, compileSdk / targetSdk 36. Single `:app` module, one package per feature.
