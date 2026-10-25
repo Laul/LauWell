@@ -29,10 +29,32 @@ enum class TrackerView(val key: String) {
     }
 }
 
+/**
+ * Light or dark, chosen in Settings › Appearance (design 20b). [System] follows the phone.
+ *
+ * [key] is what is stored: never change it once shipped.
+ */
+enum class ThemeMode(val key: String) {
+    Light("light"),
+    Dark("dark"),
+    System("system"),
+    ;
+
+    companion object {
+        val Default = System
+
+        /** Unknown or missing values fall back to [Default]. */
+        fun fromKey(key: String?): ThemeMode = entries.firstOrNull { it.key == key } ?: Default
+    }
+}
+
 /** Display preferences that follow the user across sessions. Not health data. */
 interface DisplayPreferences {
     val trackerView: Flow<TrackerView>
     suspend fun setTrackerView(view: TrackerView)
+
+    val themeMode: Flow<ThemeMode>
+    suspend fun setThemeMode(mode: ThemeMode)
 }
 
 /** [DisplayPreferences] in the app's Preferences DataStore. */
@@ -45,7 +67,15 @@ class DataStoreDisplayPreferences(private val dataStore: DataStore<Preferences>)
         dataStore.edit { it[TrackerViewKey] = view.key }
     }
 
+    override val themeMode: Flow<ThemeMode> =
+        dataStore.data.map { ThemeMode.fromKey(it[ThemeModeKey]) }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { it[ThemeModeKey] = mode.key }
+    }
+
     private companion object {
         val TrackerViewKey = stringPreferencesKey("tracker_view")
+        val ThemeModeKey = stringPreferencesKey("theme_mode")
     }
 }

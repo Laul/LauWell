@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "logout" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M200 -120Q167 -120 143.5 -143.5Q120 -167 120 -200V-760Q120 -793 143.5 -816.5Q167 -840 200 -840H480V-760H200Q200 -760 200 -760Q200 -760 200 -760V-200Q200 -200 200 -200Q200 -200 200 -200H480V-120ZM640 -280 585 -338 687 -440H360V-520H687L585 -622L640 -680L840 -480Z" />
+    </group>
+</vector>

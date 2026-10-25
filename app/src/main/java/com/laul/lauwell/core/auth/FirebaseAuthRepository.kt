@@ -93,7 +93,7 @@ class FirebaseAuthRepository(
         return GoogleIdTokenCredential.createFrom(credential.data).idToken
     }
 
-    private fun FirebaseUser.toSession() = Session(uid = uid)
+    private fun FirebaseUser.toSession() = Session(uid = uid, email = email)
 
     private companion object {
         const val GOOGLE_PROVIDER_ID = "google.com"

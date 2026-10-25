@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "straighten" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M160 -240Q127 -240 103.5 -263.5Q80 -287 80 -320V-640Q80 -673 103.5 -696.5Q127 -720 160 -720H800Q833 -720 856.5 -696.5Q880 -673 880 -640V-320Q880 -287 856.5 -263.5Q833 -240 800 -240ZM160 -320H800Q800 -320 800 -320Q800 -320 800 -320V-640Q800 -640 800 -640Q800 -640 800 -640H680V-480H600V-640H520V-480H440V-640H360V-480H280V-640H160Q160 -640 160 -640Q160 -640 160 -640V-320Q160 -320 160 -320Q160 -320 160 -320ZM280 -480H360ZM440 -480H520ZM600 -480H680ZM480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Q480 -480 480 -480Z" />
+    </group>
+</vector>

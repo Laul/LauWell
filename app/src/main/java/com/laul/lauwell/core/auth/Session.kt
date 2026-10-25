@@ -7,9 +7,11 @@ package com.laul.lauwell.core.auth
  * of every Firestore path (`users/{uid}/…`).
  *
  * Deliberately minimal. No tokens: Firebase stores and refreshes those itself, so they can't leak
- * into UI state, logs or crash reports. No name or email either: nothing needs them yet, and
- * Firebase still has them (`FirebaseAuth.currentUser`) if a screen ever does — add a field then.
+ * into UI state, logs or crash reports. No name yet (Notion: *Decide Today greeting name*).
+ *
+ * @param email the Google account's address, shown in Settings › Account; null if Firebase has none.
  */
 data class Session(
     val uid: String,
+    val email: String? = null,
 )

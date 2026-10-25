@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "sync" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M160 -160V-240H270L254 -254Q202 -300 181 -359Q160 -418 160 -478Q160 -589 226.5 -675.5Q293 -762 400 -790V-706Q328 -680 284 -617.5Q240 -555 240 -478Q240 -433 257 -390.5Q274 -348 310 -312L320 -302V-400H400V-160ZM560 -170V-254Q632 -280 676 -342.5Q720 -405 720 -482Q720 -527 703 -569.5Q686 -612 650 -648L640 -658V-560H560V-800H800V-720H690L706 -706Q755 -657 777.5 -599.5Q800 -542 800 -482Q800 -371 733.5 -284.5Q667 -198 560 -170Z" />
+    </group>
+</vector>

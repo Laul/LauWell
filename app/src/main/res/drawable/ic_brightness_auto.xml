@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "brightness_auto" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M312 -320H376L408 -412H554L586 -320H648L512 -680H448ZM426 -464 478 -614H482L534 -464ZM480 -28 346 -160H160V-346L28 -480L160 -614V-800H346L480 -932L614 -800H800V-614L932 -480L800 -346V-160H614ZM480 -140 580 -240H720V-380L820 -480L720 -580V-720H580L480 -820L380 -720H240V-580L140 -480L240 -380V-240H380ZM480 -480Z" />
+    </group>
+</vector>

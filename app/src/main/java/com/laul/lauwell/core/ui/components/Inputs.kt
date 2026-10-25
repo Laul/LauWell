@@ -187,6 +187,51 @@ fun IconToggle(
 }
 
 /**
+ * A labelled segmented control filling its row (Settings › Appearance, design 20b): the same
+ * `surface2` track as [IconToggle], equal 36dp segments with an icon and a label, the selected one
+ * on `surface`.
+ */
+@Composable
+fun SegmentedControl(
+    options: List<IconToggleOption>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LauWellTheme.colors
+    val lightMode = colors.bg.luminance() > 0.5f
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(LauWellTheme.shapes.toggleTrack)
+            .background(colors.surface2)
+            .padding(3.dp)
+            .selectableGroup(),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        options.forEachIndexed { index, option ->
+            val selected = index == selectedIndex
+            val shape = LauWellTheme.shapes.control
+            val tint = if (selected) colors.ink else colors.ink2
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(36.dp)
+                    .then(if (selected && lightMode) Modifier.shadow(1.dp, shape) else Modifier)
+                    .clip(shape)
+                    .background(if (selected) colors.surface else Color.Transparent)
+                    .selectable(selected = selected, role = Role.RadioButton, onClick = { onSelect(index) }),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
+            ) {
+                LauWellIcon(icon = option.icon, contentDescription = null, tint = tint, size = 17.dp)
+                BasicText(text = option.label, style = LauWellTheme.typography.control.copy(color = tint), maxLines = 1)
+            }
+        }
+    }
+}
+
+/**
  * An on/off switch as designed (Health Connect grant rows): a 44 × 26dp track, ink when on and
  * `surface2` when off, with a 20dp knob. Drawing only: make the whole row `toggleable`, so the
  * touch target is the row and TalkBack reads it as one control.

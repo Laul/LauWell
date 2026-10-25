@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "dark_mode" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M480 -120Q330 -120 225 -225Q120 -330 120 -480Q120 -630 225 -735Q330 -840 480 -840Q494 -840 507.5 -839Q521 -838 534 -836Q493 -807 468.5 -760.5Q444 -714 444 -660Q444 -570 507 -507Q570 -444 660 -444Q715 -444 761 -468.5Q807 -493 836 -534Q838 -521 839 -507.5Q840 -494 840 -480Q840 -330 735 -225Q630 -120 480 -120ZM480 -200Q568 -200 638 -248.5Q708 -297 740 -375Q720 -370 700 -367Q680 -364 660 -364Q537 -364 450.5 -450.5Q364 -537 364 -660Q364 -680 367 -700Q370 -720 375 -740Q297 -708 248.5 -638Q200 -568 200 -480Q200 -364 282 -282Q364 -200 480 -200ZM470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Q470 -470 470 -470Z" />
+    </group>
+</vector>

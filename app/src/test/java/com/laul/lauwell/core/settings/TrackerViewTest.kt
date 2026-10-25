@@ -22,3 +22,18 @@ class TrackerViewTest {
         assertEquals("widgets", TrackerView.Widgets.key)
     }
 }
+
+class ThemeModeTest {
+
+    @Test
+    fun `stored keys round-trip and never change`() {
+        ThemeMode.entries.forEach { assertEquals(it, ThemeMode.fromKey(it.key)) }
+        assertEquals(listOf("light", "dark", "system"), ThemeMode.entries.map { it.key })
+    }
+
+    @Test
+    fun `missing or unknown key follows the phone`() {
+        assertEquals(ThemeMode.System, ThemeMode.fromKey(null))
+        assertEquals(ThemeMode.System, ThemeMode.fromKey("sepia"))
+    }
+}

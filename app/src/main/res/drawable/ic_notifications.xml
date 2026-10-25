@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Symbols Outlined "notifications" (FILL 0, wght 400), Apache 2.0. Tinted at the call site. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <group android:translateY="960">
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M160 -200V-280H240V-560Q240 -643 290 -707.5Q340 -772 420 -792V-820Q420 -845 437.5 -862.5Q455 -880 480 -880Q505 -880 522.5 -862.5Q540 -845 540 -820V-792Q620 -772 670 -707.5Q720 -643 720 -560V-280H800V-200ZM480 -500Q480 -500 480 -500Q480 -500 480 -500Q480 -500 480 -500Q480 -500 480 -500ZM480 -80Q447 -80 423.5 -103.5Q400 -127 400 -160H560Q560 -127 536.5 -103.5Q513 -80 480 -80ZM320 -280H640V-560Q640 -626 593 -673Q546 -720 480 -720Q414 -720 367 -673Q320 -626 320 -560Z" />
+    </group>
+</vector>
