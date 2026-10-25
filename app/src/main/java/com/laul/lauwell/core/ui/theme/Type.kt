@@ -47,6 +47,10 @@ data class LauWellTypography(
     val caption: TextStyle,
     /** A value in a list row (Tracker hub, sheet): 15 sp / 500, Mono. */
     val metricSmall: TextStyle,
+    /** Today's greeting under the date in the tab header (design 20a): 19.5 sp / 700, Bricolage. */
+    val greeting: TextStyle,
+    /** Toolbar buttons and segmented controls ("All metrics", "System"): 13 sp / 600, Plex Sans. */
+    val control: TextStyle,
 )
 
 // Fonts are bundled in res/font (decided in M0: nothing downloaded at runtime). Bricolage Grotesque
@@ -142,6 +146,19 @@ val DefaultLauWellTypography = LauWellTypography(
         fontWeight = FontWeight.Medium,
         fontSize = 15.sp,
         lineHeight = 18.sp,
+    ),
+    greeting = TextStyle(
+        fontFamily = bricolage(weight = 700, opticalSize = 19.5f),
+        fontWeight = FontWeight.Bold,
+        fontSize = 19.5.sp,
+        lineHeight = 24.sp,
+        letterSpacing = (-0.02).em,
+    ),
+    control = TextStyle(
+        fontFamily = PlexSans,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp,
+        lineHeight = 16.sp,
     ),
 )
 

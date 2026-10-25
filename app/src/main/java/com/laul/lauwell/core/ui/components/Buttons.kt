@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +25,8 @@ import androidx.compose.ui.unit.sp
 import com.laul.lauwell.core.catalog.Category
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 
-private const val DisabledAlpha = 0.5f
+/** How every disabled control is drawn: at half opacity. */
+internal const val DisabledAlpha = 0.5f
 
 /**
  * The filled ink button: only for a screen's main action (Save, Allow, Continue with Google).
@@ -76,6 +78,38 @@ fun StrokeButton(
         contentAlignment = Alignment.Center,
     ) {
         BasicText(text = text, style = buttonText(14).copy(color = colors.ink))
+    }
+}
+
+/**
+ * A toolbar control (Tracker's Filter and Sort, design 20a): 34dp tall, a 1.5dp `lineSoft` outline,
+ * an icon and an optional [label] ("All metrics"); square when it has no label. Disabled while
+ * [onClick] is null.
+ */
+@Composable
+fun ToolbarButton(
+    @DrawableRes icon: Int,
+    contentDescription: String,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    label: String? = null,
+) {
+    val colors = LauWellTheme.colors
+    val shape = LauWellTheme.shapes.control
+    Row(
+        modifier = modifier
+            .height(34.dp)
+            .then(if (label == null) Modifier.width(34.dp) else Modifier)
+            .alpha(if (onClick != null) 1f else DisabledAlpha)
+            .clip(shape)
+            .border(LauWellTheme.strokes.control, colors.lineSoft, shape)
+            .clickable(enabled = onClick != null, role = Role.Button, onClick = { onClick?.invoke() })
+            .padding(start = if (label == null) 0.dp else 8.dp, end = if (label == null) 0.dp else 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs, Alignment.CenterHorizontally),
+    ) {
+        LauWellIcon(icon = icon, contentDescription = contentDescription, tint = colors.ink, size = if (label == null) 18.dp else 17.dp)
+        if (label != null) BasicText(text = label, style = LauWellTheme.typography.control.copy(color = colors.ink), maxLines = 1)
     }
 }
 

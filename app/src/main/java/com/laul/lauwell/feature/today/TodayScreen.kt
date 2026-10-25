@@ -1,34 +1,22 @@
 package com.laul.lauwell.feature.today
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.summary.MetricSummary
-import com.laul.lauwell.core.ui.components.LauWellIcon
+import com.laul.lauwell.core.ui.components.AppHeader
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.PinnedTile
 import com.laul.lauwell.core.ui.components.ScreenColumn
@@ -39,7 +27,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Today, the home tab: date, greeting, the avatar that opens Settings, and the pinned tiles (empty
+ * Today, the home tab: the header (date, greeting, and the avatar that opens Settings), and the pinned tiles (empty
  * values until M3 reads Health Connect). Quick log comes with manual entries (M4); medications,
  * the symptom check and upcoming appointments with M5–M6.
  */
@@ -52,38 +40,13 @@ fun TodayScreen(onOpenSettings: () -> Unit) {
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.sync() }
     val now = remember { LocalDateTime.now() }
-    val colors = LauWellTheme.colors
 
-    ScreenColumn {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs)) {
-                BasicText(
-                    text = now.format(DateFormat).uppercase(),
-                    style = LauWellTheme.typography.label.copy(color = colors.ink2),
-                )
-                BasicText(
-                    text = greeting(now.hour),
-                    style = LauWellTheme.typography.headline.copy(color = colors.ink),
-                    modifier = Modifier.semantics { heading() },
-                )
+    Column(Modifier.fillMaxSize()) {
+        AppHeader(title = greeting(now.hour), eyebrow = now.format(DateFormat), onAvatarClick = onOpenSettings)
+        ScreenColumn(Modifier.weight(1f)) {
+            pinned?.takeIf { it.isNotEmpty() }?.let { metrics ->
+                PinnedGrid(metrics) { summaries[it.id] ?: MetricSummary.empty(it) }
             }
-            Box(
-                modifier = Modifier
-                    .size(38.dp)
-                    .clip(LauWellTheme.shapes.tile)
-                    .background(colors.surface2)
-                    .clickable(role = Role.Button, onClick = onOpenSettings),
-                contentAlignment = Alignment.Center,
-            ) {
-                LauWellIcon(R.drawable.ic_person, contentDescription = "Settings", tint = colors.ink, size = 22.dp)
-            }
-        }
-        pinned?.takeIf { it.isNotEmpty() }?.let { metrics ->
-            PinnedGrid(metrics) { summaries[it.id] ?: MetricSummary.empty(it) }
         }
     }
 }

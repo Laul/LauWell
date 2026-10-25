@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +32,7 @@ import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.settings.TrackerView
 import com.laul.lauwell.core.summary.MetricSummary
+import com.laul.lauwell.core.ui.components.AppHeader
 import com.laul.lauwell.core.ui.components.IconToggle
 import com.laul.lauwell.core.ui.components.IconToggleOption
 import com.laul.lauwell.core.ui.components.MetricRow
@@ -38,7 +40,7 @@ import com.laul.lauwell.core.ui.components.MetricWidget
 import com.laul.lauwell.core.ui.components.MiniChartData
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.PanelDivider
-import com.laul.lauwell.core.ui.components.ScreenHeader
+import com.laul.lauwell.core.ui.components.ToolbarButton
 import com.laul.lauwell.core.ui.components.Section
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import java.time.Clock
@@ -49,7 +51,7 @@ import java.time.Clock
  * header toggle switches views and the choice is stored. A row or widget opens the metric's detail.
  */
 @Composable
-fun TrackerScreen(onOpenMetric: (MetricId) -> Unit) {
+fun TrackerScreen(onOpenMetric: (MetricId) -> Unit, onOpenSettings: () -> Unit) {
     val viewModel = appViewModel {
         TrackerViewModel(toggleRepository, displayPreferences, summaryStore, healthSync, Clock.systemDefaultZone())
     }
@@ -63,6 +65,7 @@ fun TrackerScreen(onOpenMetric: (MetricId) -> Unit) {
         view = view,
         onViewChange = viewModel::setView,
         onOpenMetric = onOpenMetric,
+        onOpenSettings = onOpenSettings,
         summaryOf = { summaries[it.id] ?: MetricSummary.empty(it) },
     )
 }
@@ -73,27 +76,44 @@ private fun TrackerContent(
     view: TrackerView?,
     onViewChange: (TrackerView) -> Unit,
     onOpenMetric: (MetricId) -> Unit,
+    onOpenSettings: () -> Unit,
     summaryOf: (MetricDefinition) -> MetricSummary,
+) {
+    val spacing = LauWellTheme.spacing
+    Column(Modifier.fillMaxSize()) {
+        // Toolbar (design 20a): what is shown (Filter, Sort) on the left, how (view) on the right.
+        // Filter and Sort stay disabled until their options are defined (Notion: *Tracker Filter & Sort*).
+        AppHeader(title = "Tracker", onAvatarClick = onOpenSettings) {
+            ToolbarButton(R.drawable.ic_filter_list, "Filter", onClick = null, label = "All metrics")
+            ToolbarButton(R.drawable.ic_sort, "Sort", onClick = null)
+            Spacer(Modifier.weight(1f))
+            if (view != null) {
+                IconToggle(
+                    options = ViewOptions,
+                    selectedIndex = TrackerView.entries.indexOf(view),
+                    onSelect = { onViewChange(TrackerView.entries[it]) },
+                )
+            }
+        }
+        TrackerList(groups, view, onOpenMetric, summaryOf, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun TrackerList(
+    groups: List<TrackerGroup>?,
+    view: TrackerView?,
+    onOpenMetric: (MetricId) -> Unit,
+    summaryOf: (MetricDefinition) -> MetricSummary,
+    modifier: Modifier = Modifier,
 ) {
     val spacing = LauWellTheme.spacing
     // Each category is one keyed item, so switching views keeps the same category in view.
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = spacing.lg, end = spacing.lg, top = spacing.xs, bottom = spacing.lg),
         verticalArrangement = Arrangement.spacedBy(spacing.lg),
     ) {
-        item(key = "header") {
-            // The design's search icon waits until there is something to search.
-            ScreenHeader("Tracker") {
-                if (view != null) {
-                    IconToggle(
-                        options = ViewOptions,
-                        selectedIndex = TrackerView.entries.indexOf(view),
-                        onSelect = { onViewChange(TrackerView.entries[it]) },
-                    )
-                }
-            }
-        }
         if (groups == null || view == null) return@LazyColumn
         if (groups.isEmpty()) {
             item(key = "empty") {
@@ -218,6 +238,7 @@ private fun TrackerPreview(initial: TrackerView) {
                 view = view,
                 onViewChange = { view = it },
                 onOpenMetric = {},
+                onOpenSettings = {},
                 summaryOf = { SampleSummaries[it.id.value] ?: MetricSummary.empty(it) },
             )
         }

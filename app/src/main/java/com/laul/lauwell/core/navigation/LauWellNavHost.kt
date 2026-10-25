@@ -65,7 +65,10 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
             }
             navigation(route = TopLevelTab.Tracker.graphRoute, startDestination = TopLevelTab.Tracker.route) {
                 composable(TopLevelTab.Tracker.route) {
-                    TrackerScreen(onOpenMetric = { navController.navigate(Routes.metricDetail(it)) })
+                    TrackerScreen(
+                        onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
+                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    )
                 }
                 composable(
                     Routes.METRIC_DETAIL,
@@ -76,10 +79,10 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
                 }
             }
             navigation(route = TopLevelTab.Care.graphRoute, startDestination = TopLevelTab.Care.route) {
-                composable(TopLevelTab.Care.route) { CareScreen() }
+                composable(TopLevelTab.Care.route) { CareScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
             }
             navigation(route = TopLevelTab.Records.graphRoute, startDestination = TopLevelTab.Records.route) {
-                composable(TopLevelTab.Records.route) { RecordsScreen() }
+                composable(TopLevelTab.Records.route) { RecordsScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(
