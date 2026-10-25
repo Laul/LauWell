@@ -1,7 +1,6 @@
 package com.laul.lauwell.core.ui.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -32,15 +30,15 @@ import com.laul.lauwell.R
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
- * The header of the four tabs (design 20a): the title — on Today, the date [eyebrow] over the
- * greeting — then search and the avatar on the right, and an optional [toolbar] row under it
- * (Tracker). It stays put above the tab's scrolling content. Search is drawn disabled while
- * [onSearch] is null: global search isn't built yet.
+ * The header of the four tabs (design 20b): the title — on Today, the date [eyebrow] over the
+ * greeting — then search and the gear that opens Settings on the right, and an optional [toolbar]
+ * row under it (Tracker). It stays put above the tab's scrolling content. Search is drawn disabled
+ * while [onSearch] is null: global search isn't built yet.
  */
 @Composable
 fun AppHeader(
     title: String,
-    onAvatarClick: () -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     eyebrow: String? = null,
     onSearch: (() -> Unit)? = null,
@@ -69,7 +67,7 @@ fun AppHeader(
                 )
             }
             IconAction(R.drawable.ic_search, "Search", onClick = onSearch ?: {}, enabled = onSearch != null)
-            Avatar(onClick = onAvatarClick)
+            IconAction(R.drawable.ic_settings, "Settings", onClick = onOpenSettings)
         }
         if (toolbar != null) {
             Row(
@@ -78,33 +76,6 @@ fun AppHeader(
                 horizontalArrangement = Arrangement.spacedBy(spacing.xs),
                 content = toolbar,
             )
-        }
-    }
-}
-
-/**
- * The account avatar: an ink disc, 36dp in a 48dp touch target. The design shows the first
- * name's initial; a person glyph stands in until the app knows the name (Notion: *Decide Today
- * greeting name*).
- */
-@Composable
-private fun Avatar(onClick: () -> Unit) {
-    val colors = LauWellTheme.colors
-    Box(
-        modifier = Modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .clickable(role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(colors.accent),
-            contentAlignment = Alignment.Center,
-        ) {
-            LauWellIcon(R.drawable.ic_person, contentDescription = "Settings", tint = colors.onAccent, size = 20.dp)
         }
     }
 }

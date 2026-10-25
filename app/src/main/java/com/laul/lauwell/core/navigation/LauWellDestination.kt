@@ -28,7 +28,7 @@ enum class TopLevelTab(
 
 /** Screens outside the tab roots. */
 object Routes {
-    /** Opened from the avatar on Today; shown without the bottom bar. */
+    /** Opened from the gear in every tab's header; shown without the bottom bar. */
     const val SETTINGS = "settings"
 
     /** The Health Connect grant screen: once after sign-in, then from Settings; no bottom bar. */

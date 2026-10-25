@@ -13,7 +13,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 @Composable
 fun RecordsScreen(onOpenSettings: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
-        AppHeader(title = "Records", onAvatarClick = onOpenSettings)
+        AppHeader(title = "Records", onOpenSettings = onOpenSettings)
         ScreenColumn(Modifier.weight(1f)) {
             BasicText(
                 text = "Labs, documents, visit notes and medical history. Not designed yet.",

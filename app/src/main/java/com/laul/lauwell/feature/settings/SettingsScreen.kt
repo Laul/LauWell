@@ -12,7 +12,7 @@ import com.laul.lauwell.core.ui.components.TopBar
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
- * Settings, opened from the avatar on Today. Will hold the visibility toggles, units and
+ * Settings, opened from the gear in every tab's header. Will hold the visibility toggles, units and
  * reminders (PLAN.md → backlog). For now: sign out.
  */
 @Composable

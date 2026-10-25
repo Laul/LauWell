@@ -27,7 +27,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Today, the home tab: the header (date, greeting, and the avatar that opens Settings), and the pinned tiles (empty
+ * Today, the home tab: the header (date, greeting, and the gear that opens Settings), and the pinned tiles (empty
  * values until M3 reads Health Connect). Quick log comes with manual entries (M4); medications,
  * the symptom check and upcoming appointments with M5–M6.
  */
@@ -42,7 +42,7 @@ fun TodayScreen(onOpenSettings: () -> Unit) {
     val now = remember { LocalDateTime.now() }
 
     Column(Modifier.fillMaxSize()) {
-        AppHeader(title = greeting(now.hour), eyebrow = now.format(DateFormat), onAvatarClick = onOpenSettings)
+        AppHeader(title = greeting(now.hour), eyebrow = now.format(DateFormat), onOpenSettings = onOpenSettings)
         ScreenColumn(Modifier.weight(1f)) {
             pinned?.takeIf { it.isNotEmpty() }?.let { metrics ->
                 PinnedGrid(metrics) { summaries[it.id] ?: MetricSummary.empty(it) }

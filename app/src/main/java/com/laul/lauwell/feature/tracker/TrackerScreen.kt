@@ -83,7 +83,7 @@ private fun TrackerContent(
     Column(Modifier.fillMaxSize()) {
         // Toolbar (design 20a): what is shown (Filter, Sort) on the left, how (view) on the right.
         // Filter and Sort stay disabled until their options are defined (Notion: *Tracker Filter & Sort*).
-        AppHeader(title = "Tracker", onAvatarClick = onOpenSettings) {
+        AppHeader(title = "Tracker", onOpenSettings = onOpenSettings) {
             ToolbarButton(R.drawable.ic_filter_list, "Filter", onClick = null, label = "All metrics")
             ToolbarButton(R.drawable.ic_sort, "Sort", onClick = null)
             Spacer(Modifier.weight(1f))

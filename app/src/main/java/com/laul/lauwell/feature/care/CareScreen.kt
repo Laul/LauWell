@@ -13,7 +13,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 @Composable
 fun CareScreen(onOpenSettings: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
-        AppHeader(title = "Care", onAvatarClick = onOpenSettings)
+        AppHeader(title = "Care", onOpenSettings = onOpenSettings)
         ScreenColumn(Modifier.weight(1f)) {
             BasicText(
                 text = "Medications, the ostomy module (products, changes, wear time and skin) and appointments. Not designed yet.",
