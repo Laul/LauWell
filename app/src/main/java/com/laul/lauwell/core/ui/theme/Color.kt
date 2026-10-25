@@ -34,7 +34,10 @@ data class LauWellColors(
     val surface: Color,
     /** Recessed fills: segmented-control track, empty chart slot. */
     val surface2: Color,
-    /** Primary text and icons. */
+    /**
+     * Primary text and icons. Same value as [line] and [accent]: one near-black, as the screens draw
+     * it (merged 2026-10-24; the token sheet had a second, almost identical text ink).
+     */
     val ink: Color,
     /** Secondary text: context lines, units, captions. */
     val ink2: Color,
@@ -77,7 +80,7 @@ val LightLauWellColors = LauWellColors(
     bg = Color(0xFFF4F6F7),
     surface = Color(0xFFFFFFFF),
     surface2 = Color(0xFFE9EDF0),
-    ink = Color(0xFF12171B),
+    ink = Color(0xFF16191C),
     ink2 = Color(0xFF56616B),
     line = Color(0xFF16191C),
     accent = Color(0xFF16191C),
@@ -99,7 +102,7 @@ val DarkLauWellColors = LauWellColors(
     bg = Color(0xFF090B0D),
     surface = Color(0xFF12161A),
     surface2 = Color(0xFF1B2127),
-    ink = Color(0xFFE4EAEE),
+    ink = Color(0xFFECEFF1),
     ink2 = Color(0xFF93A0AB),
     line = Color(0xFFECEFF1),
     accent = Color(0xFFECEFF1),
