@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.laul.lauwell.R
@@ -97,8 +98,9 @@ private fun ComponentsPreview() {
 private fun QuickLogSheetPreview() {
     LauWellTheme {
         var rating by remember { mutableStateOf<Int?>(6) }
-        Box(Modifier.fillMaxSize().background(LauWellTheme.colors.bg)) {
-            LauWellBottomSheet(visible = true, onDismissRequest = {}) {
+        // The sheet without its window: previews don't draw dialogs.
+        Box(Modifier.fillMaxSize().background(LauWellTheme.colors.bg), contentAlignment = Alignment.BottomCenter) {
+            SheetSurface {
                 Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs)) {
                     CategoryLine(Category.Symptoms, "Symptoms · Systemic")
                     BasicText("Fatigue", style = LauWellTheme.typography.headline.copy(color = LauWellTheme.colors.ink))
