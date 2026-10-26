@@ -109,7 +109,7 @@ fun HealthConnectGrantScreen(onDone: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
                 LauWellIcon(R.drawable.ic_lock, contentDescription = null, tint = colors.ink2, size = 18.dp)
                 BasicText(
-                    "Sensor data stays on this phone. Only daily summaries are saved to your account.",
+                    "Sensor data stays on this phone and in Health Connect. Only what you enter yourself is saved to your account.",
                     style = type.caption.copy(color = colors.ink2),
                 )
             }

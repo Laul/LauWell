@@ -42,7 +42,7 @@ class PermissionsRationaleActivity : ComponentActivity() {
                             style = body,
                         )
                         BasicText(
-                            "Sensor data stays on this phone. Only daily summaries are saved to your account.",
+                            "Sensor data stays on this phone and in Health Connect. Only what you enter yourself is saved to your account.",
                             style = body,
                         )
                         BasicText(
