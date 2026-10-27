@@ -2,6 +2,7 @@ package com.laul.lauwell.core.catalog
 
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
 import com.laul.lauwell.core.catalog.metrics.CardiovascularMetrics
+import com.laul.lauwell.core.catalog.metrics.MindMetrics
 import com.laul.lauwell.core.catalog.metrics.SleepMetrics
 
 /**
@@ -13,7 +14,7 @@ import com.laul.lauwell.core.catalog.metrics.SleepMetrics
  */
 object MetricRegistry {
 
-    val all: List<MetricDefinition> = CardiovascularMetrics.all + ActivityMetrics.all + SleepMetrics.all
+    val all: List<MetricDefinition> = CardiovascularMetrics.all + ActivityMetrics.all + SleepMetrics.all + MindMetrics.all
 
     private val byId: Map<MetricId, MetricDefinition> = all.associateBy { it.id }
 

@@ -121,7 +121,9 @@ private fun miniChart(kind: MiniChartKind, metric: MetricDefinition, series: Lis
     return when (kind) {
         MiniChartKind.Line -> {
             val days = series.map { it.summary?.values?.get(key)?.main }
-            val (min, max) = padded(days.filterNotNull())
+            // A rating keeps its whole scale on the axis, so 3/5 always sits in the middle.
+            val scale = metric.quantities.first().scale
+            val (min, max) = scale?.let { it.first.toDouble() to it.last.toDouble() } ?: padded(days.filterNotNull())
             MiniChartData.Line(days, min, max)
         }
         MiniChartKind.Range -> {

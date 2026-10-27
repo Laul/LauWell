@@ -9,9 +9,9 @@ import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.catalog.NavScreen
 import com.laul.lauwell.core.catalog.ToggleRepository
 import com.laul.lauwell.core.healthconnect.HealthSync
-import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.TrackerView
+import com.laul.lauwell.core.summary.DailySummarySource
 import com.laul.lauwell.core.summary.MetricSummary
 import com.laul.lauwell.core.summary.metricSummaries
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,7 +44,7 @@ internal fun trackerGroups(visible: List<MetricDefinition>): List<TrackerGroup> 
 class TrackerViewModel(
     toggleRepository: ToggleRepository,
     private val displayPreferences: DisplayPreferences,
-    store: SummaryStore,
+    summarySource: DailySummarySource,
     private val healthSync: HealthSync,
     clock: Clock,
 ) : ViewModel() {
@@ -58,9 +58,9 @@ class TrackerViewModel(
     val view: StateFlow<TrackerView?> = displayPreferences.trackerView
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    /** Each shown metric's value, takeaway and mini chart, from the synced daily summaries. */
+    /** Each shown metric's value, takeaway and mini chart, from its daily summaries. */
     val summaries: StateFlow<Map<MetricId, MetricSummary>> =
-        metricSummaries(groups.map { groups -> groups.orEmpty().flatMap { it.metrics } }, store, clock)
+        metricSummaries(groups.map { groups -> groups.orEmpty().flatMap { it.metrics } }, summarySource, clock)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /** Syncs the shown metrics whose permission is granted; called whenever the screen resumes. */

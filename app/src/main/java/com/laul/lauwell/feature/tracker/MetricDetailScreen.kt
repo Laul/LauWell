@@ -10,6 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import com.laul.lauwell.feature.log.LogEntrySheet
+import com.laul.lauwell.core.ui.components.Section
+import com.laul.lauwell.core.record.display
+import com.laul.lauwell.core.record.Measurement
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -80,7 +87,7 @@ fun MetricDetailScreen(metricId: String, onBack: () -> Unit) {
 @Composable
 private fun MetricDetail(metric: MetricDefinition) {
     val viewModel = appViewModel {
-        MetricDetailViewModel(metric, healthDataSource, healthSync, summaryStore, Clock.systemDefaultZone())
+        MetricDetailViewModel(metric, healthDataSource, healthSync, summaryStore, dailySummaries, recordRepository, Clock.systemDefaultZone())
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Back from Health Connect's settings, a permission may have changed.
@@ -91,6 +98,7 @@ private fun MetricDetail(metric: MetricDefinition) {
 
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
+    var logging by remember { mutableStateOf(false) }
     ScreenColumn {
         Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
             CategoryLine(metric.category, "${metric.category.label} · ${metric.subCategory.label}")
@@ -101,6 +109,10 @@ private fun MetricDetail(metric: MetricDefinition) {
                 }
             }
             BasicText(state.latestWhen ?: "No data yet", style = type.caption.copy(color = colors.ink2))
+        }
+        // A metric you log yourself: logging is the screen's main action.
+        if (metric.isManual && metric.prompt != null) {
+            FilledButton("Log ${metric.label.lowercase()}", onClick = { logging = true })
         }
 
         when (val access = state.access) {
@@ -128,6 +140,7 @@ private fun MetricDetail(metric: MetricDefinition) {
         }
         state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
         if (state.days.isNotEmpty()) DayList(state.days, metric)
+        if (state.entries.isNotEmpty()) EntryList(state.entries, metric)
         if (state.access == HealthAccess.Granted) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
                 if (fromWatch(state.origins)) LauWellIcon(R.drawable.ic_watch, contentDescription = null, tint = colors.ink2, size = 16.dp)
@@ -135,6 +148,37 @@ private fun MetricDetail(metric: MetricDefinition) {
                     sourceLine(state.origins, state.lastSyncedAt, ZoneId.systemDefault()),
                     style = type.caption.copy(color = colors.ink2),
                 )
+            }
+        }
+    }
+    LogEntrySheet(metric = metric.takeIf { logging }, onDismiss = { logging = false })
+}
+
+/** A logged metric's entries in the period, newest first: when, the note under it, the value. */
+@Composable
+private fun EntryList(entries: List<Measurement>, metric: MetricDefinition) {
+    val colors = LauWellTheme.colors
+    val type = LauWellTheme.typography
+    val quantity = metric.quantities.first()
+    val clock = Clock.systemDefaultZone()
+    Section("Entries") {
+        Panel {
+            entries.forEachIndexed { index, entry ->
+                if (index > 0) PanelDivider()
+                Row(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(vertical = LauWellTheme.spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        BasicText(entryWhen(entry, clock), style = type.item.copy(color = colors.ink))
+                        entry.note?.let { BasicText(it, style = type.caption.copy(color = colors.ink2)) }
+                    }
+                    BasicText(
+                        quantity.display(entry.values.getValue(quantity.key)) + quantity.unit,
+                        style = type.metricSmall.copy(color = colors.ink),
+                    )
+                }
             }
         }
     }

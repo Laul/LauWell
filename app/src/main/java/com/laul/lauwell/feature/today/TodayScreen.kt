@@ -2,12 +2,16 @@ package com.laul.lauwell.feature.today
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
@@ -19,33 +23,53 @@ import com.laul.lauwell.core.summary.MetricSummary
 import com.laul.lauwell.core.ui.components.AppHeader
 import com.laul.lauwell.core.ui.components.Panel
 import com.laul.lauwell.core.ui.components.PinnedTile
+import com.laul.lauwell.core.ui.components.QuickLogChip
 import com.laul.lauwell.core.ui.components.ScreenColumn
 import com.laul.lauwell.core.ui.components.Section
 import com.laul.lauwell.core.ui.theme.LauWellTheme
+import com.laul.lauwell.feature.log.LogEntrySheet
 import java.time.Clock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
- * Today, the home tab: the header (date, greeting, and the gear that opens Settings), and the pinned tiles (empty
- * values until M3 reads Health Connect). Quick log comes with manual entries (M4); medications,
- * the symptom check and upcoming appointments with M5–M6.
+ * Today, the home tab: the header (date, greeting, and the gear that opens Settings), the quick-log
+ * chips (each opens its entry sheet) and the pinned tiles. Medications, the symptom check and
+ * upcoming appointments come with M5–M6.
  */
 @Composable
 fun TodayScreen(onOpenSettings: () -> Unit) {
     val viewModel = appViewModel {
-        TodayViewModel(toggleRepository, pinnedMetrics, summaryStore, healthSync, Clock.systemDefaultZone())
+        TodayViewModel(toggleRepository, pinnedMetrics, dailySummaries, healthSync, Clock.systemDefaultZone())
     }
     val pinned by viewModel.pinned.collectAsStateWithLifecycle()
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
+    val quickLog by viewModel.quickLog.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.sync() }
     val now = remember { LocalDateTime.now() }
+    var logging by remember { mutableStateOf<MetricDefinition?>(null) }
 
     Column(Modifier.fillMaxSize()) {
         AppHeader(title = greeting(now.hour), eyebrow = now.format(DateFormat), onOpenSettings = onOpenSettings)
         ScreenColumn(Modifier.weight(1f)) {
+            if (quickLog.isNotEmpty()) QuickLogRow(quickLog, onLog = { logging = it })
             pinned?.takeIf { it.isNotEmpty() }?.let { metrics ->
                 PinnedGrid(metrics) { summaries[it.id] ?: MetricSummary.empty(it) }
+            }
+        }
+    }
+    LogEntrySheet(metric = logging, onDismiss = { logging = null })
+}
+
+/** The quick-log chips (design: Today), wrapping onto a second line when they don't fit. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun QuickLogRow(metrics: List<MetricDefinition>, onLog: (MetricDefinition) -> Unit) {
+    val spacing = LauWellTheme.spacing
+    Section("Quick log") {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(spacing.xs), verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            metrics.forEach { metric ->
+                QuickLogChip(icon = metric.icon, label = metric.label, category = metric.category, onClick = { onLog(metric) })
             }
         }
     }

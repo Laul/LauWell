@@ -60,6 +60,8 @@ data class MetricDefinition(
      * evening before to 18:00, so a night is never cut at midnight.
      */
     val nightly: Boolean = false,
+    /** How the quick-log sheet asks for a self-rating; set on every metric with a rating [Quantity.scale]. */
+    val prompt: RatingPrompt? = null,
 ) {
     val category: Category get() = subCategory.category
 
@@ -78,6 +80,9 @@ data class MetricDefinition(
         require(healthConnectTypes.isEmpty() || DataSource.Wearable in sources) {
             "$id: only a wearable metric is read from Health Connect"
         }
+        require((quantities.singleOrNull()?.scale != null) == (prompt != null)) {
+            "$id: a rating is one quantity with a scale, and a prompt"
+        }
     }
 
     /** Can be logged by hand: offered in Quick log and on its detail screen. */
@@ -89,6 +94,12 @@ data class MetricDefinition(
      */
     val canPin: Boolean get() = quantities.isNotEmpty() && aggregation != null
 }
+
+/**
+ * The quick-log sheet's wording for a self-rating (design: the fatigue sheet): the [question] under
+ * the title, and what each end of the scale means ("1 · Awful", "5 · Great").
+ */
+data class RatingPrompt(val question: String, val lowLabel: String, val highLabel: String)
 
 /** Where a metric's records come from. */
 enum class DataSource {
@@ -116,6 +127,8 @@ enum class NavScreen { Tracker, Records, Care }
  *   it (time awake during the night).
  * @param normalRange generic adult clinical range (Vitals); null when there is no meaningful one.
  *   User-configurable targets are backlog.
+ * @param scale the whole-number range of a self-rating (mood 1..5): the entry sheet's pips and a
+ *   fixed chart axis. Null for measured values.
  */
 data class Quantity(
     val key: String,
@@ -125,9 +138,11 @@ data class Quantity(
     val normalRange: ClosedFloatingPointRange<Double>? = null,
     val format: ValueFormat = ValueFormat.Number,
     val inTotal: Boolean = true,
+    val scale: IntRange? = null,
 ) {
     init {
         require(precision >= 0) { "precision must be >= 0" }
+        require(scale == null || scale.first < scale.last) { "$key: a scale needs at least two steps" }
         require(format != ValueFormat.Duration || unit.isEmpty()) { "$key: a duration reads \"7h 12m\", without a unit" }
     }
 }

@@ -27,6 +27,7 @@ import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.WorkManagerSyncSchedule
 import com.laul.lauwell.core.record.FirestoreRecordRepository
 import com.laul.lauwell.core.record.RecordRepository
+import com.laul.lauwell.core.summary.DailySummarySource
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
 import com.laul.lauwell.core.settings.DataStoreOnboarding
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
@@ -93,6 +94,9 @@ class AppContainer(context: Context) {
 
     /** What you enter yourself (mood…), in your Firestore account. */
     val recordRepository: RecordRepository by lazy { FirestoreRecordRepository(firestore, authRepository.session) }
+
+    /** Daily summaries for any metric: Health Connect's cache, or your entries for a manual one. */
+    val dailySummaries: DailySummarySource by lazy { DailySummarySource(summaryStore, recordRepository) }
 
     /** WorkManager's own singleton, set up with [workerFactory] (see [com.laul.lauwell.LauWellApplication]). */
     private val workManager: WorkManager by lazy { WorkManager.getInstance(appContext) }

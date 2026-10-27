@@ -53,7 +53,7 @@ import java.time.Clock
 @Composable
 fun TrackerScreen(onOpenMetric: (MetricId) -> Unit, onOpenSettings: () -> Unit) {
     val viewModel = appViewModel {
-        TrackerViewModel(toggleRepository, displayPreferences, summaryStore, healthSync, Clock.systemDefaultZone())
+        TrackerViewModel(toggleRepository, displayPreferences, dailySummaries, healthSync, Clock.systemDefaultZone())
     }
     val groups by viewModel.groups.collectAsStateWithLifecycle()
     val view by viewModel.view.collectAsStateWithLifecycle()

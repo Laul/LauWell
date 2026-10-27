@@ -80,8 +80,8 @@ fun SegmentedSelector(
 }
 
 /**
- * The 1–10 rating: ten outlined pips in two rows of five, the chosen one filled in the category
- * `fg`, with labelled ends ("1 · Rested", "10 · Exhausted").
+ * A self-rating: one outlined pip per step of [scale], in rows of five (1–10 is two rows, 1–5 one),
+ * the chosen one filled in the category `fg`, with labelled ends ("1 · Rested", "10 · Exhausted").
  *
  * @param value the chosen pip, or null before the first tap.
  */
@@ -93,6 +93,7 @@ fun PipRating(
     lowLabel: String,
     highLabel: String,
     modifier: Modifier = Modifier,
+    scale: IntRange = 1..10,
 ) {
     val colors = LauWellTheme.colors
     val categoryColor = colors.forCategory(category)
@@ -100,7 +101,7 @@ fun PipRating(
     val gap = LauWellTheme.spacing.xs
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(gap)) {
         Column(modifier = Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(gap)) {
-            (1..10).chunked(5).forEach { row ->
+            scale.chunked(PipsPerRow).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
                     row.forEach { n ->
                         val selected = n == value
@@ -137,6 +138,8 @@ fun PipRating(
         }
     }
 }
+
+private const val PipsPerRow = 5
 
 /** One segment of an [IconToggle]. */
 data class IconToggleOption(@DrawableRes val icon: Int, val label: String)

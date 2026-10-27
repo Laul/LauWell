@@ -13,6 +13,10 @@ import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.DataOrigin
 import com.laul.lauwell.core.record.PeriodStats
 import com.laul.lauwell.core.record.display
+import com.laul.lauwell.core.common.AppResult
+import com.laul.lauwell.core.record.Measurement
+import com.laul.lauwell.core.record.RecordRepository
+import com.laul.lauwell.core.summary.DailySummarySource
 import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
@@ -21,7 +25,9 @@ import com.laul.lauwell.core.ui.chart.chartSpec
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -34,6 +40,8 @@ import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /** Whether the detail screen can read the metric from Health Connect. */
 sealed interface HealthAccess {
@@ -69,6 +77,8 @@ data class MetricDetailState(
     /** Where [latest]'s records come from, read from them: the daily aggregation gives no origins. */
     val origins: Set<DataOrigin> = emptySet(),
     val lastSyncedAt: Instant? = null,
+    /** A logged metric's entries in the period, newest first (time, value, note); empty for a synced one. */
+    val entries: List<Measurement> = emptyList(),
 )
 
 /** How often the open screen asks Health Connect for changes. */
@@ -79,8 +89,18 @@ class MetricDetailViewModel(
     private val source: HealthDataSource,
     private val sync: HealthSync,
     store: SummaryStore,
+    summarySource: DailySummarySource,
+    records: RecordRepository,
     clock: Clock,
 ) : ViewModel() {
+
+    /** Your entries of a metric you log yourself; none for a synced one. */
+    private val entries: Flow<List<Measurement>> =
+        if (metric.isManual && metric.healthConnectTypes.isEmpty()) {
+            records.measurements(metric.id).map { (it as? AppResult.Success)?.data.orEmpty() }
+        } else {
+            flowOf(emptyList())
+        }
 
     private val access = MutableStateFlow<HealthAccess>(HealthAccess.Checking)
 
@@ -91,7 +111,7 @@ class MetricDetailViewModel(
      * open), read once; each period is cut from it, so switching period needs no new query.
      */
     private val summaries = LocalDate.now(clock).let { today ->
-        store.summaries(metric.id, today.minusDays(ChartPeriod.entries.maxOf { it.dayCount }.toLong())..today.plusDays(1))
+        summarySource.summaries(metric, today.minusDays(ChartPeriod.entries.maxOf { it.dayCount }.toLong())..today.plusDays(1))
     }
 
     /**
@@ -139,6 +159,9 @@ class MetricDetailViewModel(
             lastSyncedAt = syncedAt,
             origins = origins,
         )
+    }.combine(entries) { state, entries ->
+        val days = state.period.days(LocalDate.now(clock))
+        state.copy(entries = entries.filter { localDay(it, clock) in days }.sortedByDescending { it.time })
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MetricDetailState())
 
     fun setPeriod(value: ChartPeriod) {
@@ -199,3 +222,23 @@ internal fun statItems(metric: MetricDefinition, stats: PeriodStats): List<Pair<
 /** The latest day with data, up to [today]. */
 private fun latestOf(summaries: List<DailySummary>, today: LocalDate): DailySummary? =
     summaries.filter { it.date <= today }.maxByOrNull { it.date }
+
+/** The local day [entry] was taken on: in its own offset, else the phone's. */
+internal fun localDay(entry: Measurement, clock: Clock): LocalDate =
+    entry.time.atZone(entry.zoneOffset ?: clock.zone).toLocalDate()
+
+/** "Today · 21:00", "Yesterday · 08:15", "Mon 20 Oct · 21:00": when [entry] was taken, in its own offset. */
+internal fun entryWhen(entry: Measurement, clock: Clock): String {
+    val at = entry.time.atZone(entry.zoneOffset ?: clock.zone)
+    val today = LocalDate.now(clock)
+    val day = when (at.toLocalDate()) {
+        today -> "Today"
+        today.minusDays(1) -> "Yesterday"
+        else -> at.format(EntryDay)
+    }
+    return "$day · ${at.format(EntryTime)}"
+}
+
+// English names: the line around them is English (as in DayList).
+private val EntryDay = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
+private val EntryTime = DateTimeFormatter.ofPattern("HH:mm")
