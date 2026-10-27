@@ -25,6 +25,8 @@ import com.laul.lauwell.core.healthconnect.HealthSync
 import com.laul.lauwell.core.healthconnect.HealthSyncWorkerFactory
 import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.WorkManagerSyncSchedule
+import com.laul.lauwell.core.record.FirestoreRecordRepository
+import com.laul.lauwell.core.record.RecordRepository
 import com.laul.lauwell.core.settings.DataStoreDisplayPreferences
 import com.laul.lauwell.core.settings.DataStoreOnboarding
 import com.laul.lauwell.core.settings.DataStorePinnedMetrics
@@ -88,6 +90,9 @@ class AppContainer(context: Context) {
     val summaryStore: SummaryStore by lazy { RoomSummaryStore(database.healthCacheDao()) }
 
     val healthSync: HealthSync by lazy { HealthSync(healthDataSource, summaryStore, Clock.systemDefaultZone()) }
+
+    /** What you enter yourself (mood…), in your Firestore account. */
+    val recordRepository: RecordRepository by lazy { FirestoreRecordRepository(firestore, authRepository.session) }
 
     /** WorkManager's own singleton, set up with [workerFactory] (see [com.laul.lauwell.LauWellApplication]). */
     private val workManager: WorkManager by lazy { WorkManager.getInstance(appContext) }

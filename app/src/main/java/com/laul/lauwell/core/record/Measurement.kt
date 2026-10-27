@@ -28,9 +28,11 @@ data class Measurement(
     val values: Map<String, Double>,
     override val provenance: Provenance,
     override val links: List<RecordLink> = emptyList(),
+    override val note: String? = null,
 ) : HealthRecord {
     init {
         require(values.isNotEmpty()) { "$id: a measurement needs a value" }
+        require(note == null || note.isNotBlank()) { "$id: a note is null or has text" }
         require(values.values.all { it.isFinite() }) { "$id: values must be finite" }
     }
 

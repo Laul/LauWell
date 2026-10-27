@@ -38,6 +38,13 @@ sealed interface HealthRecord {
 
     /** Context links to other records, stored on the record that points (never copied both ways). */
     val links: List<RecordLink>
+
+    /**
+     * A short comment on this entry ("after a bad night"), stored with it. Grouping records goes
+     * through [links] instead, e.g. an encounter pointing at what it gathers (Notion → Decisions
+     * Tracker: *An entry's note is a field on the entry itself*).
+     */
+    val note: String?
 }
 
 /** "Recorded during" an encounter, "about" a skin rating … Shown generically ("Linked to: …"). */
