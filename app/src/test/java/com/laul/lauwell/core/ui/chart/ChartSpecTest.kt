@@ -23,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Test
+import com.laul.lauwell.core.catalog.metrics.MindMetrics.Mood
 import java.time.LocalDate
 import java.util.Locale
 
@@ -50,6 +51,16 @@ class ChartSpecTest {
 
     private fun steps(daysAgo: Long, total: Double) =
         DailySummary(steps.id, today.minusDays(daysAgo), mapOf("value" to DayValue.Total(total)), emptySet())
+
+    @Test
+    fun `a rating spans its day's lowest to highest check-in, on its whole scale`() {
+        val day = DailySummary(Mood.id, today, mapOf("value" to DayValue.Range(2.0, 10.0 / 3, 5.0)), emptySet())
+        val spec = chartSpec(Mood, listOf(day), ChartPeriod.Week, today)!!
+
+        assertEquals(ChartPoint(2.0, 10.0 / 3, 5.0), spec.slots.last().point)
+        assertEquals(true, spec.markAverage)
+        assertEquals(1.0..5.0, spec.yBounds())
+    }
 
     @Test
     fun `a week has a slot per day ending today, a missing day is null`() {

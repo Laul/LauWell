@@ -69,9 +69,10 @@ class DailySummarySourceTest {
     }
 
     @Test
-    fun `a manual metric reads your entries, one mean per day with its count`() = runBlocking {
+    fun `a manual metric reads your entries, each day as its aggregation asks`() = runBlocking {
         val days = source.summaries(Mood, day.minusDays(2)..day).first()
         assertEquals(listOf(day), days.map { it.date })
-        assertEquals(mapOf("value" to DayValue.Mean(3.5, 2)), days.single().values)
+        // Mood keeps the day's lowest, mean and highest entry.
+        assertEquals(mapOf("value" to DayValue.Range(3.0, 3.5, 4.0)), days.single().values)
     }
 }

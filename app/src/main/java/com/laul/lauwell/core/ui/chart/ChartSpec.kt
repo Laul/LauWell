@@ -147,11 +147,13 @@ fun ChartSpec.meetsGoal(index: Int): Boolean? {
 }
 
 /**
- * The y axis: bars from 0 up to the highest bar or the goal, otherwise every value and the band;
- * widened to round steps with room; null when no slot has data (the chart shows its empty state).
+ * The y axis: a rating's whole scale (mood 1–5, so a 3 always sits in the middle); else bars from 0
+ * up to the highest bar or the goal, otherwise every value and the band, widened to round steps
+ * with room. Null when no slot has data (the chart shows its empty state).
  */
 fun ChartSpec.yBounds(): ClosedFloatingPointRange<Double>? {
     val points = slots.mapNotNull { it.point }.takeIf { it.isNotEmpty() } ?: return null
+    quantity.scale?.let { return it.first.toDouble()..it.last.toDouble() }
     if (kind == ChartKind.Bar || kind == ChartKind.StackedBar) {
         val top = maxOf(points.maxOf { it.high }, goal?.value ?: 0.0) * 1.1
         val step = niceStep(top)

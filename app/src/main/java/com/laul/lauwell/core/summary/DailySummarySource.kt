@@ -3,7 +3,7 @@ package com.laul.lauwell.core.summary
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.common.AppResult
 import com.laul.lauwell.core.healthconnect.SummaryStore
-import com.laul.lauwell.core.healthconnect.averagedDays
+import com.laul.lauwell.core.healthconnect.daysFromReadings
 import com.laul.lauwell.core.record.DailySummary
 import com.laul.lauwell.core.record.RecordRepository
 import kotlinx.coroutines.flow.Flow
@@ -28,10 +28,10 @@ class DailySummarySource(
         if (metric.healthConnectTypes.isNotEmpty() || !metric.isManual) {
             store.summaries(metric.id, days)
         } else {
-            // Each day is the mean of its entries, with their count; an unreadable list shows as no data.
+            // Each day is summarised from its entries as the metric's aggregation asks; an unreadable list shows as no data.
             records.measurements(metric.id).map { result ->
                 val entries = (result as? AppResult.Success)?.data.orEmpty()
-                averagedDays(metric, entries, days, zone())
+                daysFromReadings(metric, entries, days, zone())
             }
         }
 }

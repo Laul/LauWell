@@ -105,7 +105,7 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
         // Fourteen hours either side, so a reading that its own offset places inside the days is read.
         val from = days.start.atStartOfDay(zone).toInstant().minus(Duration.ofHours(14))
         val until = days.endInclusive.plusDays(1).atStartOfDay(zone).toInstant().plus(Duration.ofHours(14))
-        return averagedDays(metric, readMeasurements(metric, from, until), days, zone)
+        return daysFromReadings(metric, readMeasurements(metric, from, until), days, zone)
     }
 
     override suspend fun changesToken(metric: MetricDefinition): String {

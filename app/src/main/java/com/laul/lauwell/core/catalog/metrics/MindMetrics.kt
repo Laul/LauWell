@@ -17,8 +17,9 @@ import com.laul.lauwell.core.catalog.SubCategory.LifestyleMindAndMood
 object MindMetrics {
 
     /**
-     * A self-rating from 1 (awful) to 5 (great), logged as often as you like; a day reads the mean
-     * of its entries. The first manual entry (Notion: *Mood end-to-end*).
+     * A self-rating from 1 (awful) to 5 (great), logged as often as you like. A day keeps its lowest,
+     * mean and highest entry, drawn as a range bar with the mean marked. The first manual entry
+     * (Notion: *Mood end-to-end*).
      */
     val Mood = MetricDefinition(
         id = MetricId("mood"),
@@ -29,8 +30,8 @@ object MindMetrics {
         sources = setOf(DataSource.Manual),
         screens = setOf(NavScreen.Tracker),
         quantities = listOf(Quantity(key = "value", label = "Mood", unit = "/5", scale = 1..5)),
-        aggregation = Aggregation.Average,
-        chartKind = ChartKind.Line,
+        aggregation = Aggregation.MinAverageMax,
+        chartKind = ChartKind.RangeBar,
         miniChart = MiniChartKind.Line,
         prompt = RatingPrompt("How do you feel right now?", lowLabel = "1 · Awful", highLabel = "5 · Great"),
     )

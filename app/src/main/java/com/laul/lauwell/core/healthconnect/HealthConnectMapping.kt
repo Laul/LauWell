@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
+import com.laul.lauwell.core.catalog.Aggregation
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics
@@ -152,7 +153,7 @@ internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<
 }
 
 /**
- * Metrics whose days are averaged from their records ([averagedDays]) instead of Health Connect's
+ * Metrics whose days are averaged from their records ([daysFromReadings]) instead of Health Connect's
  * aggregation: the Health Connect built into Android 14+ rejects blood pressure's averages
  * ("Unsupported metric type BloodPressure_diastolic_avg"), seen on the Fold 2026-10-23. Readings
  * written by several apps then all count, without the app priority.
@@ -160,11 +161,13 @@ internal fun aggregateMetricsFor(metric: MetricDefinition): Set<AggregateMetric<
 internal fun averagedFromRecords(metric: MetricDefinition): Boolean = metric.id == BloodPressure
 
 /**
- * The days of an [averagedFromRecords] metric: per quantity, the mean of the day's [readings], with
- * how many there were. Each reading falls on its own local day ([fallback] when it has no offset);
- * days outside [days] are left out, and a day without readings has no summary.
+ * A metric's days built from its readings, one summary per local day as its [MetricDefinition.aggregation]
+ * asks: the mean with its count (blood pressure; the default), the lowest–mean–highest (mood, several
+ * check-ins a day), the total, or the latest. Each reading falls on its own local day ([fallback]
+ * when it has no offset); days outside [days] are left out, and a day without readings has no summary.
+ * Used for what Health Connect can't aggregate ([averagedFromRecords]) and for your own entries.
  */
-internal fun averagedDays(
+internal fun daysFromReadings(
     metric: MetricDefinition,
     readings: List<Measurement>,
     days: ClosedRange<LocalDate>,
@@ -178,7 +181,7 @@ internal fun averagedDays(
                 metric = metric.id,
                 date = date,
                 values = metric.quantities.associate { quantity ->
-                    quantity.key to DayValue.Mean(dayReadings.map { it.values.getValue(quantity.key) }.average(), dayReadings.size)
+                    quantity.key to dayValue(metric.aggregation, dayReadings, quantity.key)
                 },
                 origins = dayReadings.mapNotNullTo(mutableSetOf()) { reading ->
                     reading.provenance.origin?.let { DataOrigin(it.appPackage) }
@@ -333,4 +336,19 @@ internal suspend fun <T> readAllPages(fetch: suspend (pageToken: String?) -> Pai
         token = next?.takeIf { it.isNotEmpty() }
     } while (token != null)
     return all
+}
+
+/** One day of [readings] summarised for [aggregation]: the shape of a [DayValue]. */
+private fun dayValue(aggregation: Aggregation?, readings: List<Measurement>, key: String): DayValue {
+    val values = readings.map { it.values.getValue(key) }
+    return when (aggregation) {
+        Aggregation.Sum -> DayValue.Total(values.sum())
+        Aggregation.MinAverageMax -> {
+            val (low, high) = values.min() to values.max()
+            // Kept between the extremes: a floating-point mean can stray past them by a hair.
+            DayValue.Range(low, values.average().coerceIn(low, high), high)
+        }
+        Aggregation.Latest -> readings.maxBy { it.time }.let { DayValue.Last(it.values.getValue(key), it.time) }
+        Aggregation.Average, null -> DayValue.Mean(values.average(), values.size)
+    }
 }

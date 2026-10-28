@@ -139,7 +139,7 @@ class HealthConnectMappingTest {
             bloodPressure("bp-4", Instant.parse("2026-10-16T12:00:00Z"), 140.0, 90.0),
         )
 
-        val summaries = averagedDays(CardiovascularMetrics.BloodPressure, readings, days, ZoneOffset.UTC)
+        val summaries = daysFromReadings(CardiovascularMetrics.BloodPressure, readings, days, ZoneOffset.UTC)
 
         assertEquals(listOf(LocalDate.of(2026, 10, 17), LocalDate.of(2026, 10, 18)), summaries.map { it.date })
         assertEquals(mapOf("systolic" to DayValue.Mean(130.0, 1), "diastolic" to DayValue.Mean(85.0, 1)), summaries[0].values)
