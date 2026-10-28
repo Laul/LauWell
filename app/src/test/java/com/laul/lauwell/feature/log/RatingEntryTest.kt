@@ -2,13 +2,16 @@ package com.laul.lauwell.feature.log
 
 import com.laul.lauwell.core.catalog.metrics.ActivityMetrics.Steps
 import com.laul.lauwell.core.catalog.metrics.MindMetrics.Mood
+import com.laul.lauwell.core.record.LinkRelation
 import com.laul.lauwell.core.record.RecordId
+import com.laul.lauwell.core.record.RecordLink
 import com.laul.lauwell.core.record.Source
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -21,14 +24,37 @@ class RatingEntryTest {
     private val clock = Clock.fixed(Instant.parse("2026-10-27T04:20:00Z"), zone)
 
     @Test
-    fun `no time chosen means now`() {
-        assertEquals(ZonedDateTime.now(clock), entryTime(null, clock))
+    fun `for a new entry, an earlier time is today, a later one yesterday evening`() {
+        assertEquals(ZonedDateTime.of(2026, 10, 27, 0, 5, 0, 0, zone), entryTime(LocalTime.of(0, 5), null, clock))
+        assertEquals(ZonedDateTime.of(2026, 10, 26, 23, 30, 0, 0, zone), entryTime(LocalTime.of(23, 30), null, clock))
     }
 
     @Test
-    fun `an earlier time is today, a later one yesterday evening`() {
-        assertEquals(ZonedDateTime.of(2026, 10, 27, 0, 5, 0, 0, zone), entryTime(LocalTime.of(0, 5), clock))
-        assertEquals(ZonedDateTime.of(2026, 10, 26, 23, 30, 0, 0, zone), entryTime(LocalTime.of(23, 30), clock))
+    fun `an edited entry keeps its day`() {
+        val day = LocalDate.of(2026, 10, 20)
+        assertEquals(ZonedDateTime.of(2026, 10, 20, 23, 30, 0, 0, zone), entryTime(LocalTime.of(23, 30), day, clock))
+    }
+
+    @Test
+    fun `editing keeps the id, links and creation time, and stamps the edit`() {
+        val at = ZonedDateTime.of(2026, 10, 26, 21, 0, 0, 0, zone)
+        val first = ratingEntry(RecordId("m1"), Mood, 2, at, "", Clock.fixed(Instant.parse("2026-10-27T01:00:00Z"), zone))
+            .copy(links = listOf(RecordLink(RecordId("enc"), LinkRelation.RecordedDuring)))
+        val edited = ratingEntry(first.id, Mood, 4, at, "better", clock, original = first)
+
+        assertEquals(first.id, edited.id)
+        assertEquals(first.links, edited.links)
+        assertEquals(first.provenance.recordedAt, edited.provenance.recordedAt)
+        assertEquals(Instant.now(clock), edited.provenance.editedAt)
+        assertEquals(mapOf("value" to 4.0), edited.values)
+    }
+
+    @Test
+    fun `day labels`() {
+        val today = LocalDate.of(2026, 10, 27)
+        assertEquals("Today", dayLabel(today, today))
+        assertEquals("Yesterday", dayLabel(today.minusDays(1), today))
+        assertEquals("Tue 20 Oct", dayLabel(LocalDate.of(2026, 10, 20), today))
     }
 
     @Test

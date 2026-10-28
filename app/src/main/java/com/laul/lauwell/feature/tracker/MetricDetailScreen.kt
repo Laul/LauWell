@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.clickable
 import com.laul.lauwell.feature.log.LogEntrySheet
 import com.laul.lauwell.core.ui.components.Section
 import com.laul.lauwell.core.record.display
@@ -99,6 +101,7 @@ private fun MetricDetail(metric: MetricDefinition) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     var logging by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<Measurement?>(null) }
     ScreenColumn {
         Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
             CategoryLine(metric.category, "${metric.category.label} · ${metric.subCategory.label}")
@@ -140,7 +143,7 @@ private fun MetricDetail(metric: MetricDefinition) {
         }
         state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
         if (state.days.isNotEmpty()) DayList(state.days, metric)
-        if (state.entries.isNotEmpty()) EntryList(state.entries, metric)
+        if (state.entries.isNotEmpty()) EntryList(state.entries, metric, onEdit = { editing = it })
         if (state.access == HealthAccess.Granted) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
                 if (fromWatch(state.origins)) LauWellIcon(R.drawable.ic_watch, contentDescription = null, tint = colors.ink2, size = 16.dp)
@@ -151,12 +154,19 @@ private fun MetricDetail(metric: MetricDefinition) {
             }
         }
     }
-    LogEntrySheet(metric = metric.takeIf { logging }, onDismiss = { logging = false })
+    LogEntrySheet(
+        metric = metric.takeIf { logging || editing != null },
+        entry = editing,
+        onDismiss = {
+            logging = false
+            editing = null
+        },
+    )
 }
 
-/** A logged metric's entries in the period, newest first: when, the note under it, the value. */
+/** A logged metric's entries in the period, newest first: when, the note under it, the value. Tap one to edit or delete it. */
 @Composable
-private fun EntryList(entries: List<Measurement>, metric: MetricDefinition) {
+private fun EntryList(entries: List<Measurement>, metric: MetricDefinition, onEdit: (Measurement) -> Unit) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     val quantity = metric.quantities.first()
@@ -166,7 +176,11 @@ private fun EntryList(entries: List<Measurement>, metric: MetricDefinition) {
             entries.forEachIndexed { index, entry ->
                 if (index > 0) PanelDivider()
                 Row(
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(vertical = LauWellTheme.spacing.xs),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 52.dp)
+                        .clickable(role = Role.Button, onClickLabel = "Edit") { onEdit(entry) }
+                        .padding(vertical = LauWellTheme.spacing.xs),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
                 ) {

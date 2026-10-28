@@ -17,6 +17,7 @@ import com.laul.lauwell.core.common.AppResult
 import com.laul.lauwell.core.record.Measurement
 import com.laul.lauwell.core.record.RecordRepository
 import com.laul.lauwell.core.summary.DailySummarySource
+import com.laul.lauwell.feature.log.dayLabel
 import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
 import com.laul.lauwell.core.ui.chart.ChartSpec
@@ -41,7 +42,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 /** Whether the detail screen can read the metric from Health Connect. */
 sealed interface HealthAccess {
@@ -230,15 +230,7 @@ internal fun localDay(entry: Measurement, clock: Clock): LocalDate =
 /** "Today · 21:00", "Yesterday · 08:15", "Mon 20 Oct · 21:00": when [entry] was taken, in its own offset. */
 internal fun entryWhen(entry: Measurement, clock: Clock): String {
     val at = entry.time.atZone(entry.zoneOffset ?: clock.zone)
-    val today = LocalDate.now(clock)
-    val day = when (at.toLocalDate()) {
-        today -> "Today"
-        today.minusDays(1) -> "Yesterday"
-        else -> at.format(EntryDay)
-    }
-    return "$day · ${at.format(EntryTime)}"
+    return "${dayLabel(at.toLocalDate(), LocalDate.now(clock))} · ${at.format(EntryTime)}"
 }
 
-// English names: the line around them is English (as in DayList).
-private val EntryDay = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
 private val EntryTime = DateTimeFormatter.ofPattern("HH:mm")

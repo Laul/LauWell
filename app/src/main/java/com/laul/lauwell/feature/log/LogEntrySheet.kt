@@ -30,56 +30,74 @@ import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.common.AppResult
 import com.laul.lauwell.core.di.appViewModel
+import com.laul.lauwell.core.record.Measurement
 import com.laul.lauwell.core.ui.components.CategoryLine
 import com.laul.lauwell.core.ui.components.FilledButton
 import com.laul.lauwell.core.ui.components.LauWellBottomSheet
 import com.laul.lauwell.core.ui.components.LauWellIcon
 import com.laul.lauwell.core.ui.components.PanelDivider
 import com.laul.lauwell.core.ui.components.PipRating
+import com.laul.lauwell.core.ui.components.QuietButton
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import java.time.Clock
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * The quick-log sheet (design: Today › Quick log, drawn for fatigue): category line, title and
  * question, the rating's pips, when it was (now, or Change), an optional note, and Save · n/5.
- * Opens for [metric], closes when it becomes null; each opening starts blank.
+ * Opens for [metric], closes when it becomes null. A new entry starts blank; with an [entry] the
+ * sheet edits it, prefilled, and adds Delete.
  */
 @Composable
-fun LogEntrySheet(metric: MetricDefinition?, onDismiss: () -> Unit) {
+fun LogEntrySheet(metric: MetricDefinition?, onDismiss: () -> Unit, entry: Measurement? = null) {
     val viewModel = appViewModel { LogEntryViewModel(recordRepository, Clock.systemDefaultZone()) }
-    // The last metric shown, kept while the sheet slides away.
-    var shown by remember { mutableStateOf<MetricDefinition?>(null) }
+    // What was last shown, kept while the sheet slides away.
+    var shown by remember { mutableStateOf<Pair<MetricDefinition, Measurement?>?>(null) }
     var opening by remember { mutableIntStateOf(0) }
-    LaunchedEffect(metric) {
+    LaunchedEffect(metric, entry) {
         if (metric != null) {
-            shown = metric
+            shown = metric to entry
             opening++
         }
     }
     LauWellBottomSheet(visible = metric != null, onDismissRequest = onDismiss) {
-        val current = shown ?: return@LauWellBottomSheet
+        val (current, original) = shown ?: return@LauWellBottomSheet
+        fun closeOnSuccess(result: AppResult<Unit>) = result.also { if (it is AppResult.Success) onDismiss() }
         key(opening) {
-            RatingForm(current, onSave = { value, at, note ->
-                val result = viewModel.saveRating(current, value, at, note)
-                if (result is AppResult.Success) onDismiss()
-                result
-            })
+            RatingForm(
+                metric = current,
+                original = original,
+                onSave = { value, at, note -> closeOnSuccess(viewModel.saveRating(current, value, at, note, original)) },
+                onDelete = original?.let { { closeOnSuccess(viewModel.delete(it)) } },
+            )
         }
     }
 }
 
 @Composable
-private fun RatingForm(metric: MetricDefinition, onSave: (Int, LocalTime?, String) -> AppResult<Unit>) {
+private fun RatingForm(
+    metric: MetricDefinition,
+    original: Measurement?,
+    onSave: (Int, ZonedDateTime?, String) -> AppResult<Unit>,
+    onDelete: (() -> AppResult<Unit>)?,
+) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     val prompt = requireNotNull(metric.prompt) { "${metric.id} has no rating prompt" }
-    val scale = requireNotNull(metric.quantities.single().scale)
-    var value by remember { mutableStateOf<Int?>(null) }
-    var at by remember { mutableStateOf<LocalTime?>(null) }
-    var note by remember { mutableStateOf("") }
+    val quantity = metric.quantities.single()
+    val scale = requireNotNull(quantity.scale)
+    val clock = remember { Clock.systemDefaultZone() }
+    var value by remember { mutableStateOf(original?.values?.get(quantity.key)?.roundToInt()) }
+    // Null: now. An entry being edited starts at its own time, in the offset it was taken in.
+    var at by remember { mutableStateOf(original?.let { it.time.atZone(it.zoneOffset ?: clock.zone) }) }
+    var note by remember { mutableStateOf(original?.note.orEmpty()) }
     var error by remember { mutableStateOf<String?>(null) }
+    var confirmDelete by remember { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs)) {
         CategoryLine(metric.category, "${metric.category.label} · ${metric.subCategory.label}")
@@ -89,70 +107,80 @@ private fun RatingForm(metric: MetricDefinition, onSave: (Int, LocalTime?, Strin
     PipRating(value, { value = it }, metric.category, prompt.lowLabel, prompt.highLabel, scale = scale)
     Column {
         PanelDivider()
-        TimeRow(at, onChange = { at = it })
+        TimeRow(at, clock, onPick = { time -> at = entryTime(time, original?.let { at?.toLocalDate() }, clock) })
         PanelDivider()
         NoteRow(note, onChange = { note = it })
     }
     error?.let { BasicText(it, style = type.caption.copy(color = colors.ink2)) }
-    FilledButton(
-        text = "Save",
-        onClick = {
-            val result = onSave(value ?: return@FilledButton, at, note)
-            error = (result as? AppResult.Error)?.message
-        },
-        enabled = value != null,
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-            BasicText("Save ·", style = type.item.copy(color = colors.onAccent))
-            BasicText("${value ?: "–"}/${scale.last}", style = type.metricSmall.copy(color = colors.onAccent))
+    Column {
+        FilledButton(
+            text = "Save",
+            onClick = {
+                val result = onSave(value ?: return@FilledButton, at, note)
+                error = (result as? AppResult.Error)?.message
+            },
+            enabled = value != null,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                BasicText("Save ·", style = type.item.copy(color = colors.onAccent))
+                BasicText("${value ?: "–"}/${scale.last}", style = type.metricSmall.copy(color = colors.onAccent))
+            }
+        }
+        // Deleting asks once more, in place: a second dialog over the sheet would be one too many.
+        onDelete?.let { delete ->
+            QuietButton(
+                text = if (confirmDelete) "Tap again to delete" else "Delete entry",
+                onClick = {
+                    if (!confirmDelete) {
+                        confirmDelete = true
+                    } else {
+                        error = (delete() as? AppResult.Error)?.message
+                    }
+                },
+            )
         }
     }
 }
 
-/** "Now · 09:14", or the chosen time ("Yesterday · 23:30"); Change opens the system time picker. */
+/** "Now · 09:14", or the chosen time ("Yesterday · 23:30", "Tue 20 Oct · 21:00"); Change opens the system time picker. */
 @Composable
-private fun TimeRow(at: LocalTime?, onChange: (LocalTime) -> Unit) {
+private fun TimeRow(at: ZonedDateTime?, clock: Clock, onPick: (LocalTime) -> Unit) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     val context = LocalContext.current
-    val now = LocalTime.now()
-    val shown = at ?: now
-    val label = when {
-        at == null -> "Now"
-        at.isAfter(now) -> "Yesterday"
-        else -> "Today"
-    }
+    val shown = at ?: ZonedDateTime.now(clock)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .clickable(role = Role.Button, onClickLabel = "Change the time") {
-                TimePickerDialog(context, { _, h, m -> onChange(LocalTime.of(h, m)) }, shown.hour, shown.minute, DateFormat.is24HourFormat(context)).show()
+                TimePickerDialog(context, { _, h, m -> onPick(LocalTime.of(h, m)) }, shown.hour, shown.minute, DateFormat.is24HourFormat(context)).show()
             },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
     ) {
         LauWellIcon(R.drawable.ic_schedule, contentDescription = null, tint = colors.ink2, size = 20.dp)
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            BasicText("$label · ", style = type.item.copy(color = colors.ink))
+            BasicText("${if (at == null) "Now" else dayLabel(at.toLocalDate(), LocalDate.now(clock))} · ", style = type.item.copy(color = colors.ink))
             BasicText(shown.format(TimeFormat), style = type.metricSmall.copy(color = colors.ink))
         }
         BasicText("Change", style = type.control.copy(color = colors.ink))
     }
 }
 
-/** "Add a note" until tapped, then a text field (the sheet rises above the keyboard). */
+/** "Add a note" until tapped, then a text field (the sheet rises above the keyboard). An existing note shows as text. */
 @Composable
 private fun NoteRow(note: String, onChange: (String) -> Unit) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
-    var editing by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(note.isNotEmpty()) }
+    var tapped by remember { mutableStateOf(false) }
     val focus = remember { FocusRequester() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .then(if (editing) Modifier else Modifier.clickable(role = Role.Button) { editing = true }),
+            .then(if (editing) Modifier else Modifier.clickable(role = Role.Button) { editing = true; tapped = true }),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),
     ) {
@@ -171,11 +199,22 @@ private fun NoteRow(note: String, onChange: (String) -> Unit) {
                     field()
                 },
             )
-            LaunchedEffect(Unit) { focus.requestFocus() }
+            // Only a tap opens the keyboard; an entry opened for editing shows its note quietly.
+            if (tapped) LaunchedEffect(Unit) { focus.requestFocus() }
         } else {
             BasicText("Add a note", style = type.item.copy(color = colors.ink2), modifier = Modifier.weight(1f))
         }
     }
 }
 
+/** "Today", "Yesterday", or "Tue 20 Oct". */
+internal fun dayLabel(day: LocalDate, today: LocalDate): String = when (day) {
+    today -> "Today"
+    today.minusDays(1) -> "Yesterday"
+    else -> day.format(DayFormat)
+}
+
 private val TimeFormat = DateTimeFormatter.ofPattern("HH:mm")
+
+// English names: the line around them is English (as in DayList).
+private val DayFormat = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
