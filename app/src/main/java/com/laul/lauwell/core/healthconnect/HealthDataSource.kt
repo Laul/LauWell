@@ -42,6 +42,12 @@ interface HealthDataSource {
      */
     suspend fun dailySummaries(metric: MetricDefinition, days: ClosedRange<LocalDate>): List<DailySummary>
 
+    /**
+     * When [metric]'s oldest record readable here starts, or null with none: how far back its charts
+     * can scroll. Without the history permission, Health Connect only returns the last 30 days.
+     */
+    suspend fun oldestRecordTime(metric: MetricDefinition): Instant?
+
     /** A token marking "now" in [metric]'s change log; [changes] later returns what happened since. */
     suspend fun changesToken(metric: MetricDefinition): String
 

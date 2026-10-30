@@ -109,6 +109,7 @@ class BackgroundSyncTest {
             return emptyList()
         }
 
+        override suspend fun oldestRecordTime(metric: MetricDefinition): Instant? = null
         override suspend fun changesToken(metric: MetricDefinition) = "token"
         override suspend fun changes(metric: MetricDefinition, token: String) = HealthChanges.TokenExpired
     }

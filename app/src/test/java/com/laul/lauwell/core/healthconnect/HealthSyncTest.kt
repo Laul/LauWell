@@ -196,6 +196,7 @@ class HealthSyncTest {
             return this.days.filterKeys { it in days }.toSortedMap().map { (date, bpm) -> summary(date, bpm) }
         }
 
+        override suspend fun oldestRecordTime(metric: MetricDefinition): Instant? = null
         override suspend fun changesToken(metric: MetricDefinition) = "token-${tokensTaken.size + 1}".also { tokensTaken += it }
         override suspend fun changes(metric: MetricDefinition, token: String) = changes
     }

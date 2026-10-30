@@ -245,6 +245,17 @@ internal fun localDays(record: Record, fallback: ZoneId): Set<LocalDate> = when 
     else -> error("No mapping for ${record::class.simpleName}")
 }
 
+/** When [record] starts: a reading's time, an interval's start. */
+internal fun startOf(record: Record): Instant = when (record) {
+    is HeartRateRecord -> record.startTime
+    is StepsRecord -> record.startTime
+    is SleepSessionRecord -> record.startTime
+    is RestingHeartRateRecord -> record.time
+    is BloodPressureRecord -> record.time
+    // Health Connect's instant / interval interfaces are internal, hence one branch per record type.
+    else -> error("No mapping for ${record::class.simpleName}")
+}
+
 /** Every local day from an interval's start to its end, each end in its own offset. */
 private fun daysOf(start: Instant, startOffset: ZoneOffset?, end: Instant, endOffset: ZoneOffset?, fallback: ZoneId): Set<LocalDate> {
     val first = localDate(start, startOffset, fallback)

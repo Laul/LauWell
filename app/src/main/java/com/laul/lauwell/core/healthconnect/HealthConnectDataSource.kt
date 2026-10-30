@@ -132,6 +132,13 @@ class HealthConnectDataSource(private val context: Context) : HealthDataSource {
         return HealthChanges.Changed(days, hadDeletions, next)
     }
 
+    override suspend fun oldestRecordTime(metric: MetricDefinition): Instant? =
+        metric.healthConnectTypes.mapNotNull { type ->
+            // Oldest first, one record: the start of what Health Connect holds for this type.
+            client.readRecords(ReadRecordsRequest(type, TimeRangeFilter.before(Instant.now()), ascendingOrder = true, pageSize = 1))
+                .records.firstOrNull()?.let(::startOf)
+        }.minOrNull()
+
     private suspend fun <T : Record> readAll(type: KClass<T>, range: TimeRangeFilter): List<T> =
         readAllPages { token ->
             val response = client.readRecords(ReadRecordsRequest(type, range, pageToken = token))
