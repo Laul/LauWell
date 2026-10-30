@@ -53,6 +53,28 @@ class ChartSpecTest {
         DailySummary(steps.id, today.minusDays(daysAgo), mapOf("value" to DayValue.Total(total)), emptySet())
 
     @Test
+    fun `the timeline reaches back to where it was loaded, its last slot ending today`() {
+        // Loaded back 20 days, grouped by day, 7 on screen.
+        val spec = chartSpec(HeartRate, listOf(hr(19, 50.0, 70.0, 140.0)), ChartPeriod.Week, today, from = today.minusDays(19))!!
+
+        assertEquals(20, spec.slots.size)
+        assertEquals(today..today, spec.slots.last().days)
+        assertEquals(13, spec.lastWindowStart)
+        assertEquals(today.minusDays(6)..today, spec.visibleDays(spec.lastWindowStart))
+        assertEquals(today.minusDays(19)..today.minusDays(13), spec.visibleDays(0))
+        assertEquals("1 – 7 Oct", spec.rangeLabel(0, en))
+    }
+
+    @Test
+    fun `weeks are counted back from today, and a short span still fills the screen`() {
+        val weeks = chartSpec(HeartRate, emptyList(), ChartPeriod.ThreeMonths, today, from = today.minusDays(200))!!
+        assertEquals(29, weeks.slots.size) // 201 days, in weeks ending today
+        assertEquals(today.minusDays(6)..today, weeks.slots.last().days)
+
+        assertEquals(7, chartSpec(HeartRate, emptyList(), ChartPeriod.Week, today, from = today.minusDays(2))!!.slots.size)
+    }
+
+    @Test
     fun `a rating spans its day's lowest to highest check-in, on its whole scale`() {
         val day = DailySummary(Mood.id, today, mapOf("value" to DayValue.Range(2.0, 10.0 / 3, 5.0)), emptySet())
         val spec = chartSpec(Mood, listOf(day), ChartPeriod.Week, today)!!
@@ -152,8 +174,8 @@ class ChartSpecTest {
 
     @Test
     fun `header dates and the band's reference line`() {
-        assertEquals("14 – 20 Oct", chartSpec(HeartRate, emptyList(), ChartPeriod.Week, today)!!.rangeLabel(en))
-        assertEquals("21 Sep – 20 Oct", chartSpec(HeartRate, emptyList(), ChartPeriod.Month, today)!!.rangeLabel(en))
+        assertEquals("14 – 20 Oct", chartSpec(HeartRate, emptyList(), ChartPeriod.Week, today)!!.rangeLabel(locale = en))
+        assertEquals("21 Sep – 20 Oct", chartSpec(HeartRate, emptyList(), ChartPeriod.Month, today)!!.rangeLabel(locale = en))
         assertEquals("Normal 60–100", chartSpec(HeartRate, emptyList(), ChartPeriod.Week, today)!!.referenceLabel())
     }
 

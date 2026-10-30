@@ -24,11 +24,18 @@ import java.util.Locale
 data class DayRow(val date: LocalDate, val label: String, val value: String?, val note: String?, val atGoal: Boolean)
 
 /**
- * The days of [period] ending [today], newest first, from the oldest day with data on (days before
- * it say nothing, e.g. before the watch was worn); empty when the period has no data at all.
+ * The [days] on screen (by default the latest of [period], ending [today]), newest first, from the
+ * oldest day with data on (days before it say nothing, e.g. before the watch was worn); empty when
+ * they have no data at all.
  */
-fun dayRows(metric: MetricDefinition, summaries: List<DailySummary>, period: ChartPeriod, today: LocalDate): List<DayRow> {
-    val series = daySeries(metric, summaries, period.days(today))
+fun dayRows(
+    metric: MetricDefinition,
+    summaries: List<DailySummary>,
+    period: ChartPeriod,
+    today: LocalDate,
+    days: ClosedRange<LocalDate> = period.days(today),
+): List<DayRow> {
+    val series = daySeries(metric, summaries, days)
     val first = series.indexOfFirst { it.summary != null }
     if (first < 0) return emptyList()
     val format = if (period == ChartPeriod.Week) WeekDay else MonthDay

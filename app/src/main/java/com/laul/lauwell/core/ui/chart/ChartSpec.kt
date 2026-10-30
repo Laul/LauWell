@@ -16,6 +16,7 @@ import com.laul.lauwell.core.record.main
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -23,16 +24,20 @@ import kotlin.math.log10
 import kotlin.math.pow
 
 /**
- * The range a detail chart shows, always ending today. Week and Month have one slot per day;
- * 3 months has one per week (13), since 91 daily bars would be too thin to read.
+ * How a detail chart groups its days, and how many groups fit on screen. It doesn't limit time:
+ * the chart scrolls back to the oldest data (Notion → Decisions Tracker: *Charts are built from
+ * time-stamped series…*). Week and Month show one slot per day (7 or 30 on screen); 3 months one
+ * per week (13 on screen), since 91 daily bars would be too thin to read.
  */
-enum class ChartPeriod(val label: String, val slotCount: Int, val daysPerSlot: Int) {
+enum class ChartPeriod(val label: String, val visibleSlots: Int, val daysPerSlot: Int) {
     Week("Week", 7, 1),
     Month("Month", 30, 1),
     ThreeMonths("3 months", 13, 7);
 
-    val dayCount: Int get() = slotCount * daysPerSlot
+    /** How many days fit on screen. */
+    val dayCount: Int get() = visibleSlots * daysPerSlot
 
+    /** The days on screen when the chart opens: the latest [dayCount] days, ending today. */
     fun days(today: LocalDate): ClosedRange<LocalDate> = today.minusDays(dayCount - 1L)..today
 }
 
@@ -70,25 +75,46 @@ data class ChartSpec(
     val parts: List<Quantity> = emptyList(),
 ) {
     init {
-        require(slots.size == period.slotCount) { "${period.slotCount} slots expected, got ${slots.size}" }
+        require(slots.size >= period.visibleSlots) { "at least ${period.visibleSlots} slots expected, got ${slots.size}" }
     }
 
     val currentIndex: Int get() = slots.lastIndex
+
+    /** How many slots fit on screen; the chart scrolls through the rest. */
+    val visibleSlots: Int get() = period.visibleSlots
+
+    /** The first slot on screen when the chart opens on today. */
+    val lastWindowStart: Int get() = slots.size - visibleSlots
+
+    /** The days on screen when the first visible slot is [firstVisible]. */
+    fun visibleDays(firstVisible: Int): ClosedRange<LocalDate> {
+        val first = firstVisible.coerceIn(0, lastWindowStart)
+        return slots[first].days.start..slots[first + visibleSlots - 1].days.endInclusive
+    }
     val hasData: Boolean get() = slots.any { it.point != null }
 }
 
 /**
- * [metric]'s chart over [period] ending [today], from its daily [summaries]; null for a metric
- * without a chart kind. A range bar spans a day's own min–max (heart rate) or its quantities
+ * [metric]'s chart from [from] to [today], grouped as [period] says, from its daily [summaries]; null
+ * for a metric without a chart kind. Slots are counted back from today, so the last one always ends
+ * today; there are at least as many as fit on screen. A range bar spans a day's own min–max (heart rate) or its quantities
  * (blood pressure: diastolic to systolic); a bar or a line uses the day's value. A stacked bar is
  * as tall as the day's value, split in proportion to its parts (the stages of one app's night may
  * not add up exactly to the night's value). A week slot holds the mean of its days' values and
  * parts, and the extremes of their lows and highs.
  */
-fun chartSpec(metric: MetricDefinition, summaries: List<DailySummary>, period: ChartPeriod, today: LocalDate): ChartSpec? {
+fun chartSpec(
+    metric: MetricDefinition,
+    summaries: List<DailySummary>,
+    period: ChartPeriod,
+    today: LocalDate,
+    from: LocalDate = period.days(today).start,
+): ChartSpec? {
     val kind = metric.chartKind ?: return null
     val first = metric.quantities.firstOrNull() ?: return null
-    val series = daySeries(metric, summaries, period.days(today))
+    val spanDays = ChronoUnit.DAYS.between(from, today) + 1
+    val slotCount = maxOf(period.visibleSlots.toLong(), (spanDays + period.daysPerSlot - 1) / period.daysPerSlot)
+    val series = daySeries(metric, summaries, today.minusDays(slotCount * period.daysPerSlot - 1)..today)
     val parts = if (kind == ChartKind.StackedBar) metric.breakdown.filter { it.inTotal } else emptyList()
     return ChartSpec(
         kind = kind,
@@ -199,10 +225,11 @@ fun ChartSpec.slotLabel(index: Int, locale: Locale = Locale.getDefault()): Strin
     }
 }
 
-/** The chart header's dates: "14 – 20 Oct", "21 Sep – 20 Oct". */
-fun ChartSpec.rangeLabel(locale: Locale = Locale.getDefault()): String {
-    val start = slots.first().days.start
-    val end = slots.last().days.endInclusive
+/** The chart header's dates, of the slots on screen from [firstVisible]: "14 – 20 Oct", "21 Sep – 20 Oct". */
+fun ChartSpec.rangeLabel(firstVisible: Int = lastWindowStart, locale: Locale = Locale.getDefault()): String {
+    val shown = visibleDays(firstVisible)
+    val start = shown.start
+    val end = shown.endInclusive
     val month = DateTimeFormatter.ofPattern("MMM", locale)
     val startText = if (start.month == end.month && start.year == end.year) "${start.dayOfMonth}" else "${start.dayOfMonth} ${start.format(month)}"
     return "$startText – ${end.dayOfMonth} ${end.format(month)}"

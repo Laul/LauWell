@@ -16,7 +16,8 @@ import com.laul.lauwell.core.record.display
 import com.laul.lauwell.core.common.AppResult
 import com.laul.lauwell.core.record.Measurement
 import com.laul.lauwell.core.record.RecordRepository
-import com.laul.lauwell.core.summary.DailySummarySource
+import com.laul.lauwell.core.healthconnect.SyncWindowDays
+import com.laul.lauwell.core.summary.DayHistory
 import com.laul.lauwell.feature.log.dayLabel
 import com.laul.lauwell.core.summary.ago
 import com.laul.lauwell.core.record.periodStats
@@ -28,6 +29,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -59,8 +61,9 @@ sealed interface HealthAccess {
 }
 
 /**
- * The detail screen of a synced metric: today's value, and the chart, stats and per-day list of the
- * selected period (week, month, 3 months, all ending today).
+ * The detail screen of a metric: its latest value, and a chart you scroll back through, grouped as
+ * the selected period says (days, or weeks), with the stats, per-day list and entries of what is
+ * on screen.
  */
 data class MetricDetailState(
     val access: HealthAccess = HealthAccess.Checking,
@@ -79,7 +82,15 @@ data class MetricDetailState(
     val lastSyncedAt: Instant? = null,
     /** A logged metric's entries in the period, newest first (time, value, note); empty for a synced one. */
     val entries: List<Measurement> = emptyList(),
+    /** The days on screen: what the stats, the day list and the entries cover. */
+    val shownDays: ClosedRange<LocalDate>? = null,
 )
+
+/** How far back the chart goes ([from]), its grouping, and its first slot on screen (null: opening on today). */
+private data class ChartView(val period: ChartPeriod, val from: LocalDate, val firstVisible: Int?)
+
+/** Older days are read this many at a time as the chart scrolls back (one ~0.4 s Health Connect read for heart rate). */
+private const val ChunkDays = 91L
 
 /** How often the open screen asks Health Connect for changes. */
 private const val RefreshMillis = 60_000L
@@ -89,7 +100,7 @@ class MetricDetailViewModel(
     private val source: HealthDataSource,
     private val sync: HealthSync,
     store: SummaryStore,
-    summarySource: DailySummarySource,
+    private val history: DayHistory,
     records: RecordRepository,
     clock: Clock,
 ) : ViewModel() {
@@ -106,12 +117,21 @@ class MetricDetailViewModel(
 
     private val period = MutableStateFlow(ChartPeriod.Week)
 
-    /**
-     * Every day the longest period can show (plus one, in case the date changes while the screen is
-     * open), read once; each period is cut from it, so switching period needs no new query.
-     */
-    private val summaries = LocalDate.now(clock).let { today ->
-        summarySource.summaries(metric, today.minusDays(ChartPeriod.entries.maxOf { it.dayCount }.toLong())..today.plusDays(1))
+    /** The oldest day loaded so far: the cached sync window at first, older as the chart scrolls back. */
+    private val from = MutableStateFlow(LocalDate.now(clock).minusDays(SyncWindowDays - 1))
+
+    private val firstVisible = MutableStateFlow<Int?>(null)
+
+    /** Where the data starts (null: none, or not readable); scrolling stops there. Read once. */
+    private var firstDay: LocalDate? = null
+    private var loadingOlder = false
+
+    private val view = combine(period, from, firstVisible) { period, from, first -> ChartView(period, from, first) }
+
+    /** Every day from [from] (plus one, in case the date changes while the screen is open). */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val summaries = from.flatMapLatest { start ->
+        history.days(metric, start..LocalDate.now(clock).plusDays(1))
     }
 
     /**
@@ -140,35 +160,67 @@ class MetricDetailViewModel(
 
     val state: StateFlow<MetricDetailState> = combine(
         access,
-        period,
+        view,
         summaries,
         store.lastSyncedAt(metric.id),
         origins,
-    ) { access, period, summaries, syncedAt, origins ->
+    ) { access, view, summaries, syncedAt, origins ->
         val today = LocalDate.now(clock)
         val latest = latestOf(summaries, today)
+        val chart = chartSpec(metric, summaries, view.period, today, from = view.from)
+        val shown = chart?.visibleDays(view.firstVisible ?: chart.lastWindowStart) ?: view.period.days(today)
         MetricDetailState(
             access = access,
-            period = period,
+            period = view.period,
             latest = latest,
             latestWhen = latest?.let { ago(it.date, today, metric.nightly).replaceFirstChar { c -> c.uppercase() } },
-            chart = chartSpec(metric, summaries, period, today),
-            stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, period.days(today)) },
-            days = dayRows(metric, summaries, period, today),
+            chart = chart,
+            stats = metric.quantities.firstOrNull()?.let { periodStats(metric, summaries, shown) },
+            days = dayRows(metric, summaries, view.period, today, shown),
             breakdown = latest?.let { breakdownRows(metric, it) }.orEmpty(),
             lastSyncedAt = syncedAt,
             origins = origins,
+            shownDays = shown,
         )
     }.combine(entries) { state, entries ->
-        val days = state.period.days(LocalDate.now(clock))
+        val days = state.shownDays ?: state.period.days(LocalDate.now(clock))
         state.copy(entries = entries.filter { localDay(it, clock) in days }.sortedByDescending { it.time })
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MetricDetailState())
 
+    /** A new grouping opens on today again. */
     fun setPeriod(value: ChartPeriod) {
         period.value = value
+        firstVisible.value = null
+    }
+
+    /** The chart scrolled: its first slot on screen is now [index]. Nearing the start loads older days. */
+    fun onFirstVisibleChange(index: Int) {
+        firstVisible.value = index
+        if (index < period.value.visibleSlots) loadOlder()
+    }
+
+    /**
+     * Reads the next [ChunkDays] older days, never before where the data starts. One read at a time;
+     * a failed read (no access) leaves the chart as it is, and the next scroll tries again.
+     */
+    private fun loadOlder() {
+        if (loadingOlder) return
+        val start = from.value
+        val first = firstDay ?: return
+        if (!start.isAfter(first)) return
+        loadingOlder = true
+        viewModelScope.launch {
+            try {
+                val older = maxOf(start.minusDays(ChunkDays), first)
+                if (history.load(metric, older) is AppResult.Success) from.value = older
+            } finally {
+                loadingOlder = false
+            }
+        }
     }
 
     init {
+        viewModelScope.launch { firstDay = history.firstDay(metric) }
         refreshAccess()
         // While access is granted: sync now, then every minute. A change of access cancels the loop.
         viewModelScope.launch {

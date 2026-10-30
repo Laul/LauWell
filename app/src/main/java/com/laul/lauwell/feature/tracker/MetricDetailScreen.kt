@@ -89,7 +89,7 @@ fun MetricDetailScreen(metricId: String, onBack: () -> Unit) {
 @Composable
 private fun MetricDetail(metric: MetricDefinition) {
     val viewModel = appViewModel {
-        MetricDetailViewModel(metric, healthDataSource, healthSync, summaryStore, dailySummaries, recordRepository, Clock.systemDefaultZone())
+        MetricDetailViewModel(metric, healthDataSource, healthSync, summaryStore, dayHistory, recordRepository, Clock.systemDefaultZone())
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     // Back from Health Connect's settings, a permission may have changed.
@@ -139,7 +139,7 @@ private fun MetricDetail(metric: MetricDefinition) {
                 selectedIndex = state.period.ordinal,
                 onSelect = { viewModel.setPeriod(ChartPeriod.entries[it]) },
             )
-            Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) { Chart(chart) }
+            Panel(contentPadding = PaddingValues(LauWellTheme.spacing.panel)) { Chart(chart, onFirstVisibleChange = viewModel::onFirstVisibleChange) }
         }
         state.stats?.takeIf { it.daysWithData > 0 }?.let { StatsRow(statItems(metric, it)) }
         if (state.days.isNotEmpty()) DayList(state.days, metric)

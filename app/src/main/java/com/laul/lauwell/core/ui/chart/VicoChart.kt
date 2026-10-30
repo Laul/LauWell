@@ -11,7 +11,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,6 +34,8 @@ import com.laul.lauwell.core.catalog.ChartKind
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.CartesianDrawingContext
+import com.patrykandpatrick.vico.compose.cartesian.Scroll
+import com.patrykandpatrick.vico.compose.cartesian.VicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
@@ -62,6 +69,11 @@ import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
 import com.patrykandpatrick.vico.compose.common.data.ExtraStore
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import kotlin.math.roundToInt
 
 // The only file that imports Vico (CLAUDE.md → Stack → Charts): ChartSpec in, Vico chart out.
@@ -92,28 +104,47 @@ private fun ChartPeriod.dotSize(): Dp = when (this) {
 
 private val ChartHeight = 180.dp
 
-/** The header ("14 – 20 Oct" · "Goal 8,000") and [spec] drawn below it, or its empty state. */
+/**
+ * The header ("14 – 20 Oct" · "Goal 8,000") and [spec] drawn below it, or its empty state. The chart
+ * shows [ChartSpec.visibleSlots] slots and scrolls through the rest, opening on today;
+ * [onFirstVisibleChange] reports the first slot on screen as it scrolls (the caller loads older
+ * days when it nears the start, and keeps its stats to what is shown).
+ */
 @Composable
-fun Chart(spec: ChartSpec, modifier: Modifier = Modifier) {
+fun Chart(spec: ChartSpec, modifier: Modifier = Modifier, onFirstVisibleChange: (Int) -> Unit = {}) {
     val colors = LauWellTheme.colors
     val caption = LauWellTheme.typography.caption.copy(color = colors.ink2)
+    var firstVisible by remember(spec.period) { mutableIntStateOf(spec.lastWindowStart) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xs)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            BasicText(spec.rangeLabel(), style = caption)
+            BasicText(spec.rangeLabel(firstVisible), style = caption)
             spec.referenceLabel()?.let { BasicText(it, style = caption) }
         }
-        if (spec.hasData) CartesianChart(spec) else EmptyChart()
+        if (spec.hasData) {
+            // A new grouping opens on today again.
+            key(spec.period) {
+                CartesianChart(spec, onFirstVisible = {
+                    firstVisible = it
+                    onFirstVisibleChange(it)
+                })
+            }
+        } else {
+            EmptyChart()
+        }
     }
 }
 
 @Composable
-private fun CartesianChart(spec: ChartSpec) {
+private fun CartesianChart(spec: ChartSpec, onFirstVisible: (Int) -> Unit) {
     val bounds = spec.yBounds() ?: return
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     val fg = colors.forCategory(spec.category).fg
 
     val producer = remember { CartesianChartModelProducer() }
+    val scrollState = rememberVicoScrollState(scrollEnabled = true, initialScroll = Scroll.Absolute.End)
+    // The first day drawn so far (null before the first draw): tells "older days added" from a refresh.
+    val shownFrom = remember { arrayOfNulls<LocalDate>(1) }
     LaunchedEffect(spec) {
         val present = spec.slots.withIndex().filter { it.value.point != null }
         val x = present.map { it.index }
@@ -146,6 +177,30 @@ private fun CartesianChart(spec: ChartSpec) {
                 }
             }
         }
+        // Once drawn: open on today the first time; when older slots were added on the left, move by
+        // as many, so what was on screen stays put. Waits for the chart to measure the new content.
+        val firstDay = spec.slots.first().days.start
+        val previous = shownFrom[0]
+        val maxBefore = scrollState.maxValue
+        when {
+            previous == null -> {
+                awaitMeasured(scrollState) { it > 0f }
+                scrollState.scroll(Scroll.Absolute.End)
+            }
+            firstDay < previous -> {
+                awaitMeasured(scrollState) { it > maxBefore }
+                scrollState.scroll(Scroll.Relative.x(ChronoUnit.DAYS.between(firstDay, previous).toDouble() / spec.period.daysPerSlot))
+            }
+        }
+        shownFrom[0] = firstDay
+    }
+    LaunchedEffect(scrollState, spec.slots.size) {
+        snapshotFlow {
+            val max = scrollState.maxValue
+            if (max <= 0f) spec.lastWindowStart else (scrollState.value / max * spec.lastWindowStart).roundToInt()
+        }
+            .distinctUntilChanged()
+            .collect { onFirstVisible(it) }
     }
 
     // Every layer shares one x and y range: all slots of the period, and the padded bounds.
@@ -230,9 +285,19 @@ private fun CartesianChart(spec: ChartSpec) {
         ),
         modelProducer = producer,
         modifier = Modifier.fillMaxWidth().height(ChartHeight),
-        scrollState = rememberVicoScrollState(scrollEnabled = false),
-        zoomState = rememberVicoZoomState(zoomEnabled = false, initialZoom = Zoom.Content),
+        scrollState = scrollState,
+        // As many slots as fit the grouping on screen; the rest is a scroll away.
+        zoomState = rememberVicoZoomState(zoomEnabled = false, initialZoom = Zoom.x(spec.visibleSlots.toDouble())),
     )
+}
+
+/**
+ * Suspends until the chart has measured content whose scroll range passes [test] (it does so on its
+ * next frames, after a model update), or gives up after a second (nothing to scroll, e.g. a week
+ * that fits the screen).
+ */
+private suspend fun awaitMeasured(scrollState: VicoScrollState, test: (Float) -> Boolean) {
+    withTimeoutOrNull(1_000) { snapshotFlow { scrollState.maxValue }.first(test) }
 }
 
 /** Bars in the category color: the current slot outlined, slots below the goal dimmed. */
