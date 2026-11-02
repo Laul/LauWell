@@ -54,7 +54,7 @@ index of them; its old *Milestones* section is read-only history.
 - Two levels only. **Parent** = a milestone (`Type = Milestone`), closed when all its children are Done.
   **Child** = one capability, bug or feature (`Parent item` set). Not a checklist item: group small steps into one row.
 - Columns (exact names): `Task Name`, `Type` (Milestone, Feature, Bug, Design, Tech, Verify on device),
-  `Status` (Not started, Next up, In progress, Blocked, Done — `Blocked` flags a task put on hold because something
+  `Status` (Not started, Next up, In progress, Hold On / Blocked, Done, Wont do — `Hold On / Blocked` flags a task put on hold because something
   is missing, e.g. a design still to do or another feature not finished; it is a flag, unlike the `Blocked by` /
   `Blocking` relations, which set the implementation order), `Priority` (`P0 • Critical`, `P1 • High`, `P2 • Medium`,
   `P3. Low` — note the dot on P3), `Effort (days count)` (number of days, estimate), `Screens relation`
@@ -62,7 +62,7 @@ index of them; its old *Milestones* section is read-only history.
   `Parent item`, `Blocked by` / `Blocking`, `[Start - End] Dates` (a date or a start–end range; property keys `date:[Start - End] Dates:start` / `:end`),
   `Description`, `PLAN.md ref` (where the item came from in the old plan, may be empty).
 
-**"What's next?"** — query the database for rows with `Type != Milestone` and `Status != Done`, then answer with:
+**"What's next?"** — query the database for rows with `Type != Milestone` and `Status` not Done or Wont do, then answer with:
 1. anything `In progress`; then
 2. tasks marked `Next up`; then
 3. the rest by `Priority` (P0 first), then smaller `Effort` first.
