@@ -1,0 +1,91 @@
+%% C4 level 3 - LauWell app: how data reaches a screen.
+%% Which screen uses which service is a table in README.md (a diagram of it was unreadable).
+%% Built today: sensor data Health Connect -> Room -> screens; entered data Firestore -> screens.
+%% Planned (M9, decisions of 2026-11-04): entries and raw readings are stored in Room, queued in an outbox,
+%% and synced to Postgres through a sync API. Firestore and its repository are removed.
+%% Solid = built, dashed = planned, amber = built and being removed.
+flowchart LR
+  classDef shell fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
+  classDef scr fill:#dbe8f5,stroke:#4b78a8,color:#16191C
+  classDef dom fill:#f3e8c8,stroke:#a88b2e,color:#16191C
+  classDef data fill:#e3f1e6,stroke:#4f8a5c,color:#16191C
+  classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
+  classDef planned fill:#ffffff,stroke:#8a939b,color:#4a525a,stroke-dasharray:5 4
+  classDef retiring fill:#fbf1e4,stroke:#a8641a,color:#16191C
+
+  EHC["Health Connect"]:::ext
+  EROOM[("Room database<br/>daily_summary_value, sync_state.<br/>Planned: raw readings,<br/>entries, outbox")]:::ext
+  EFS[("Cloud Firestore<br/>users/{uid}/records<br/>removed in M9")]:::retiring
+  EAPI["Sync API<br/>planned cloud function,<br/>checks the Firebase ID token"]:::planned
+  EPG[("Neon Postgres<br/>planned, source of truth")]:::planned
+
+  subgraph TRIG["What starts a sync"]
+    direction TB
+    APPL["<b>LauWellApplication</b><br/>each time the app<br/>comes to the foreground"]:::shell
+    WORK["<b>HealthSyncWorker</b><br/>WorkManager, every 20 min,<br/>only with background<br/>read granted"]:::data
+    BG["<b>BackgroundSync</b><br/>only while signed in,<br/>only visible metrics"]:::data
+    VM["<b>Today / Tracker / detail</b><br/>on resume; detail<br/>every minute"]:::scr
+  end
+
+  subgraph SENSOR["Sensor data path"]
+    direction TB
+    HCS["<b>HealthDataSource</b><br/>HealthConnectDataSource<br/>aggregation by local day,<br/>app priority applied"]:::data
+    SYNC["<b>HealthSync</b><br/>changes token; refresh only<br/>changed days in a 91-day window"]:::data
+    STOREC["<b>SummaryStore</b><br/>RoomSummaryStore + DAO"]:::data
+    RAW["<b>Raw-readings table</b><br/>planned (M9): metric, time,<br/>quantity, value, origin"]:::planned
+  end
+
+  subgraph ENTERED["Entered data path"]
+    direction TB
+    LOG["<b>Log entry sheet</b>"]:::scr
+    RECR["<b>RecordRepository</b><br/>FirestoreRecordRepository today.<br/>M9: a Room-backed one that writes<br/>locally and queues the change"]:::data
+    AUTHR["<b>AuthRepository</b><br/>session uid"]:::data
+  end
+
+  subgraph OUTSYNC["Sync to Postgres, planned (M9)"]
+    direction TB
+    OUTB["<b>Outbox + SyncWorker</b><br/>WorkManager; uploads entries<br/>and readings, pulls changes,<br/>safe to repeat"]:::planned
+  end
+
+  subgraph READ["One read path for screens"]
+    direction TB
+    DSRC["<b>DailySummarySource</b><br/>synced metric: Room.<br/>logged metric: its entries,<br/>averaged per day"]:::dom
+    HIST["<b>DayHistory</b><br/>scroll back: loads older<br/>chunks from Health Connect<br/>into Room"]:::dom
+    MS["<b>MetricSummaries, ChartSpec</b><br/>value, takeaway,<br/>sparkline, chart slots"]:::dom
+    SCR["<b>Today, Tracker, detail</b>"]:::scr
+  end
+
+  APPL --> BG
+  WORK --> BG
+  VM --> SYNC
+  BG --> SYNC
+  SYNC -->|"changes since token"| HCS
+  HCS <-->|"reads"| EHC
+  SYNC -->|"replace days"| STOREC
+  STOREC <--> EROOM
+  SYNC -.->|"same incremental sync"| RAW
+  RAW -.-> EROOM
+
+  LOG -->|"save / delete"| RECR
+  RECR <-->|"set, delete, snapshot listener<br/>(until M9)"| EFS
+  AUTHR -->|"uid"| RECR
+  RECR -.->|"M9: local write,<br/>then queue"| OUTB
+  RAW -.->|"queue"| OUTB
+  AUTHR -.->|"ID token"| OUTB
+  OUTB -.->|"upload, pull changes"| EAPI
+  EAPI -.-> EPG
+
+  STOREC -->|"summaries"| DSRC
+  RECR -->|"measurements"| DSRC
+  HIST -->|"older days"| HCS
+  HIST -->|"replace"| STOREC
+  DSRC --> HIST
+  DSRC --> MS
+  HIST --> MS
+  MS --> SCR
+
+  style TRIG fill:none,stroke:#8a939b,stroke-dasharray:2 3
+  style SENSOR fill:none,stroke:#4f8a5c,stroke-dasharray:2 3
+  style ENTERED fill:none,stroke:#4f8a5c,stroke-dasharray:2 3
+  style OUTSYNC fill:none,stroke:#8a939b,stroke-dasharray:2 3
+  style READ fill:none,stroke:#a88b2e,stroke-dasharray:2 3

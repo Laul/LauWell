@@ -1,0 +1,48 @@
+%% C4 level 2 - Containers. Solid = built, dashed = planned, amber = built and being removed (M9).
+%% Updated 2026-11-06 for the decisions of 2026-11-04.
+flowchart TB
+  classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
+  classDef store fill:#dbe8f5,stroke:#4b78a8,color:#16191C
+  classDef cloud fill:#e3f1e6,stroke:#4f8a5c,color:#16191C
+  classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
+  classDef planned fill:#ffffff,stroke:#8a939b,color:#4a525a,stroke-dasharray:5 4
+  classDef retiring fill:#fbf1e4,stroke:#a8641a,color:#16191C
+
+  P["<b>Patient</b><br/>Person"]
+
+  subgraph PHONE["Android phone"]
+    direction TB
+    APP["<b>LauWell app</b><br/>Kotlin 2.4, Jetpack Compose<br/>One Gradle module (:app), a package per feature<br/>Screens, sync, domain, manual DI"]:::app
+    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state.<br/>Planned: raw readings, entries, outbox.<br/>Fast offline copy for the screens")]:::store
+    DS[("<b>Preferences DataStore</b><br/>settings.preferences_pb<br/>Theme, Tracker view, pinned set,<br/>onboarding flag")]:::store
+    HC["<b>Health Connect</b><br/>Android system service<br/>Keeps the sensor detail"]:::ext
+  end
+
+  subgraph FIREBASE["Firebase project lauwell-app"]
+    direction TB
+    AUTH["<b>Firebase Auth</b><br/>Google provider<br/>Issues the session and uid. Stays"]:::cloud
+    ST[("<b>Cloud Storage</b><br/>Photos, documents, nightly database dumps<br/>Stays. Not provisioned yet")]:::planned
+    FS[("<b>Cloud Firestore</b><br/>users/{uid}/records<br/>Entries today, owner-only rules.<br/>Removed in M9")]:::retiring
+  end
+
+  subgraph STORE["Postgres store, planned (M9)"]
+    direction TB
+    API["<b>Sync API</b><br/>Small cloud function, host to be chosen<br/>Checks the Firebase ID token,<br/>maps it to users.id"]:::planned
+    PG[("<b>Neon Postgres</b><br/>AWS US East, plain Postgres<br/>Every entry and raw reading, links as<br/>foreign keys, file metadata.<br/>Row-level security. Source of truth")]:::planned
+  end
+
+  GI["<b>Google Identity</b><br/>via Credential Manager"]:::ext
+
+  P -->|"uses"| APP
+  APP -->|"daily summaries,<br/>sync token and time"| ROOM
+  APP -->|"preferences"| DS
+  APP -->|"reads aggregates and changes<br/>(Health Connect client)"| HC
+  APP -->|"1. requests Google ID token"| GI
+  APP -->|"2. signInWithCredential"| AUTH
+  APP -->|"saves, deletes, listens to records<br/>(until M9)"| FS
+  AUTH -.->|"uid checked by rules<br/>(until M9)"| FS
+  APP -.->|"M9: uploads the outbox, pulls changes<br/>(Firebase ID token)"| API
+  AUTH -.->|"token verified"| API
+  API -.->|"upserts, reads"| PG
+  APP -.->|"planned: photos, documents"| ST
+  PG -.->|"file path and metadata;<br/>nightly pg_dump"| ST
