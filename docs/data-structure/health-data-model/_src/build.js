@@ -19,7 +19,7 @@ const template = fs.readFileSync(path.join(SRC, 'template.html'), 'utf8');
 
 // --- validate before writing anything ---
 const SHAPES = ['Measurement','Event','Interval','Standing fact','Catalogue','Document','Derived'];
-const CATS = ['Vitals','Labs','Medical Records','Lifestyle','Symptoms','Treatments & Appliances','Ostomy'];
+const CATS = ['Vitals','Labs','Medical Records','Lifestyle','Symptoms','Treatments','Ostomy','Healthcare Resources'];
 const SCREENS = ['Tracker','Records','Care'];
 const SOURCES = ['Manual','Wearable','Computed'];
 const problems = [];

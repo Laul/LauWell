@@ -139,7 +139,7 @@ private fun CategoryBars() {
         colors.medicalRecords to 20.dp,
         colors.lifestyle to 36.dp,
         colors.symptoms to 24.dp,
-        colors.treatmentsAndAppliances to 40.dp,
+        colors.treatments to 40.dp,
     )
     Row(
         modifier = Modifier.height(44.dp).clearAndSetSemantics {},

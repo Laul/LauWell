@@ -8,7 +8,7 @@
     --ink:#191E1C; --ink-2:#4E5955; --ink-3:#7E8985;
     --line:#DCE0D9; --line-strong:#C3C9C0;
     --accent:#2C6A57; --accent-soft:#E2EDE7;
-    --c1:#D4312A; --c2:#8C51D9; --c3:#0073E9; --c4:#00952A; --c5:#C83184; --c6:#0095A5; --c7:#B26200;
+    --c1:#D4312A; --c2:#8C51D9; --c3:#0073E9; --c4:#00952A; --c5:#C83184; --c6:#0095A5; --c7:#B26200; --c8:#778100;
     --warn:#A7561A; --ok:#2C6A57;
   }
   @media (prefers-color-scheme: dark){
@@ -17,7 +17,7 @@
       --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
       --line:#2A322E; --line-strong:#3A443F;
       --accent:#74C2A4; --accent-soft:#1D2D27;
-      --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
+      --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700; --c8:#B5C300;
       --warn:#E0A661; --ok:#74C2A4;
     }
   }
@@ -26,7 +26,7 @@
     --ink:#E9EEEB; --ink-2:#A6B1AC; --ink-3:#77837E;
     --line:#2A322E; --line-strong:#3A443F;
     --accent:#74C2A4; --accent-soft:#1D2D27;
-    --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700;
+    --c1:#FF8474; --c2:#CA99FF; --c3:#60B9FF; --c4:#4CD676; --c5:#FF81C3; --c6:#00D7E4; --c7:#F2A700; --c8:#B5C300;
     --warn:#E0A661; --ok:#74C2A4;
   }
 
@@ -175,13 +175,13 @@
   <header>
     <div class="eyebrow">LauWell · data structure · October 2026 · v4 · drafted with Claude</div>
     <h1>Patient Data Categories</h1>
-    <p class="lede">Seven categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes, and a tag for the screens that show it. The rows mirror the Notion table <i>Data Model [Simplified]</i>; the earlier five-category map (v03) is kept beside this page.</p>
+    <p class="lede">Eight categories a patient can hold in their head, each with a one-sentence test that settles where a new data point goes, and a tag for the screens that show it. The rows mirror the Notion table <i>Data Model [Simplified]</i>; the earlier five-category map (v03) is kept beside this page.</p>
   </header>
 
   <div class="axis">
     <h3>The dividing axis</h3>
     <p><b>Is this value read against a clinical normal range, or against a goal you set yourself?</b> A blood pressure of 160/100 is abnormal to any clinician; nobody reads 4,000 steps as pathological. Clinical band → <b>Vitals</b>. Personal goal → <b>Lifestyle</b>.</p>
-    <p>One question decides both, and it handles mood without an exception: a daily log with no clinical band, so Lifestyle. Two categories now sit beside the axis rather than on it: <b>Labs</b>, split by where the number comes from, and <b>Ostomy</b>, split by subject so that everything about the stoma is in one place.</p>
+    <p>One question decides both, and it handles mood without an exception: a daily log with no clinical band, so Lifestyle. Two categories now sit beside the axis rather than on it: <b>Labs</b>, split by where the number comes from, and <b>Ostomy</b>, split by subject so that everything about the stoma is in one place. A third, <b>Healthcare Resources</b>, holds no health data at all: it is the address book the other categories point to.</p>
   </div>
 
   <div class="glance">
@@ -206,16 +206,20 @@
       <p class="gtest">Something I feel, that I report myself.</p>
     </div>
     <div class="gcard" style="--cc:var(--c6)">
-      <div class="gnum">06 · Treatments</div><h3>Treatments &amp; Appliances</h3>
+      <div class="gnum">06 · Treatments</div><h3>Treatments</h3>
       <p class="gtest">What I'm taking or using, and the care I have planned.</p>
     </div>
     <div class="gcard" style="--cc:var(--c7)">
       <div class="gnum">07 · Ostomy</div><h3>Ostomy</h3>
       <p class="gtest">Everything about my stoma: its output, its skin, the appliance on it.</p>
     </div>
+    <div class="gcard" style="--cc:var(--c8)">
+      <div class="gnum">08 · Resources</div><h3>Healthcare Resources</h3>
+      <p class="gtest">Who and where my care comes from: clinicians, places, suppliers.</p>
+    </div>
   </div>
 
-  <h2>The seven, in detail</h2>
+  <h2>The eight, in detail</h2>
   <p class="sub">Sub-category lists are generated from the data map further down, which is the authoritative row set.</p>
 
   <section class="cat" style="--cc:var(--c1)">
@@ -252,7 +256,7 @@
     <div class="items" data-cat="Medical Records"></div>
     <dl class="edge">
       <dt>An appointment and an encounter are two records</dt>
-      <dd>The appointment is the plan (date, place, who, questions to ask) and lives in Treatments &amp; Appliances, shown in Care. The encounter — <i>Note (Encounter)</i> — is what happened, and lives here. <b>An encounter points to the appointment it is based on, when there is one</b>: an emergency visit has no appointment, and a cancelled appointment never becomes an encounter.</dd>
+      <dd>The appointment is the plan (date, place, who, questions to ask) and lives in Treatments, shown in Care. The encounter — <i>Note (Encounter)</i> — is what happened, and lives here. <b>An encounter points to the appointment it is based on, when there is one</b>: an emergency visit has no appointment, and a cancelled appointment never becomes an encounter.</dd>
       <dt>Status, not deletion</dt>
       <dd>A resolved diagnosis stays visible as resolved rather than disappearing. The fact that something ended is itself clinical information.</dd>
     </dl>
@@ -285,14 +289,14 @@
   </section>
 
   <section class="cat" style="--cc:var(--c6)">
-    <h3>Treatments &amp; Appliances <em>intervention + catalogue</em></h3>
+    <h3>Treatments <em>intervention + catalogue</em></h3>
     <p class="test">What I'm taking or using, the product behind it, and the care I have planned.</p>
     <p>Holds the <b>things</b> — drugs, devices, supplies — and the intervention records that govern them, plus appointments, the forward-looking plan of care. Shown in Care.</p>
     <span class="lbl">Sub-categories</span>
-    <div class="items" data-cat="Treatments &amp; Appliances"></div>
+    <div class="items" data-cat="Treatments"></div>
     <dl class="edge">
       <dt>Unfinished, by choice</dt>
-      <dd>Only the Appointment row is in the simplified model so far. Medication (catalogue, scheduled / taken / skipped doses, as-needed, supplements, side effects), therapies, devices, supplies and trial periods stay as defined in the v03 map and come back as rows when their screens are built.</dd>
+      <dd>Appointments and medication are in the simplified model: the drug as a catalogue, the course, scheduled and taken / skipped doses, pharmacy dispenses and the stock they add up to. Therapies, devices, supplies and trial periods stay as defined in the v03 map and come back as rows when their screens are built.</dd>
       <dt>Product and act must stay separate entities</dt>
       <dd>The single most consequential decision in the set. Product attributes — convexity, flange size, barrier chemistry, brand, reference — belong to a catalogue entity; the appliance-change event points at it. Only then can you ask <b>"did the 25mm convex barrier give me longer wear time and better skin than the flat one"</b>. If product is a free-text field on the event, that question is permanently out of reach.</dd>
     </dl>
@@ -309,6 +313,18 @@
       <dd>Output, emptying and skin are read day to day and show in Tracker; the appliance change and the wear time it produces show in Care. Peristomal skin is shown in both, stored once.</dd>
       <dt>A leak is a reason, not an event</dt>
       <dd>A leak forces an appliance change, so it is recorded as that change's reason. <b>Wear time is derived</b> from consecutive changes and is the headline outcome for comparing products.</dd>
+    </dl>
+  </section>
+
+  <section class="cat" style="--cc:var(--c8)">
+    <h3>Healthcare Resources <em>catalogues only</em></h3>
+    <p class="test">Who or where care comes from: a clinician, a facility, a supplier.</p>
+    <p>Three address books, entered once and reused: the <b>care providers</b> you see, the <b>facilities</b> where care happens, and the <b>suppliers</b> your medication and ostomy products come from. Every row is a Catalogue; the events that point to them (an appointment, a prescription, a dispense, an ostomy order) live in their own categories. Shown in Care and Records.</p>
+    <span class="lbl">Sub-categories</span>
+    <div class="items" data-cat="Healthcare Resources"></div>
+    <dl class="edge">
+      <dt>Added on the spot</dt>
+      <dd>A new doctor, clinic or pharmacy can be created from the sheet that needs it, so keeping the address book never becomes a chore.</dd>
     </dl>
   </section>
 
@@ -339,7 +355,7 @@
   </div>
 
   <h2>Categories are not entities</h2>
-  <p class="sub">Seven categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart.</p>
+  <p class="sub">Eight categories sit on top of seven storage shapes, and the mapping is many-to-many. Counts are generated from the map above, so the two cannot drift apart.</p>
 
   <div class="tablewrap" id="shapematrix"></div>
 
@@ -368,7 +384,7 @@
     <div class="fnum">03</div>
     <div class="fbody">
       <h4>The catalogue rows are missing</h4>
-      <p>Wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table: the ostomy product and its changes, the medication and its doses. The simplified model has the events but none of the catalogues yet — the shape matrix shows an empty Catalogue row. They come back with Treatments &amp; Appliances.</p>
+      <p>Wherever <b>Catalogue</b> and <b>Event</b> share a sub-category, that's a type table plus an occurrence table: the ostomy product and its changes, the medication and its doses. The simplified model now has catalogues for medication and for the Healthcare Resources address books (care providers, facilities, suppliers); the ostomy product catalogue comes back with its screens.</p>
       <span class="verdict">Core modelling decision, still to re-add</span>
     </div>
   </div>
@@ -391,7 +407,7 @@
     </div>
   </div>
 
-  <h2>Still outside the seven</h2>
+  <h2>Still outside the eight</h2>
   <p class="sub">Four things that deliberately aren't categories, and what they are instead.</p>
 
   <div class="finding" style="--cc:var(--accent)">
@@ -437,7 +453,7 @@
 <script>
 const CATS = {
   "Vitals":"--c1", "Labs":"--c2", "Medical Records":"--c3", "Lifestyle":"--c4",
-  "Symptoms":"--c5", "Treatments & Appliances":"--c6", "Ostomy":"--c7"
+  "Symptoms":"--c5", "Treatments":"--c6", "Ostomy":"--c7", "Healthcare Resources":"--c8"
 };
 const SHAPES = ["Measurement","Event","Interval","Standing fact","Catalogue","Document","Derived"];
 const SCREENS = ["Tracker","Records","Care"];
@@ -484,7 +500,7 @@ document.getElementById("n-rows").textContent = rows.length;
 /* shape x category matrix, generated from the rows */
 (function(){
   const cats = Object.keys(CATS);
-  const short = c => c === "Treatments & Appliances" ? "Treatments" : c.replace("Medical ", "");
+  const short = c => c.replace("Medical ", "");
   const head = '<thead><tr><th>Shape</th>' +
     cats.map(c => '<th>' + short(c) + '</th>').join("") + '<th>Total</th></tr></thead>';
   const body = '<tbody>' + SHAPES.map(s => {

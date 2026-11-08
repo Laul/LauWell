@@ -1,20 +1,20 @@
 // [ name, category, sub-category, shape, nav screens, data sources, description ]
 //
 // Mirrors the Notion table *Data Model [Simplified]* (LauWell App • Home → Table of Content → Data Model),
-// copied 2026-10-17: name, category, sub-category, `Nav. Screens`, `Data Sources` and description as written
-// there. Notion has no Shape column, so shapes are ours (carried over from v03 where the row existed).
+// copied 2026-10-17 and re-synced 2026-11-07: name, category, sub-category, `Nav. Screens`, `Data Sources` and description as written
+// there, and the storage shape from its `Storage Shape` column (added 2026-11-07 from the shapes kept here until then).
 const T = 'Tracker', R = 'Records', C = 'Care';
 const M = 'Manual', W = 'Wearable', X = 'Computed';
 const lab = (name, sub, desc) => [name, 'Labs', sub, 'Measurement', [R], [M], desc || ''];
 const DATA = [
-  ["Blood glucose","Vitals","Biochemistry - Metabolic","Measurement",[T],[W,M],"Fingerstick readings or a continuous sensor stream. One metric, two very different data shapes. (Self Reported)"],
+  ["Blood glucose","Vitals","Metabolic","Measurement",[T],[W,M],"Fingerstick readings or a continuous sensor stream. One metric, two very different data shapes. (Self Reported)"],
   ["Blood Oxygen","Vitals","Cardiovascular","Measurement",[T],[W,M],"Percentage saturation, spot-checked or sampled through the night."],
   ["Blood Pressure","Vitals","Cardiovascular","Measurement",[T],[W,M],"Systolic and diastolic from a cuff, usually logged together with the pulse. Orthostatic pairs matter for some conditions."],
   ["ECG Trace","Vitals","Cardiovascular","Document",[T],[W],"A recorded waveform plus the rhythm classification derived from it. Stored as a file, not a number."],
   ["Heart Rate","Vitals","Cardiovascular","Measurement",[T],[W],"Beats per minute at rest, in activity or overnight. The most commonly synced measure and the one most apps lead with."],
   ["Resting Heart Rate","Vitals","Cardiovascular","Measurement",[T],[W],"Beats per minute at full rest, one value per day, usually estimated by a wearable overnight or on waking. A slow-moving baseline that shifts with fitness, illness, stress and recovery."],
   ["Respiratory Rate","Vitals","Respiratory","Measurement",[T],[W,M],"Breaths per minute, generally derived overnight by a wearable rather than measured directly."],
-  ["Menstrual Cycle","Vitals","Woman Health","Interval",[T],[M],"Phase and flow. Not behaviour, but a daily log without a clinical band, so the axis places it here."],
+  ["Menstrual Cycle • Duration","Vitals","Woman Health","Interval",[T],[M],"Phase and flow. Not behaviour, but a daily log without a clinical band, so the axis places it here."],
 
   lab("Bicarbonate (CO2 total)","Biochemistry - Electrolytes","Total CO2 in blood, mostly bicarbonate. The main buffer for acid-base balance."),
   lab("Calcium (total)","Biochemistry - Electrolytes","Total blood calcium. Reflects bone, parathyroid and vitamin D status and affects muscles and nerves."),
@@ -40,7 +40,6 @@ const DATA = [
   lab("eGFR","Biochemistry - Renal","Estimated kidney filtration rate, calculated from creatinine, age and sex. The main overall measure of kidney function."),
   lab("Urea (BUN)","Biochemistry - Renal","Waste product of protein breakdown, cleared by the kidneys. Reflects kidney function and hydration."),
   lab("Uric acid","Biochemistry - Renal","End product of purine metabolism. High levels relate to gout and kidney stones."),
-  lab("NT-proBNP","Cardiovascular","Hormone fragment released by the heart when its walls are stretched. Used to detect and monitor heart failure."),
   lab("Troponin (hs)","Cardiovascular","Heart muscle protein released with cardiac injury. The key blood test for a heart attack."),
   lab("aPTT","Coagulation","Clotting time for the intrinsic pathway. Used to monitor heparin and to look for clotting factor problems."),
   lab("D-dimer","Coagulation","Fragment released when a clot breaks down. Used mainly to rule out blood clots when the result is normal."),
@@ -91,7 +90,7 @@ const DATA = [
   ["Note (Encounter)","Medical Records","Appointment","Event",[R],[M],"What happened at a past appointment, what was said and what changed as a result."],
   ["Clinical Records","Medical Records","Documents","Document",[R],[M],"Lab reports, letters, discharge summaries. Attaches to the record it belongs to rather than floating free."],
   ["Insurance files (Policy, Claims)","Medical Records","Documents","Document",[R],[M],"Policy, claims, what is reimbursable and what you have already paid."],
-  ["Prescription","Medical Records","Documents","Document",[R],[M],"Written order for medication or treatment, including the dose, frequency, and duration."],
+  ["Prescription","Medical Records","Documents","Document",[R],[M],"The doctor's written order, kept as a document: provider, date prescribed, the encounter it came from (optional, since renewals by phone or pharmacist have none), and the list of drugs, each with the posology as written, quantity, refills and duration. The pharmacy often keeps the original, so nothing else depends on it."],
   ["Allergy","Medical Records","Medical History","Interval",[R],[M],"Substance, the reaction it causes and how severe. Must be reachable instantly, including from the emergency view."],
   ["Diagnosis","Medical Records","Medical History","Interval",[R],[M],"What you have been diagnosed with, its onset date, and whether it is active or resolved. One of the two things a clinician asks for first."],
   ["Hospitalization","Medical Records","Medical History","Interval",[R],[M],"Admission and discharge dates with the reason. Rarely read, must never be lost."],
@@ -117,15 +116,28 @@ const DATA = [
   ["Pain","Symptoms","Pain","Measurement",[T],[M],"Location, intensity and quality, usually entered on a body map rather than typed."],
   ["Fatigue","Symptoms","Systemic","Measurement",[T],[M],"Often the most actionable subjective measure in chronic illness, and the hardest to capture consistently."],
   ["Fever & chills","Symptoms","Systemic","Measurement",[T],[M],"Self-reported feeling, distinct from the thermometer reading that belongs in Vitals."],
+  ["Menstrual pain","Symptoms","Woman Health","Measurement",[T],[M],"Pain level during menstruations"],
 
-  ["Appointment","Treatments & Appliances","Appointment","Event",[C],[M],"A scheduled visit with prep instructions and the questions you want to ask. The one item here that points forward rather than back."],
+  ["Appointment","Treatments","Appointment","Event",[C],[M],"A scheduled visit with prep instructions and the questions you want to ask. The one item here that points forward rather than back."],
+  // Medication: one catalogue (the drug) and the records that point to it, copied from Notion 2026-11-06.
+  ["Medication","Treatments","Medication","Catalogue",[C,R],[M],"The drug itself, as a catalogue entry (never an event): standardized name (DIN), active ingredient, ATC code (the drug class is derived from it), strength (per volume for liquids), form, route, pack size. Everything about how much, when and for how long lives in the rows below."],
+  ["Medication Course","Treatments","Medication","Interval",[C],[M],"What you take now, from a start to an end: which medication, how much each time, at what times or as needed, why (the condition), and why it stopped. Needs no prescription, so OTC drugs and supplements fit too. A dose change ends one course and starts the next, so the history stays readable. Holds the reorder lead time (days before running out to be alerted)."],
+  ["Medication Dose Scheduled","Treatments","Medication","Event",[C],[X],"A planned dose at a local time of day (\"08:00\"), generated from the medication course. What the reminder and the daily plan (\"2/3 taken\") are built from. As-needed medication has none."],
+  ["Medication Dose Taken or Skipped","Treatments","Medication","Event",[C],[M],"What actually happened: taken or skipped, at what time, and how much (tablets, mL, puffs or mg). Compared with the scheduled time to show lateness. The skipped case carries as much information as the taken one. As-needed doses are logged the same way, with no scheduled dose behind them."],
+  ["Medication Dispense","Treatments","Medication","Event",[C,R],[M],"A pharmacy pick-up: the pharmacy (a Supplier), date, total cost, and for each drug the quantity, days' supply, cost, the actual product (brand or DIN, since the pharmacist may substitute) and the refills remaining read from the label. One prescription can lead to several dispenses (refills, partial fills), and one pick-up can cover several prescriptions."],
+  ["Medication Stock Count","Treatments","Medication","Measurement",[C],[M],"A manual count of the pills at home: which medication, how many, on what date. Resets the stock so forgotten dose logs never pile up into a wrong number."],
+  ["Medication Stock","Treatments","Medication","Derived",[C],[X],"Pills left at home per medication: last stock count + picked up since - taken since (skipped doses use nothing). Gives the days remaining at the planned daily amount, the reorder date, and whether to order at the pharmacy or ask the doctor for a renewal (refills remaining is 0). Follows the medication, not the course, so a dose change does not reset it."],
 
   ["Ostomy Accessories used","Ostomy","Ostomy • Daily Routines","Event",[C],[M],"Barrier ring, paste, powder, adhesive remover - what went on alongside the appliance."],
   ["Ostomy Output Consistency","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"A Bristol-style ordinal scale for stoma or bowel output, logged alongside volume."],
-  ["Ostomy Output Volume","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"Millilitres over a period. Sits in Vitals rather than Lifestyle because sustained high output is a clinical dehydration risk."],
+  ["Ostomy Output Volume","Ostomy","Ostomy • Daily Routines","Measurement",[T],[M],"Millilitres over a period. Kept in Ostomy (not Lifestyle) because sustained high output is a clinical dehydration risk."],
   ["Ostomy Pouch Emptying","Ostomy","Ostomy • Daily Routines","Event",[T],[M],"Frequency and timing across the day."],
   ["Peristomal Skin Rating","Ostomy","Ostomy • Daily Routines","Measurement",[T,C],[M],"Skin quality rating around the stoma. Irritation, burning or soreness around the stoma, as you experience it rather than as it is scored."],
   ["Ostomy Appliance Change (+ reason)","Ostomy","Ostomy • Replacement","Event",[C],[M],"When the pouch was changed, which product was used, and whether it was scheduled or forced by a leak."],
   ["Ostomy Wear Time","Ostomy","Ostomy • Replacement","Derived",[C],[X],"How long an appliance stayed on. Derived from consecutive appliance changes, and the headline outcome for comparing products."],
+  // Healthcare Resources: catalogues only (who and where care comes from), copied from Notion 2026-11-06.
+  ["Care Provider","Healthcare Resources","Care Providers","Catalogue",[R,C],[M],"A clinician as a catalogue entry (never an event): name, kind (doctor, dentist, therapist, nurse), specialty, phone, address, and a works-at link to the Care Facility where they work. Reused by Appointment, Note (Encounter), Prescription, Surgery, Hospitalization and Immunisation. A new one can be added on the spot while logging, so it never becomes a chore."],
+  ["Care Facility","Healthcare Resources","Care Facilities","Catalogue",[R,C],[M],"A clinic, hospital, lab or imaging centre as a catalogue entry (never an event): name, kind, address, phone, website and your own notes. Where care providers work, and where visits, surgeries, hospitalizations, lab draws and imaging happen. A visit records its facility directly, since a doctor can work at two sites. A new one can be added on the spot while logging."],
+  ["Supplier","Healthcare Resources","Suppliers","Catalogue",[C],[M],"Where supplies come from, as a catalogue entry (never an event): pharmacies, online stores for ostomy products, medical supply shops. Name, kind, address or website, phone, lead time (how far ahead to order) and what they are allowed to bill. The pharmacy of a medication dispense and the source of an ostomy order. A new one can be added on the spot while logging."],
 ];
 module.exports = DATA;

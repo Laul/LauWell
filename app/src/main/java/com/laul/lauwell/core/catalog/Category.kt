@@ -1,7 +1,7 @@
 package com.laul.lauwell.core.catalog
 
 /**
- * The seven patient-facing categories: the top level of the data hierarchy
+ * The eight patient-facing categories: the top level of the data hierarchy
  * (`docs/data-structure/health-data-model/Patient Data Categories`). Each comes with the test that decides whether a
  * new data point belongs in it.
  *
@@ -24,8 +24,11 @@ enum class Category(val key: String, val label: String) {
     Symptoms(key = "symptoms", label = "Symptoms"),
 
     /** What you take or use, the products behind it, and the care you have planned. */
-    TreatmentsAndAppliances(key = "treatments_appliances", label = "Treatments & Appliances"),
+    Treatments(key = "treatments", label = "Treatments"),
 
     /** Everything about the stoma: its output, the skin around it, the appliance on it. */
     Ostomy(key = "ostomy", label = "Ostomy"),
+
+    /** Who and where care comes from: clinicians, facilities and suppliers, entered once and reused. */
+    HealthcareResources(key = "healthcare_resources", label = "Healthcare Resources"),
 }

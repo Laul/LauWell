@@ -23,18 +23,18 @@ class MetricDefinitionTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun `a measurement needs a quantity`() {
-        metric(SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement)
+        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `quantity keys are unique`() {
-        metric(SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement, quantities = listOf(quantity("a"), quantity("a")))
+        metric(SubCategory.VitalsMetabolic, StorageShape.Measurement, quantities = listOf(quantity("a"), quantity("a")))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `a chart needs an aggregation`() {
         metric(
-            SubCategory.VitalsBiochemistryMetabolic, StorageShape.Measurement,
+            SubCategory.VitalsMetabolic, StorageShape.Measurement,
             quantities = listOf(quantity("a")),
             chartKind = ChartKind.Line,
         )

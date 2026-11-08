@@ -1,15 +1,16 @@
 package com.laul.lauwell.core.catalog
 
+import com.laul.lauwell.core.catalog.Category.HealthcareResources
 import com.laul.lauwell.core.catalog.Category.Labs
 import com.laul.lauwell.core.catalog.Category.Lifestyle
 import com.laul.lauwell.core.catalog.Category.MedicalRecords
 import com.laul.lauwell.core.catalog.Category.Ostomy
 import com.laul.lauwell.core.catalog.Category.Symptoms
-import com.laul.lauwell.core.catalog.Category.TreatmentsAndAppliances
+import com.laul.lauwell.core.catalog.Category.Treatments
 import com.laul.lauwell.core.catalog.Category.Vitals
 
 /**
- * The 35 sub-categories: the second level of the data hierarchy. Mirrors
+ * The 40 sub-categories: the second level of the data hierarchy. Mirrors
  * `docs/data-structure/health-data-model/Patient Data Categories.csv` (labels as written in the Notion table);
  * `CatalogMatchesDocsTest` fails if they drift.
  *
@@ -19,8 +20,8 @@ import com.laul.lauwell.core.catalog.Category.Vitals
  */
 enum class SubCategory(val category: Category, val key: String, val label: String) {
     // Vitals
-    VitalsBiochemistryMetabolic(Vitals, "biochemistry_metabolic", "Biochemistry - Metabolic"),
     VitalsCardiovascular(Vitals, "cardiovascular", "Cardiovascular"),
+    VitalsMetabolic(Vitals, "metabolic", "Metabolic"),
     VitalsRespiratory(Vitals, "respiratory", "Respiratory"),
     VitalsWomanHealth(Vitals, "woman_health", "Woman Health"),
 
@@ -59,13 +60,20 @@ enum class SubCategory(val category: Category, val key: String, val label: Strin
     SymptomsNeurological(Symptoms, "neurological", "Neurological"),
     SymptomsPain(Symptoms, "pain", "Pain"),
     SymptomsSystemic(Symptoms, "systemic", "Systemic"),
+    SymptomsWomanHealth(Symptoms, "woman_health", "Woman Health"),
 
-    // Treatments & Appliances
-    TreatmentsAppointment(TreatmentsAndAppliances, "appointment", "Appointment"),
+    // Treatments
+    TreatmentsAppointment(Treatments, "appointment", "Appointment"),
+    TreatmentsMedication(Treatments, "medication", "Medication"),
 
     // Ostomy
     OstomyDailyRoutines(Ostomy, "daily_routines", "Ostomy • Daily Routines"),
     OstomyReplacement(Ostomy, "replacement", "Ostomy • Replacement"),
+
+    // Healthcare Resources
+    ResourcesCareProviders(HealthcareResources, "care_providers", "Care Providers"),
+    ResourcesCareFacilities(HealthcareResources, "care_facilities", "Care Facilities"),
+    ResourcesSuppliers(HealthcareResources, "suppliers", "Suppliers"),
     ;
 
     val storageKey: String get() = "${category.key}/$key"
