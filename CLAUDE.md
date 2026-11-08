@@ -15,7 +15,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `docs/` — documents written by Lauranne.
 - `docs/data-structure/` — the data model reference, generated from the Notion table *Data Model
-  [Simplified]* (seven categories incl. Labs and Ostomy, a `Nav. Screens` column), which stays the source
+  [Simplified]* (eight categories incl. Labs, Ostomy and Healthcare Resources; a `Storage Shape` column and a `Nav. Screens` column), which stays the source
   of truth for rows: change Notion first, then `_src/rows.js`, then rebuild.
   - `health-data-model/` — patient data categories, the data map (every data point → category /
     sub-category / storage shape), and the terminology codings (LOINC / SNOMED CT / UCUM).
@@ -26,6 +26,10 @@ activity and sleep, ostomy appliances and changes, medications, and more.
     reference ranges list.
   - `health_data_labs/` — `common_lab_tests.csv`, the seed list for the Labs category.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
+  - `c4/` — C4 diagrams, levels 1-3 (`.mmd` sources, README with the screen-to-service table, `lauwell-c4.html` page).
+    Current implementation, with planned parts dashed. Kept up to date by the *Architecture check* step (see **Planning**).
+  - `backend/db-schema/` — the proposed Postgres schema (`schema-er.mmd`, `schema-flow.mmd`, `lauwell-data-schema.html`;
+    milestone M9, nothing built yet). Covered by the *Architecture check* step.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
   the Notion Decisions Tracker entry *Visual design* (indexed in PLAN.md → Decisions) is the tracked record. **`Design • Full Experience - v02.html` is
@@ -60,7 +64,8 @@ index of them; its old *Milestones* section is read-only history.
   `P3. Low` — note the dot on P3), `Effort (days count)` (number of days, estimate), `Screens relation`
   (multi-select: `01. Sign in`, `02. Today`, `03. Tracker`, `04. Care`, `05. Records`, `06. Settings`),
   `Parent item`, `Blocked by` / `Blocking`, `[Start - End] Dates` (a date or a start–end range; property keys `date:[Start - End] Dates:start` / `:end`),
-  `Description`, `PLAN.md ref` (where the item came from in the old plan, may be empty).
+  `Description`, `PLAN.md ref` (where the item came from in the old plan, may be empty),
+  `Changes architecture?` (checkbox: tick when the task changes the structure of the app or its data).
 
 **"What's next?"** — query the database for rows with `Type != Milestone` and `Status` not Done or Wont do, then answer with:
 1. anything `In progress`; then
@@ -74,6 +79,10 @@ Give the top 3 with parent milestone, effort and one line of why, and ask before
 - Finishing a task: set `Status = Done` and put today as the end of its `[Start - End] Dates` range. When closing a
   task late (already committed, box not ticked), use the date of its last commit instead of today. When the last child of a
   milestone is Done, set the milestone to Done too.
+- Architecture check: if the row has `Changes architecture?` ticked, then before setting `Status = Done`, in the same commit:
+  update the matching diagram source in `docs/architecture/c4/` (levels 1-3) or `docs/architecture/backend/db-schema/` (schema) and
+  its README table if affected; if a box or table was planned, change it from dashed to solid; rebuild the HTML page from
+  the `.mmd` sources. If a diagram change cannot be made now, create a follow-up row for it instead of leaving it silent.
 - Follow-ups found along the way: create a new child row (set `Parent item`, `Type`, `Priority`, `Effort`, `Screens relation`,
   and `Blocked by` where it applies) instead of adding a TODO to code or docs. Ask before creating a new milestone.
 - Put the detail a future reader needs (what was decided, how it was verified, what is left) in the row's `Description`
@@ -92,7 +101,7 @@ Give the top 3 with parent milestone, effort and one line of why, and ask before
 - Keep the Notion planning database current (see **Planning**): status when work starts and ends, follow-ups as new rows.
   Decisions go to the Decisions Tracker; `PLAN.md` gets only their one-line index entry, never tasks.
 - Prefer small, reviewable changes; explain trade-offs before large refactors.
-- Every new data point gets a category, a sub-category, a storage shape and the screen(s) it shows on
+- Every new data point gets a category, a sub-category, a storage shape (the Notion `Storage Shape` column) and the screen(s) it shows on
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
   Adding a tracker should be a registry entry, not a new navigation destination.
 - Navigation: four bottom tabs — **Today** (quick-log row, pinned metrics, medications due,
