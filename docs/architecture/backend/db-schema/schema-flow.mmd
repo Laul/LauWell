@@ -1,0 +1,38 @@
+flowchart LR
+  classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
+  classDef room fill:#dbe8f5,stroke:#4b78a8,color:#16191C
+  classDef cloud fill:#e3f1e6,stroke:#4f8a5c,color:#16191C
+  classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
+  classDef old fill:#fbeedb,stroke:#a8641a,color:#4a525a,stroke-dasharray:5 4
+
+  W["Wearables and<br/>health apps"]:::ext
+  HC["Health Connect<br/>live source"]:::ext
+
+  subgraph PHONE["Phone"]
+    direction TB
+    ROOM[("<b>Room</b><br/>reading (recent window)<br/>daily_summary<br/>origin, record tables<br/>outbox, sync_state: phone only")]:::room
+    SCR["<b>Screens</b><br/>Today, Tracker, detail"]:::app
+  end
+
+  API["<b>Sync API</b><br/>checks the Firebase ID token,<br/>maps it to users.id"]:::cloud
+
+  subgraph CLOUD["Neon Postgres, the single source of truth"]
+    direction TB
+    DB[("<b>All history</b><br/>reading, origin<br/>daily_summary (derived)")]:::cloud
+    REC[("<b>record, record_value,<br/>record_link, file</b><br/>every entry, file metadata")]:::cloud
+  end
+
+  GCS[("Cloud Storage<br/>file contents, nightly pg_dump")]:::cloud
+  FS[("Firestore records<br/>removed in M9")]:::old
+
+  W -->|"write"| HC
+  HC -->|"1. incremental sync"| ROOM
+  SCR -->|"log an entry"| ROOM
+  ROOM -->|"2. outbox: upload new rows"| API
+  API --> DB
+  API --> REC
+  DB -->|"3. refill: older history,<br/>new phone, after a reset"| API
+  API -->|"refill"| ROOM
+  ROOM -->|"4. all charts read here"| SCR
+  REC -.->|"file contents"| GCS
+  FS -.->|"Mood moves to Postgres, then Firestore is removed"| REC

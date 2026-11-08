@@ -1,0 +1,89 @@
+%% Proposed database schema, drafted with Claude 2026-11-01. Updated with Claude 2026-11-07 for the storage decisions of 2026-11-04
+%% (Neon Postgres as the single source of truth; own users + auth_identities tables). Status: proposal, nothing built (Planning: M9).
+erDiagram
+  USERS ||--o{ AUTH_IDENTITY : "signs in with"
+  USERS ||--o{ READING : owns
+  USERS ||--o{ DAILY_SUMMARY : owns
+  USERS ||--o{ RECORD : owns
+  USERS ||--o{ FILE : owns
+  ORIGIN ||--o{ READING : "wrote"
+  RECORD ||--|{ RECORD_VALUE : "has values"
+  RECORD ||--o{ RECORD_LINK : "links from"
+  RECORD ||--o{ RECORD_LINK : "linked to"
+  RECORD ||--o{ FILE : "attaches"
+
+  USERS {
+    uuid id PK "internal id, referenced everywhere"
+    timestamptz created_at
+  }
+  AUTH_IDENTITY {
+    text provider PK "firebase"
+    text subject PK "Firebase uid"
+    uuid user_id FK
+  }
+  ORIGIN {
+    int id PK
+    text app_package "com.garmin... , com.sec..."
+    text manufacturer
+    text model
+    text device_type
+  }
+  READING {
+    uuid user_id PK,FK
+    text metric_id PK "code-owned id, e.g. heart_rate"
+    text quantity_key PK "value, systolic, diastolic"
+    timestamptz time_utc PK
+    int origin_id PK,FK
+    int zone_offset_s
+    float value
+    text recording_method
+    text source_record_id "Health Connect id, finds deletions"
+    timestamptz deleted_at
+  }
+  DAILY_SUMMARY {
+    uuid user_id PK,FK
+    text metric_id PK
+    date day PK
+    text quantity_key PK
+    text aggregation "Sum, Average, MinAverageMax, Latest"
+    float value "derived, can be recomputed"
+    float min
+    float max
+    int count
+    timestamptz last_at
+    text origins "writing apps"
+  }
+  RECORD {
+    uuid id PK
+    uuid user_id FK
+    text metric_id
+    text shape "Measurement, Event, Interval..."
+    timestamptz time_utc
+    timestamptz end_time_utc "Interval only"
+    int zone_offset_s
+    text source "device, lab, manual, import"
+    timestamptz recorded_at
+    timestamptz edited_at
+    timestamptz deleted_at
+    text note
+    int schema_version
+  }
+  RECORD_VALUE {
+    uuid record_id PK,FK
+    text quantity_key PK
+    float value
+  }
+  RECORD_LINK {
+    uuid from_id PK,FK
+    uuid to_id PK,FK
+    text relation PK
+  }
+  FILE {
+    uuid id PK
+    uuid user_id FK
+    uuid record_id FK "optional"
+    text storage_path "object in Cloud Storage"
+    text mime_type
+    int size_bytes
+    timestamptz uploaded_at
+  }
