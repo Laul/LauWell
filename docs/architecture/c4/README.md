@@ -19,7 +19,7 @@ them; they are rebuilt from the `.mmd` files, so change the `.mmd` first.
 | 3 Components, Firebase | `c4-3-components-firebase.mmd` | What stays (Auth, Storage) and what is removed in M9 (Firestore, rules, tests) |
 | 3 Components, Postgres | `c4-3-components-postgres.mmd` | Planned: sync API, user mapping, tables, row-level security, backup |
 
-Rendered pages: `lauwell-c4.html`, `LauWell C4 Diagrams.html`.
+Rendered page: `lauwell-c4.html`.
 
 ## Which screen calls which service (level 3, app)
 
