@@ -85,6 +85,8 @@
 "Clinical Records","Medical Records","Documents","Document","","loinc-doc-later","","","","","",""
 "Insurance files (Policy, Claims)","Medical Records","Documents","Document","","none","","","","","",""
 "Prescription","Medical Records","Documents","Document","","loinc-doc-later","","","","","",""
+"Lab requisition","Medical Records","Documents","Document","","none","","","","","",""
+"Lab report","Medical Records","Documents","Document","","none","","","","","",""
 "Allergy","Medical Records","Medical History","Interval","","snomed-later","","","","","",""
 "Diagnosis","Medical Records","Medical History","Interval","","snomed-later","","","","","",""
 "Hospitalization","Medical Records","Medical History","Interval","","snomed-later","","","","","",""
