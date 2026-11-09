@@ -52,6 +52,7 @@ commit `b4ea515`.)
 - **Persistence:** Room on the phone, Postgres as the single source of truth, Cloud Storage for files, Firebase Auth stays; Firestore removed. → [Notion](https://app.notion.com/p/40f9d84e94a1811d95fae6a2bc834331)
 - **Raw readings:** every individual reading is kept; AI analysis reads values computed from them. → [Notion](https://app.notion.com/p/40f9d84e94a1816bbef1e4a3c330e0c5)
 - **Database provider:** Neon Postgres to start (free plan, US East), plain portable Postgres, own nightly backups. → [Notion](https://app.notion.com/p/40f9d84e94a181f7ac1dd70c1b55f74e)
+- **What the phone keeps:** every entry and every thing (all history); sensor readings for the last month, older ones fetched from Postgres. → [Notion](https://app.notion.com/p/4129d84e94a181f08b25efac39633aa2)
 
 ## Milestones — archive (frozen 2026-10-23, tracked in Notion)
 

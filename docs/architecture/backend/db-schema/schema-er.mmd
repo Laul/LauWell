@@ -1,16 +1,31 @@
 %% Proposed database schema, drafted with Claude 2026-11-01. Updated with Claude 2026-11-07 for the storage decisions of 2026-11-04
-%% (Neon Postgres as the single source of truth; own users + auth_identities tables). Status: proposal, nothing built (Planning: M9).
+%% (Neon Postgres as the single source of truth; own users + auth_identities tables) and the Shared foundation review of 2026-11-07
+%% (two families of things, detail tables with named links, "Not used anymore"). Status: proposal, nothing built (Planning: M9).
+%% Column-level reference: schema-tables.md (edit that first). Every Postgres table also carries user_id -> USERS; only the
+%% identity and sensor tables show it here, to keep the diagram readable.
 erDiagram
   USERS ||--o{ AUTH_IDENTITY : "signs in with"
   USERS ||--o{ READING : owns
   USERS ||--o{ DAILY_SUMMARY : owns
   USERS ||--o{ RECORD : owns
-  USERS ||--o{ FILE : owns
   ORIGIN ||--o{ READING : "wrote"
-  RECORD ||--|{ RECORD_VALUE : "has values"
+  RECORD ||--o{ RECORD_VALUE : "has values"
   RECORD ||--o{ RECORD_LINK : "links from"
   RECORD ||--o{ RECORD_LINK : "linked to"
   RECORD ||--o{ FILE : "attaches"
+
+  RECORD ||--o| MEDICATION_COURSE : "detail of"
+  RECORD ||--o| DOSE_TAKEN : "detail of"
+  RECORD ||--o| DISPENSE : "detail of"
+  RECORD ||--o| APPLIANCE_CHANGE : "detail of"
+  MEDICATION ||--o{ MEDICATION_COURSE : "taken as"
+  MEDICATION ||--o{ DOSE_TAKEN : "dose of"
+  MEDICATION_COURSE ||--o{ DOSE_TAKEN : "within"
+  DISPENSE ||--|{ DISPENSE_ITEM : "holds"
+  MEDICATION ||--o{ DISPENSE_ITEM : "picked up"
+  SUPPLIER ||--o{ DISPENSE : "where"
+  OSTOMY_PRODUCT ||--o{ APPLIANCE_CHANGE : "used"
+  CARE_FACILITY ||--o{ CARE_PROVIDER : "works at"
 
   USERS {
     uuid id PK "internal id, referenced everywhere"
@@ -54,14 +69,13 @@ erDiagram
     text origins "writing apps"
   }
   RECORD {
-    uuid id PK
-    uuid user_id FK
+    uuid id PK "one row per act, every kind"
     text metric_id
     text shape "Measurement, Event, Interval..."
     timestamptz time_utc
-    timestamptz end_time_utc "Interval only"
+    timestamptz end_time_utc "Interval only, optional"
     int zone_offset_s
-    text source "device, lab, manual, import"
+    text source "manual, device, lab, import"
     timestamptz recorded_at
     timestamptz edited_at
     timestamptz deleted_at
@@ -75,15 +89,90 @@ erDiagram
   }
   RECORD_LINK {
     uuid from_id PK,FK
-    uuid to_id PK,FK
+    uuid to_id PK,FK "context: recorded_during, about"
     text relation PK
   }
   FILE {
     uuid id PK
-    uuid user_id FK
     uuid record_id FK "optional"
     text storage_path "object in Cloud Storage"
     text mime_type
     int size_bytes
     timestamptz uploaded_at
+  }
+
+  MEDICATION {
+    uuid id PK "Products family"
+    text name
+    text brand
+    text reference_code "DIN"
+    text form
+    text strength
+    text active_ingredient
+    timestamptz not_used_since "Not used anymore; auto from courses"
+  }
+  OSTOMY_PRODUCT {
+    uuid id PK "Products family"
+    text name
+    text brand
+    text reference_code
+    text product_type "pouch, barrier, accessory"
+    int flange_size_mm
+    text convexity
+    timestamptz not_used_since
+  }
+  SUPPLIER {
+    uuid id PK "Resources family"
+    text name
+    text type "pharmacy, ostomy store"
+    text address
+    text phone
+    timestamptz not_used_since
+  }
+  CARE_FACILITY {
+    uuid id PK "Resources family"
+    text name
+    text type "clinic, hospital, lab"
+    text address
+    text phone
+    timestamptz not_used_since
+  }
+  CARE_PROVIDER {
+    uuid id PK "Resources family"
+    text name
+    text specialty
+    uuid works_at_id FK
+    timestamptz not_used_since
+  }
+
+  MEDICATION_COURSE {
+    uuid record_id PK,FK "Interval, end optional"
+    uuid medication_id FK
+    float dose_amount
+    text dose_unit
+    text schedule "local times"
+    text end_reason "why it stopped"
+  }
+  DOSE_TAKEN {
+    uuid record_id PK,FK "Event"
+    uuid course_id FK
+    uuid medication_id FK
+    text taken_or_skipped
+    float amount
+    text end_reason "why a dose was skipped"
+  }
+  DISPENSE {
+    uuid record_id PK,FK "Event"
+    uuid supplier_id FK
+    float total_cost
+  }
+  DISPENSE_ITEM {
+    uuid dispense_id PK,FK
+    uuid medication_id PK,FK
+    float quantity
+  }
+  APPLIANCE_CHANGE {
+    uuid record_id PK,FK "Event"
+    uuid product_id FK
+    text reason
   }
