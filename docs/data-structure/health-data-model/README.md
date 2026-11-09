@@ -1,7 +1,7 @@
 # Data structure
 
-> **Status (2026-10-17):** regenerated from the Notion table *Data Model [Simplified]*: seven categories
-> (Labs and Ostomy added), 35 sub-categories, 126 data points, each with a shape, its `Nav. Screens` tag
+> **Status (2026-11-07):** regenerated from the Notion table *Data Model [Simplified]*: eight categories
+> (Labs, Ostomy and Healthcare Resources added), 40 sub-categories, 126 data points, each with a shape, its `Nav. Screens` tag
 > and its data sources. The earlier five-category, 81-point map is kept as the `-v03` snapshot: it is
 > the reference for rows not yet re-added (medication, therapies, devices, supplies…) and for their codings.
 
@@ -9,7 +9,7 @@ The reference for how LauWell's health data is organised.
 
 | File | What it is |
 |---|---|
-| `Patient Data Categories.html` | **Current reference.** Seven patient-facing categories, their boundary tests, 35 sub-categories, the data map (126 points, with screens and sources) and the shape-to-category bridge. |
+| `Patient Data Categories.html` | **Current reference.** Eight patient-facing categories, their boundary tests, 40 sub-categories, the data map (126 points, with screens and sources) and the shape-to-category bridge. |
 | `Patient Data Categories.csv` | The same 126 rows, for import into Notion or a spreadsheet. Read by `CatalogMatchesDocsTest`. |
 | `Patient Data Categories-v03.*`, `Patient Data Model-v03.csv` | Snapshot of the five-category, 81-point map (2026-10-12) and its codings, before the simplification. Not generated. |
 | `Patient Data Codings.csv` | Standard terminology codes (LOINC, later SNOMED CT) for the same data points. First pass, in review — see *Codings* below. |
