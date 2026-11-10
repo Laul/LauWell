@@ -12,6 +12,9 @@ How to read the tables:
 - In Postgres, every table also has `user_id FK → users`, filled by the sync API from the verified sign-in, and
   row-level security limits each person to their own rows. Room has no `user_id`: the phone holds one person's data,
   and signing out clears it. The tables below leave `user_id` out, except where it is part of the key.
+- In Postgres, a foreign key to `record` goes through `(user_id, record_id)`, so it can never reach another
+  person's record (foreign key checks ignore row-level security).
+- **Built** in `backend/db/migrations/` (sections 1 and 3, 2026-11-09); the rest is still a proposal.
 - Ids are UUIDs made on the phone, so anything can be created offline and synced later.
 - Metric definitions (unit, aggregation, chart kind, category) stay in code. The database stores only the metric's id
   as text (`heart_rate`, `mood`). There is no metrics table.
@@ -104,6 +107,7 @@ with fields of its own adds a **detail table** (section 5), one row per record, 
 | deleted_at | timestamptz | | an act can be deleted; the row stays as a tombstone so the deletion syncs |
 | note | text | | the entry's own comment |
 | schema_version | int | | bumped on a breaking change |
+| change_seq | bigint | | (PG only) sync number: set on every change, also to its values or links; the phone pulls what is above the last one it saw |
 
 ### `record_value` (Both)
 
@@ -136,6 +140,8 @@ named columns on the detail tables.
 | mime_type | text | | |
 | size_bytes | int | | |
 | uploaded_at | timestamptz | | |
+| deleted_at | timestamptz | | soft delete, so the deletion syncs |
+| change_seq | bigint | | (PG only) sync number, as on `record` |
 
 ## 4. Things: the catalogues
 

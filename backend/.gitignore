@@ -1,0 +1,3 @@
+node_modules/
+# Connection strings stay out of the repo (CLAUDE.md -> Privacy).
+.env*

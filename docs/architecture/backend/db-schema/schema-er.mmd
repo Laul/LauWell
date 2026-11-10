@@ -1,6 +1,7 @@
 %% Proposed database schema, drafted with Claude 2026-11-01. Updated with Claude 2026-11-07 for the storage decisions of 2026-11-04
 %% (Neon Postgres as the single source of truth; own users + auth_identities tables) and the Shared foundation review of 2026-11-07
-%% (two families of things, detail tables with named links, "Not used anymore"). Status: proposal, nothing built (Planning: M9).
+%% (two families of things, detail tables with named links, "Not used anymore"). Status: USERS, AUTH_IDENTITY, RECORD, RECORD_VALUE,
+%% RECORD_LINK and FILE built in backend/db/migrations (2026-11-09); the rest is a proposal (Planning: M9).
 %% Column-level reference: schema-tables.md (edit that first). Every Postgres table also carries user_id -> USERS; only the
 %% identity and sensor tables show it here, to keep the diagram readable.
 erDiagram
@@ -81,6 +82,7 @@ erDiagram
     timestamptz deleted_at
     text note
     int schema_version
+    bigint change_seq "sync number, PG only"
   }
   RECORD_VALUE {
     uuid record_id PK,FK
@@ -99,6 +101,8 @@ erDiagram
     text mime_type
     int size_bytes
     timestamptz uploaded_at
+    timestamptz deleted_at
+    bigint change_seq "sync number, PG only"
   }
 
   MEDICATION {

@@ -13,6 +13,8 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
 - `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
   (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
+- `backend/` — the Postgres schema (Neon): numbered SQL migrations in `db/migrations/`, applied by `npm run migrate`
+  (`DATABASE_URL` set in the shell only), and their tests on PGlite (`npm test` from that folder).
 - `docs/` — documents written by Lauranne.
 - `docs/data-structure/` — the data model reference, generated from the Notion table *Data Model
   [Simplified]* (eight categories incl. Labs, Ostomy and Healthcare Resources; a `Storage Shape` column and a `Nav. Screens` column), which stays the source
