@@ -121,3 +121,47 @@ private val SampleSteps = MiniChartData.Bars(listOf(7420.0, 9104.0, 5880.0, null
 private val SampleMood = MiniChartData.Line(listOf(3.0, 4.0, 4.0, 2.0, 3.0, 4.0, null), min = 1.0, max = 5.0)
 private val SampleBrainFog = MiniChartData.SeverityDots(listOf(0, 1, 2, 1, 1, null, null), levels = 4)
 private val SampleCycle = MiniChartData.CycleStrip(day = 14, period = 1..5, fertile = 12..16)
+
+@Preview(name = "Picker light", widthDp = 360, heightDp = 720)
+@Preview(name = "Picker dark", widthDp = 360, heightDp = 720, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun ThingPickerPreview() {
+    LauWellTheme {
+        var selected by remember { mutableStateOf<String?>("p2") }
+        var query by remember { mutableStateOf("") }
+        Box(Modifier.fillMaxSize().background(LauWellTheme.colors.bg), contentAlignment = Alignment.BottomCenter) {
+            SheetSurface {
+                BasicText("Pickup", style = LauWellTheme.typography.headline.copy(color = LauWellTheme.colors.ink))
+                ThingPicker(
+                    options = SamplePharmacies,
+                    selectedId = selected,
+                    onSelect = { selected = it },
+                    query = query,
+                    onQueryChange = { query = it },
+                    kindLabel = "pharmacy",
+                    onCreate = {},
+                )
+                FilledButton("Save", onClick = {})
+            }
+        }
+    }
+}
+
+@Preview(name = "Picker, new light", widthDp = 360, heightDp = 360)
+@Preview(name = "Picker, new dark", widthDp = 360, heightDp = 360, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun NewThingFormPreview() {
+    LauWellTheme {
+        Box(Modifier.fillMaxSize().background(LauWellTheme.colors.bg), contentAlignment = Alignment.BottomCenter) {
+            SheetSurface {
+                NewThingForm(kindLabel = "pharmacy", initialName = "Uniprix", onAdd = {}, onCancel = {})
+            }
+        }
+    }
+}
+
+private val SamplePharmacies = listOf(
+    PickerOption("p1", "Jean Coutu Laurier", "Last used Sun 1 Nov"),
+    PickerOption("p2", "Pharmaprix Mont-Royal"),
+    PickerOption("p3", "Familiprix Saint-Denis"),
+)
