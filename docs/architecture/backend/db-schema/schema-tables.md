@@ -147,7 +147,7 @@ Entered once, reused by many acts. Two families, one table per kind. Every thing
 | name | text | | what lists and pickers show |
 | note | text | | |
 | created_at, edited_at | timestamptz | | |
-| not_used_since | timestamptz | | the **"Not used anymore"** tag, as the moment it stopped; screens show "since Mon 3 Nov". Still listed, no longer offered when logging; empty while in use |
+| not_used_since | timestamptz | | the **"Not used anymore"** tag, as the moment it stopped; screens show "since Tue 3 Nov". Still listed, no longer offered when logging; empty while in use |
 | deleted_at | timestamptz | | only for a thing created by mistake that nothing points to (P3 task); otherwise never deleted |
 
 ### Products: what I take or use
@@ -214,7 +214,7 @@ count + picked up − taken), *Ostomy Wear Time* (between two appliance changes)
 
 ## Settled in review (2026-11-07)
 
-- `not_used_since` is a timestamp (the moment it stopped); "since Mon 3 Nov" is computed when shown.
+- `not_used_since` is a timestamp (the moment it stopped); "since Tue 3 Nov" is computed when shown.
 - A pharmacy pickup usually holds several drugs, so `dispense_item` stays: one row per drug, with real foreign keys.
 - What the phone keeps (Decisions Tracker: *What the phone keeps*): every entry and every thing, all history; sensor
   readings for the last month, older ones fetched from Postgres when online.
