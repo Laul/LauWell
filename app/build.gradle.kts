@@ -49,6 +49,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Robolectric tests read the exported Room schemas as assets (LauWellDatabaseMigrationTest). Unit tests
+    // only see the app's merged assets, so they go in the debug build (a few KB); release stays without.
+    sourceSets.getByName("debug").assets.srcDir("$projectDir/schemas")
+    testOptions.unitTests.isIncludeAndroidResources = true
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -100,6 +105,11 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
+    // Room on the JVM (DAO and migration tests): Robolectric gives Room an Android SQLite without a device.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

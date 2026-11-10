@@ -80,12 +80,12 @@ class AppContainer(context: Context) {
     val healthDataSource: HealthDataSource by lazy { HealthConnectDataSource(appContext) }
 
     /**
-     * The Health Connect cache. A schema change drops it instead of migrating: everything in it is
-     * read again from Health Connect on the next sync.
+     * The Health Connect cache and what you log. Every version change migrates (see [LauWellDatabase]);
+     * only version 1, the cache alone, is dropped on upgrade.
      */
     private val database: LauWellDatabase by lazy {
         Room.databaseBuilder(appContext, LauWellDatabase::class.java, "lauwell.db")
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .fallbackToDestructiveMigrationFrom(dropAllTables = true, 1)
             .build()
     }
 
