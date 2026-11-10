@@ -3,6 +3,7 @@
 %% Built today: sensor data Health Connect -> Room -> screens; entered data Firestore -> screens.
 %% Planned (M9, decisions of 2026-11-04): entries and raw readings are stored in Room, queued in an outbox,
 %% and synced to Postgres through a sync API. Firestore and its repository are removed.
+%% Built 2026-11-09 (Shared foundation): the entry tables in Room (RecordDao), not wired yet: Mood still writes to Firestore.
 %% Solid = built, dashed = planned, amber = built and being removed.
 flowchart LR
   classDef shell fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
@@ -14,7 +15,7 @@ flowchart LR
   classDef retiring fill:#fbf1e4,stroke:#a8641a,color:#16191C
 
   EHC["Health Connect"]:::ext
-  EROOM[("Room database<br/>daily_summary_value, sync_state.<br/>Planned: raw readings,<br/>entries, outbox")]:::ext
+  EROOM[("Room database<br/>daily_summary_value, sync_state;<br/>record, record_value, record_link<br/>(not wired yet). Planned:<br/>raw readings, outbox")]:::ext
   EFS[("Cloud Firestore<br/>users/{uid}/records<br/>removed in M9")]:::retiring
   EAPI["Sync API<br/>planned cloud function,<br/>checks the Firebase ID token"]:::planned
   EPG[("Neon Postgres<br/>planned, source of truth")]:::planned

@@ -13,7 +13,7 @@ flowchart TB
   subgraph PHONE["Android phone"]
     direction TB
     APP["<b>LauWell app</b><br/>Kotlin 2.4, Jetpack Compose<br/>One Gradle module (:app), a package per feature<br/>Screens, sync, domain, manual DI"]:::app
-    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state.<br/>Planned: raw readings, entries, outbox.<br/>Fast offline copy for the screens")]:::store
+    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state;<br/>entry tables (record, values, links),<br/>not wired yet. Planned: raw readings, outbox.<br/>Fast offline copy for the screens")]:::store
     DS[("<b>Preferences DataStore</b><br/>settings.preferences_pb<br/>Theme, Tracker view, pinned set,<br/>onboarding flag")]:::store
     HC["<b>Health Connect</b><br/>Android system service<br/>Keeps the sensor detail"]:::ext
   end
