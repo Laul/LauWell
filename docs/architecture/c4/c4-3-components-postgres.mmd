@@ -12,7 +12,7 @@ flowchart TB
   APP["<b>LauWell app</b><br/>Outbox + SyncWorker<br/>(WorkManager, offline queue). Planned"]:::planned
   AUTH["<b>Firebase Auth</b><br/>issues the ID token"]:::cloud
 
-  subgraph API["Sync API: Firebase Cloud Function, us-east4 (backend/api, not deployed yet)"]
+  subgraph API["Sync API: Firebase Cloud Function, us-east5 (Ohio) (backend/api, not deployed yet)"]
     direction TB
     VERIFY["<b>Token check</b><br/>Firebase ID token,<br/>firebase-admin verifyIdToken"]:::cloud
     MAP["<b>Request session</b><br/>one transaction per request as lauwell_api;<br/>app.begin_request maps the uid to users.id"]:::cloud
@@ -21,7 +21,7 @@ flowchart TB
     RWRITE["<b>Readings writer</b><br/>upsert on the Health Connect record_id"]:::planned
   end
 
-  subgraph PG["Neon Postgres, AWS US East, plain Postgres (no provider features)"]
+  subgraph PG["Neon Postgres, AWS US East 2 (Ohio), plain Postgres (no provider features)"]
     direction TB
     USERS[("<b>users, auth_identity</b><br/>our own user key; every other table<br/>references users.id, never the Firebase uid")]:::store
     ENT[("<b>Entries</b><br/>record, record_value, record_link;<br/>change_seq for sync. Thing and detail<br/>tables come with their features")]:::store

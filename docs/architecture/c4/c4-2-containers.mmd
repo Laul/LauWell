@@ -27,8 +27,8 @@ flowchart TB
 
   subgraph STORE["Postgres store (M9)"]
     direction TB
-    API["<b>Sync API</b><br/>Firebase Cloud Function, us-east4<br/>POST /push, POST /pull. Checks the<br/>Firebase ID token, maps it to users.id.<br/>Written, not deployed yet"]:::planned
-    PG[("<b>Neon Postgres</b><br/>AWS US East, plain Postgres<br/>Schema v1: users, entries (record,<br/>values, links), file metadata.<br/>Row-level security. Planned: raw readings.<br/>Source of truth")]:::store
+    API["<b>Sync API</b><br/>Firebase Cloud Function, us-east5 (Ohio)<br/>POST /push, POST /pull. Checks the<br/>Firebase ID token, maps it to users.id.<br/>Written, not deployed yet"]:::planned
+    PG[("<b>Neon Postgres</b><br/>AWS US East 2 (Ohio), plain Postgres<br/>Schema v1: users, entries (record,<br/>values, links), file metadata.<br/>Row-level security. Planned: raw readings.<br/>Source of truth")]:::store
   end
 
   GI["<b>Google Identity</b><br/>via Credential Manager"]:::ext

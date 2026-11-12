@@ -27,8 +27,9 @@ async function runAs(uid, fn) {
   }
 }
 
-// Near Neon's US East region. Public at the network level: every call is checked against its Firebase ID token.
+// Columbus, Ohio: next to Neon's AWS US East 2 (Ohio). Public at the network level: every call is checked against
+// its Firebase ID token.
 export const api = onRequest(
-  { region: 'us-east4', secrets: [DATABASE_URL], invoker: 'public', maxInstances: 2 },
+  { region: 'us-east5', secrets: [DATABASE_URL], invoker: 'public', maxInstances: 2 },
   makeHandler({ verifyToken: (token) => getAuth().verifyIdToken(token), runAs }),
 );
