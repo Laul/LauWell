@@ -14,8 +14,7 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `backend/` — the server side. The Postgres schema (Neon): numbered SQL migrations in `db/migrations/`, applied by
   `npm run migrate` (`DATABASE_URL` set in the shell only). The sync API in `api/` (`POST /push`, `POST /pull`), a
   Firebase Cloud Function in `lauwell-app` (`firebase.json` and `.firebaserc` there; its `DATABASE_URL` in Secret
-  Manager; deployed with `npm run deploy:api`). Both tested
-  on PGlite (`npm test` from that folder).
+  Manager; deployed with `npm run deploy:api`). Both tested on PGlite (`npm test` from that folder).
 - `docs/` — documents written by Lauranne.
 - `docs/data-structure/` — the data model reference, generated from the Notion table *Data Model
   [Simplified]* (eight categories incl. Labs, Ostomy and Healthcare Resources; a `Storage Shape` column and a `Nav. Screens` column), which stays the source
@@ -31,8 +30,10 @@ activity and sleep, ostomy appliances and changes, medications, and more.
 - `docs/architecture/` — how the app is put together: module and feature-toggle design.
   - `c4/` — C4 diagrams, levels 1-3 (`.mmd` sources, README with the screen-to-service table, `lauwell-c4.html` page).
     Current implementation, with planned parts dashed. Kept up to date by the *Architecture check* step (see **Planning**).
-  - `backend/db-schema/` — the proposed Postgres schema (`schema-er.mmd`, `schema-flow.mmd`, `lauwell-data-schema.html`;
-    milestone M9, nothing built yet). Covered by the *Architecture check* step.
+  - `backend/db-schema/` — the Postgres schema (`schema-tables.md` the editable reference, `schema-er.mmd`,
+    `schema-flow.mmd`, `lauwell-data-schema.html`). Identity, entries and files are built (`backend/db/migrations/`,
+    on Neon); thing, detail and sensor tables are still proposals, built with their features (M9).
+    Covered by the *Architecture check* step.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
   the Notion Decisions Tracker entry *Visual design* (indexed in PLAN.md → Decisions) is the tracked record. **`Design • Full Experience - v02.html` is

@@ -23,7 +23,6 @@ flowchart LR
   end
 
   GCS[("Cloud Storage<br/>file contents, nightly pg_dump")]:::cloud
-  FS[("Firestore records<br/>removed in M9")]:::old
 
   W -->|"write"| HC
   HC -->|"1. incremental sync"| ROOM
@@ -35,4 +34,3 @@ flowchart LR
   API -->|"refill"| ROOM
   ROOM -->|"4. all charts read here"| SCR
   REC -.->|"file contents"| GCS
-  FS -.->|"Mood moves to Postgres, then Firestore is removed"| REC

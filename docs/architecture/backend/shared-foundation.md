@@ -1,7 +1,8 @@
 # Shared foundation: things, acts, and links between records
 
 *Drafted with Claude, 2026-11-07; revised the same day after review (two families of things, "Not used anymore").
-Status: proposal under review, no code yet (Planning: "Shared foundation: things vs. acts, and links between records", M4). Builds on the Decisions Tracker entries *Storage shapes*, *Catalogue + occurrence*,
+Status: settled and built (2026-11-09, Planning: "Shared foundation: things vs. acts, and links between records", M4);
+Mood moved to these tables and Firestore was removed on 2026-11-11. Builds on the Decisions Tracker entries *Storage shapes*, *Catalogue + occurrence*,
 *Relationships between records* and *Persistence: Room on the phone, Postgres as the single source of truth*.*
 
 ## The question
@@ -81,7 +82,7 @@ foreign keys, and those need their own columns.
 
 ## 3. Links between records: two kinds, as decided
 
-Unchanged from *Relationships between records*; only the storage changes now that Firestore goes.
+Unchanged from *Relationships between records*; only the storage changed (Room and Postgres, no Firestore).
 
 - **Named link, when it defines the record**, and logic or statistics depend on it: a column with a foreign key on
   the detail table (`dose_taken.medication_id`, `dispense.supplier_id`, `appliance_change.product_id`).
@@ -148,7 +149,7 @@ The thing and the act are saved separately. If the user cancels the act, the new
 - `care_provider`, `care_facility`, `supplier` (Resources): *Care provider + care facility catalogues*.
 - `ostomy_product`, `device`: their ostomy and glucose tasks.
 - Postgres tables and security: *Real database (Neon): provision, schema and security* (written from this note).
-- Moving Mood from Firestore to Room: *Move Mood off Firestore…* (needs the sync).
+- Moving Mood from Firestore to Room: *Move Mood off Firestore…* (done 2026-11-11).
 
 ## Settled in review (2026-11-07)
 

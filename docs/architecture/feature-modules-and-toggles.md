@@ -2,7 +2,7 @@
 
 *Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
 2026-10-11 for the simplified data model and the four-tab navigation; 2026-10-15 for the Tracker
-list/widgets views; 2026-10-18 for the regenerated counts. Status: adopted (PLAN.md → M0).
+list/widgets views; 2026-10-18 for the regenerated counts; 2026-11-11 for storage (Room and Postgres, no Firestore). Status: adopted (PLAN.md → M0).
 Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
@@ -92,7 +92,7 @@ Example: Lifestyle → Activity switched off.
 
 - **Code:** still ships in the APK, never runs. Negligible size cost.
 - **Data:** hidden, **never deleted**. Turning it back on loses nothing. Deleting data is a
-  separate, explicit action in Settings. Storage (Firestore `users/{uid}/…`, Room tables) keeps
+  separate, explicit action in Settings. Storage (Room tables, synced to Postgres) keeps
   one schema and one migration history either way.
 - **Permissions:** `AndroidManifest.xml` declares every permission any metric might need. At
   runtime a permission is requested only for a visible metric, and only when it is first needed

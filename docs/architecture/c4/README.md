@@ -2,7 +2,7 @@
 
 *Drafted with Claude, 2026-10-30, from the code at commit `f374a25`, the Notion Home page and its subpages,
 `PLAN.md` and the Notion Planning and Decisions databases. Updated with Claude, 2026-11-06, for the storage
-decisions of 2026-11-04 (Postgres on Neon as the single source of truth, Firestore removed in M9; see the
+decisions of 2026-11-04 (Postgres on Neon as the single source of truth, Firestore removed from the app on 2026-11-11; see the
 Notion page *Long-term data store*). Status: draft for review against the vision.
 Level 4 stays in the Notion sequence diagrams.*
 

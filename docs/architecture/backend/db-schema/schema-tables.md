@@ -2,7 +2,8 @@
 
 *Drafted with Claude, 2026-11-07, from `schema-er.mmd` (2026-11-01) and the decisions taken since: Postgres on Neon as the
 single source of truth (2026-11-04), our own user key (2026-11-06), and the Shared foundation review (2026-11-07, see
-`../shared-foundation.md`). Status: proposal, nothing built (Planning: M9 and "Shared foundation"). This file is the
+`../shared-foundation.md`). Status: sections 1 and 3 built (`backend/db/migrations/0001_initial.sql`, on Neon since
+2026-11-11, synced from the phone); the rest is a proposal (Planning: M9). This file is the
 editable reference: change a table here first, then `schema-er.mmd` and the rendered page.*
 
 How to read the tables:
