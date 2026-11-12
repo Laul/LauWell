@@ -9,7 +9,17 @@ if (!url) {
   console.error('DATABASE_URL is not set');
   process.exit(1);
 }
-const client = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: true } });
+// pg reads anything else as a relative address and fails with "getaddrinfo ENOTFOUND base".
+// The message never echoes the value: it holds the password.
+if (!/^postgres(ql)?:\/\//.test(url)) {
+  console.error("DATABASE_URL must start with postgresql:// (paste the URL only: no quotes, no 'psql', no 'DATABASE_URL=')");
+  process.exit(1);
+}
+// TLS with the certificate checked (verify-full) comes from `ssl` below, not from Neon's sslmode=require, which
+// pg 9 will weaken to libpq's meaning (encrypted, certificate unchecked).
+const address = new URL(url);
+address.searchParams.delete('sslmode');
+const client = new pg.Client({ connectionString: address.href, ssl: { rejectUnauthorized: true } });
 await client.connect();
 try {
   const applied = await migrate({ query: (sql) => client.query(sql), exec: (sql) => client.query(sql) });
