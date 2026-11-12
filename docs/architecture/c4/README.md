@@ -16,7 +16,7 @@ them; they are rebuilt from the `.mmd` files, so change the `.mmd` first.
 | 2 Containers | `c4-2-containers.mmd` | App, Room, DataStore, Health Connect, Firebase, Neon Postgres and the sync API |
 | 3 Components, app | `c4-3-components-app-data.mmd` | How data reaches a screen (sync, read path, entries) and the planned sync to Postgres |
 | 3 Components, app | table below | Which screen calls which service |
-| 3 Components, Firebase | `c4-3-components-firebase.mmd` | What stays (Auth, Storage) and what is removed in M9 (Firestore, rules, tests) |
+| 3 Components, Firebase | `c4-3-components-firebase.mmd` | Auth, the sync API (Cloud Function, Secret Manager), Storage (planned), the old Firestore data kept as a backup |
 | 3 Components, Postgres | `c4-3-components-postgres.mmd` | Sync API (push, pull), user mapping, tables, row-level security; planned: readings, backup |
 
 Rendered page: `lauwell-c4.html`.

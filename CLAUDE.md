@@ -11,11 +11,10 @@ activity and sleep, ostomy appliances and changes, medications, and more.
   archive (2026-10-23): tasks now live in Notion, see **Planning** below.
 - `app/` — the `:app` Gradle module (standard Android Studio layout: `app/src/main/...`).
   The Gradle root is the repo root (`settings.gradle.kts`, `build.gradle.kts`, `gradle/`).
-- `firebase/` — Firestore security rules (`firestore.rules`) and their emulator tests
-  (`npm test` from that folder). Pinned to the `lauwell-app` project in `.firebaserc`.
 - `backend/` — the server side. The Postgres schema (Neon): numbered SQL migrations in `db/migrations/`, applied by
   `npm run migrate` (`DATABASE_URL` set in the shell only). The sync API in `api/` (`POST /push`, `POST /pull`), a
-  Firebase Cloud Function in `lauwell-app` (`firebase.json` there; its `DATABASE_URL` in Secret Manager). Both tested
+  Firebase Cloud Function in `lauwell-app` (`firebase.json` and `.firebaserc` there; its `DATABASE_URL` in Secret
+  Manager; deployed with `npm run deploy:api`). Both tested
   on PGlite (`npm test` from that folder).
 - `docs/` — documents written by Lauranne.
 - `docs/data-structure/` — the data model reference, generated from the Notion table *Data Model
@@ -134,8 +133,10 @@ Decisions and rationale: the Notion Decisions Tracker, indexed in `PLAN.md` → 
 - UI: own theme tokens (`core.ui.theme`), no Material3 dependency. Fonts: Bricolage Grotesque
   (display, headlines, titles), IBM Plex Sans (body), IBM Plex Mono (metric values). Icons: Material
   Symbols Outlined. Light and dark themes.
-- Backend: Firebase — Auth (Google sign-in via Credential Manager), Cloud Firestore, Cloud Storage.
-- Data: Health Connect for sensor data, cached in Room; user-logged data in Firestore only.
+- Backend: Firebase — Auth (Google sign-in via Credential Manager), Cloud Functions (the sync API), Cloud Storage
+  (planned). Postgres on Neon is the source of truth for user-logged data. No Firestore (removed 2026-11-11).
+- Data: Health Connect for sensor data, cached in Room; user-logged data written to Room first (`RoomRecordRepository`),
+  queued in an outbox and synced to Postgres (`core.sync.EntrySync`).
   Patient-facing categories and the seven storage shapes: `docs/data-structure/`.
 - Charts: Vico 3.x (`com.patrykandpatrick.vico:compose`), only behind the `ChartSpec` mapper.
   Never import Vico outside that file. Tracker's 7-day mini charts are our own Canvas drawing

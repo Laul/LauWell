@@ -1,32 +1,31 @@
 %% C4 level 3 - Components of the Firebase backend (project lauwell-app).
-%% Updated 2026-11-06: Firestore, its rules and its tests are removed in M9 (decision of 2026-11-04);
-%% Firebase Auth and Cloud Storage stay. The Postgres side is in c4-3-components-postgres.mmd.
-%% Solid = built, dashed = planned, amber = built and being removed.
+%% Updated 2026-11-11: Firestore removed from the app with its rules and tests (task "Move Mood off Firestore");
+%% its data is kept in the project as a backup until deleted. The sync API runs here as a Cloud Function.
+%% The Postgres side is in c4-3-components-postgres.mmd. Solid = built, dashed = planned, amber = being removed.
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
   classDef cloud fill:#e3f1e6,stroke:#4f8a5c,color:#16191C
-  classDef tool fill:#f3e8c8,stroke:#a88b2e,color:#16191C
+  classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
   classDef planned fill:#ffffff,stroke:#8a939b,color:#4a525a,stroke-dasharray:5 4
   classDef retiring fill:#fbf1e4,stroke:#a8641a,color:#16191C
 
-  APP["<b>LauWell app</b><br/>AuthRepository, RecordRepository"]:::app
+  APP["<b>LauWell app</b><br/>AuthRepository, EntrySync"]:::app
 
-  subgraph FB["Firebase project lauwell-app"]
+  subgraph FB["Firebase project lauwell-app (Blaze plan)"]
     direction TB
-    AUTH["<b>Firebase Auth</b><br/>Google provider. Verifies the Google ID token<br/>(raw nonce), keeps and refreshes the session.<br/>Stays: its ID token is what the sync API checks"]:::cloud
-    STO[("<b>Cloud Storage</b><br/>Ostomy photos, attachments, nightly database dumps<br/>Stays. No rules written yet")]:::planned
-    RULES["<b>Security rules</b> firestore.rules<br/>match users/{uid}/{path=**}<br/>allow read, write only if request.auth.uid == uid.<br/>Removed in M9"]:::retiring
-    REC[("<b>users/{uid}/records/{id}</b><br/>type: measurement, metric, schemaVersion,<br/>time, zoneOffset, values, note,<br/>provenance (source, recordedAt, editedAt),<br/>links [to, relation].<br/>Moves to Postgres tables in M9")]:::retiring
+    AUTH["<b>Firebase Auth</b><br/>Google provider. Verifies the Google ID token<br/>(raw nonce), keeps and refreshes the session.<br/>Its ID token is what the sync API checks"]:::cloud
+    FN["<b>Cloud Function api</b><br/>2nd gen, us-east5, Node 22, at most 2 instances.<br/>POST /push, POST /pull (backend/api)"]:::cloud
+    SEC[("<b>Secret Manager</b><br/>DATABASE_URL: lauwell_api,<br/>Neon pooled host")]:::cloud
+    STO[("<b>Cloud Storage</b><br/>Ostomy photos, attachments, nightly database dumps<br/>No rules written yet")]:::planned
+    OLD[("<b>Cloud Firestore data</b><br/>users/{uid}/records: Mood entries before<br/>2026-11-11, copied to Postgres. No longer read;<br/>kept as a backup until deleted")]:::retiring
   end
 
-  TEST["<b>Emulator tests</b> firebase/test<br/>7 tests: owner can read and write,<br/>others and top-level paths denied.<br/>Replaced by database security tests in M9"]:::retiring
-  SYNC["<b>Sync API</b><br/>planned cloud function<br/>see c4-3-components-postgres"]:::planned
+  NEON[("<b>Neon Postgres</b><br/>see c4-3-components-postgres")]:::ext
 
   APP -->|"signInWithCredential"| AUTH
-  AUTH -->|"request.auth.uid"| RULES
-  APP -->|"set, delete, snapshot listener<br/>(offline cache on the phone)"| RULES
-  RULES -->|"allowed"| REC
-  TEST -.->|"verifies"| RULES
+  APP -->|"ID token on each call"| FN
+  FN -->|"verifyIdToken"| AUTH
+  SEC -->|"at run time"| FN
+  FN -->|"as lauwell_api"| NEON
   APP -.->|"planned"| STO
-  AUTH -.->|"ID token, checked on every sync call"| SYNC
-  SYNC -.->|"file contents stay here; Postgres keeps<br/>the path and metadata"| STO
+  NEON -.->|"file path and metadata;<br/>nightly dumps"| STO

@@ -6,7 +6,7 @@ import java.time.ZoneOffset
 
 /**
  * Identifier of one record. Health Connect records keep Health Connect's id (one sample of a
- * series gets the series id plus its index); our own records get a Firestore document id.
+ * series gets the series id plus its index); our own records get a UUID made on the phone.
  */
 @JvmInline
 value class RecordId(val value: String) {

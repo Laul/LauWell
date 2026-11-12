@@ -22,7 +22,7 @@ flowchart TB
     direction TB
     AUTH["<b>Firebase Auth</b><br/>Google provider<br/>Issues the session and uid. Stays"]:::cloud
     ST[("<b>Cloud Storage</b><br/>Photos, documents, nightly database dumps<br/>Stays. Not provisioned yet")]:::planned
-    FS[("<b>Cloud Firestore</b><br/>users/{uid}/records<br/>Mood entries before 2026-11-11,<br/>read once to copy them. Removed in M9")]:::retiring
+    FS[("<b>Cloud Firestore data</b><br/>Mood entries before 2026-11-11,<br/>copied to Postgres. No longer read;<br/>kept as a backup until deleted")]:::retiring
   end
 
   subgraph STORE["Postgres store (M9)"]
@@ -39,8 +39,6 @@ flowchart TB
   APP -->|"reads aggregates and changes<br/>(Health Connect client)"| HC
   APP -->|"1. requests Google ID token"| GI
   APP -->|"2. signInWithCredential"| AUTH
-  APP -->|"one-time copy of Mood entries<br/>(until removed)"| FS
-  AUTH -.->|"uid checked by rules<br/>(until M9)"| FS
   APP -->|"sends the outbox, pulls changes<br/>(Firebase ID token)"| API
   AUTH -.->|"token verified"| API
   API -.->|"upserts, reads"| PG

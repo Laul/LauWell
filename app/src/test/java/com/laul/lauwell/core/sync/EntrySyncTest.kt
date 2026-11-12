@@ -94,7 +94,7 @@ class EntrySyncTest {
 
     @Test
     fun `an id the server can't read is refused without being sent`() = runBlocking {
-        dao.save(mood(id = "firestore-id"))
+        dao.save(mood(id = "not-a-uuid"))
         assertEquals(EntrySync.Outcome.Synced(sent = 0, refused = 1, received = 0), sync.run())
         assertTrue(server.pushed.isEmpty())
     }

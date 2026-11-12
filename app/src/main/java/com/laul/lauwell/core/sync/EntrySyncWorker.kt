@@ -11,7 +11,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CancellationException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -40,29 +39,18 @@ class WorkManagerEntrySyncSchedule(private val workManager: WorkManager) : Entry
 }
 
 /**
- * One [EntrySync] run, after [prepare] (the one-time Firestore import, until Firestore is removed). Network
- * trouble and server errors (5xx) retry with backoff; a 4xx other than an expired sign-in is a bug that a
- * retry won't fix, so it stops until the next request. A failed [prepare] doesn't hold back the sync, and
- * retries with it.
+ * One [EntrySync] run. Network trouble and server errors (5xx) retry with backoff; a 4xx other than an
+ * expired sign-in is a bug that a retry won't fix, so it stops until the next request.
  */
 class EntrySyncWorker(
     context: Context,
     params: WorkerParameters,
     private val sync: EntrySync,
-    private val prepare: suspend () -> Unit,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result = try {
-        val prepared = try {
-            prepare()
-            true
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            false
-        }
         sync.run()
-        if (prepared) Result.success() else Result.retry()
+        Result.success()
     } catch (e: NotSignedInException) {
         Result.success()
     } catch (e: SyncHttpException) {
@@ -73,17 +61,14 @@ class EntrySyncWorker(
 }
 
 /** Builds [EntrySyncWorker] with its dependency from the `AppContainer`; `null` for any other class. */
-class EntrySyncWorkerFactory(
-    private val sync: () -> EntrySync,
-    private val prepare: suspend () -> Unit = {},
-) : WorkerFactory() {
+class EntrySyncWorkerFactory(private val sync: () -> EntrySync) : WorkerFactory() {
 
     override fun createWorker(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters,
     ): ListenableWorker? = when (workerClassName) {
-        EntrySyncWorker::class.java.name -> EntrySyncWorker(appContext, workerParameters, sync(), prepare)
+        EntrySyncWorker::class.java.name -> EntrySyncWorker(appContext, workerParameters, sync())
         else -> null
     }
 }

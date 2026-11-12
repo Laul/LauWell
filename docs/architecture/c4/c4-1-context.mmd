@@ -1,5 +1,5 @@
 %% C4 level 1 - System context. Code as read at f374a25 (2026-10-30); target state updated 2026-11-06
-%% for the decisions of 2026-11-04 (Postgres on Neon, Firestore removed in M9).
+%% for the decisions of 2026-11-04 (Postgres on Neon). Updated 2026-11-11: entries in Neon, Firestore removed.
 %% Solid = built. Dashed = planned (Notion Planning, not started). Amber = built, being removed (M9).
 flowchart TB
   classDef person fill:#1f3a5f,stroke:#7fa2d0,color:#ffffff
@@ -15,10 +15,9 @@ flowchart TB
   W["<b>Wearables and health apps</b><br/>External<br/>Write heart rate, steps, sleep,<br/>blood pressure into Health Connect"]:::ext
   HC["<b>Health Connect</b><br/>External, on the phone<br/>Android store of sensor data"]:::ext
   GI["<b>Google account sign-in</b><br/>External<br/>Credential Manager, Play services"]:::ext
-  FB["<b>Firebase</b><br/>External, Google Cloud<br/>Auth (stays), Cloud Storage (stays,<br/>photos and documents, planned)"]:::ext
-  FS["<b>Cloud Firestore</b><br/>External, Google Cloud<br/>Holds the entries today.<br/>Removed in M9"]:::retiring
+  FB["<b>Firebase</b><br/>External, Google Cloud<br/>Auth, the sync API (Cloud Function),<br/>Cloud Storage (photos and documents, planned)"]:::ext
 
-  NEON["<b>Neon Postgres</b><br/>External, AWS US East, planned<br/>Single source of truth for every<br/>entry and every raw reading"]:::planned
+  NEON["<b>Neon Postgres</b><br/>External, AWS US East 2 (Ohio)<br/>Single source of truth for every<br/>entry; raw readings planned"]:::ext
   AI["<b>AI analysis</b><br/>Planned<br/>Looks for potential health risks in<br/>values computed from the readings"]:::planned
   LAB["<b>Lab results, documents</b><br/>Planned<br/>Records tab"]:::planned
 
@@ -27,8 +26,7 @@ flowchart TB
   LW -->|"reads daily aggregates<br/>(read-only)"| HC
   LW -->|"asks for a Google identity"| GI
   LW -->|"signs in"| FB
-  LW -->|"stores entries<br/>(until M9)"| FS
   P -.->|"will log medication, ostomy changes,<br/>appointments"| LW
   LAB -.->|"imported / attached"| LW
-  LW -.->|"syncs entries and raw readings<br/>through a small sync API"| NEON
+  LW -->|"syncs entries through the sync API<br/>(raw readings planned)"| NEON
   NEON -.->|"computed values"| AI

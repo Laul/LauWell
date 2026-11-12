@@ -2,11 +2,11 @@
 %% Which screen uses which service is a table in README.md (a diagram of it was unreadable).
 %% Built today: sensor data Health Connect -> Room -> screens; entered data Room -> screens, synced to Postgres.
 %% Planned (M9, decisions of 2026-11-04): entries and raw readings are stored in Room, queued in an outbox,
-%% and synced to Postgres through a sync API. Firestore and its repository are removed.
+%% and synced to Postgres through a sync API.
 %% Built 2026-11-09 (Shared foundation): the entry tables in Room (RecordDao), not wired yet: Mood still writes to Firestore.
 %% Built 2026-11-11 (Sync entries, part 1): the outbox in Room and EntrySync (EntrySyncWorker, HttpSyncApi), run at each
 %% foreground against the deployed sync API.
-%% Built 2026-11-11 (Move Mood, stage 1): RecordRepository on Room; Firestore only read once to copy old entries.
+%% Built 2026-11-11 (Move Mood): RecordRepository on Room; the Mood entries copied from Firestore, then Firestore removed.
 %% Solid = built, dashed = planned, amber = built and being removed.
 flowchart LR
   classDef shell fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
@@ -19,7 +19,6 @@ flowchart LR
 
   EHC["Health Connect"]:::ext
   EROOM[("Room database<br/>daily_summary_value, sync_state;<br/>record, record_value, record_link,<br/>outbox, sync_cursor.<br/>Planned: raw readings")]:::ext
-  EFS[("Cloud Firestore<br/>users/{uid}/records<br/>read once, removed in M9")]:::retiring
   EAPI["Sync API<br/>Firebase Cloud Function, us-east5,<br/>checks the Firebase ID token"]:::ext
   EPG[("Neon Postgres<br/>source of truth")]:::ext
 
@@ -72,7 +71,6 @@ flowchart LR
 
   LOG -->|"save / delete"| RECR
   RECR <-->|"save, delete, live reads"| EROOM
-  EFS -->|"FirestoreImport: one-time<br/>copy (until removed)"| OUTB
   AUTHR -->|"uid"| RECR
   RECR -->|"request a run"| OUTB
   RAW -.->|"queue"| OUTB

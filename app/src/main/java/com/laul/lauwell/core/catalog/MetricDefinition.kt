@@ -5,7 +5,7 @@ import androidx.health.connect.client.records.Record
 import kotlin.reflect.KClass
 
 /**
- * Stable identifier of a metric. Ends up in Firestore paths, Room rows and stored settings, so it
+ * Stable identifier of a metric. Ends up in Room and Postgres rows and stored settings, so it
  * must never change once shipped. Lowercase snake_case.
  */
 @JvmInline

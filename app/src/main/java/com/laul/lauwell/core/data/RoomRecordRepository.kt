@@ -25,9 +25,9 @@ import java.util.UUID
  * [RecordRepository] on the app's Room database: what you log is written on the phone first, then sent
  * to Postgres by [com.laul.lauwell.core.sync.EntrySync] ([sync] asks for a run after each change).
  *
- * Writes return at once and run on [scope], as Firestore's offline cache did: logging never waits, even
- * offline. The live [measurements] see them as soon as they land. Shown only while signed in, and only
- * to the account the local tables belong to ([SyncCursorEntity.uid]). Never logs record contents.
+ * Writes return at once and run on [scope]: logging never waits, even offline. The live [measurements]
+ * see them as soon as they land. Shown only while signed in, and only to the account the local tables
+ * belong to ([SyncCursorEntity.uid]). Never logs record contents.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class RoomRecordRepository(

@@ -13,7 +13,7 @@ import java.time.ZoneId
 
 /**
  * Where a metric's daily summaries come from: the Health Connect cache (Room) for a synced metric,
- * your own entries (Firestore) for one you only log by hand (mood). Screens read summaries through
+ * your own entries (Room, synced to Postgres) for one you only log by hand (mood). Screens read summaries through
  * this, never knowing which.
  *
  * A metric with both sources (blood pressure, later) reads Health Connect for now; how manual and

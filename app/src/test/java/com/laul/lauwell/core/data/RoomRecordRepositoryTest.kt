@@ -6,15 +6,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.laul.lauwell.core.auth.Session
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.common.AppResult
-import com.laul.lauwell.core.record.FirestoreImport
-import com.laul.lauwell.core.record.LinkRelation
 import com.laul.lauwell.core.record.Measurement
 import com.laul.lauwell.core.record.Provenance
 import com.laul.lauwell.core.record.RecordId
-import com.laul.lauwell.core.record.RecordLink
 import com.laul.lauwell.core.record.RecordingMethod
 import com.laul.lauwell.core.record.Source
-import com.laul.lauwell.core.record.postgresId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,7 +28,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 
-// Mood on Room: what the screens see, what gets queued for the sync, and the one-time copy from Firestore.
+// Mood on Room: what the screens see and what gets queued for the sync.
 @RunWith(AndroidJUnit4::class)
 class RoomRecordRepositoryTest {
 
@@ -57,14 +53,13 @@ class RoomRecordRepositoryTest {
         (repository.measurements(Mood).first() as AppResult.Success).data
     }
 
-    private fun mood(id: RecordId, value: Double, at: String, links: List<RecordLink> = emptyList()) = Measurement(
+    private fun mood(id: RecordId, value: Double, at: String) = Measurement(
         id = id,
         metric = Mood,
         time = Instant.parse(at),
         zoneOffset = ZoneOffset.ofHours(-5),
         values = mapOf("value" to value),
         provenance = Provenance(Source.Manual, recordingMethod = RecordingMethod.Manual, recordedAt = Instant.parse(at)),
-        links = links,
     )
 
     @Test
@@ -113,31 +108,6 @@ class RoomRecordRepositoryTest {
         session.value = null
         assertTrue(moods().isEmpty())
         assertTrue(repository.save(mood(repository.newId(), 5.0, "2026-11-10T21:00:00Z")) is AppResult.Error)
-    }
-
-    @Test
-    fun `the Firestore copy runs once, with stable UUIDs, links included`() = runBlocking {
-        val encounter = mood(RecordId("fsEncounter"), 1.0, "2026-11-01T12:00:00Z")
-        val entry = mood(RecordId("fsMood"), 7.0, "2026-11-01T13:00:00Z", listOf(RecordLink(RecordId("fsEncounter"), LinkRelation.RecordedDuring)))
-        var fetches = 0
-        val import = FirestoreImport(dao, session) { fetches++; listOf(entry, encounter) }
-
-        import.run()
-        import.run()
-
-        assertEquals(1, fetches)
-        val copied = moods()
-        assertEquals(listOf(postgresId("fsEncounter"), postgresId("fsMood")), copied.map { it.id.value })
-        assertEquals(RecordId(postgresId("fsEncounter")), copied[1].links.single().to)
-        assertEquals(2, dao.queued().size)
-    }
-
-    @Test
-    fun `the Firestore copy waits while another account owns the tables`() = runBlocking {
-        dao.setCursor(SyncCursorEntity(RecordCursor, "bob", 0))
-        var fetches = 0
-        FirestoreImport(dao, session) { fetches++; emptyList() }.run()
-        assertEquals(0, fetches)
     }
 
     private companion object {

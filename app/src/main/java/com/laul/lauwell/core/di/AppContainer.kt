@@ -11,7 +11,6 @@ import androidx.work.DelegatingWorkerFactory
 import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.laul.lauwell.BuildConfig
 import com.laul.lauwell.core.auth.AuthRepository
 import com.laul.lauwell.core.auth.FirebaseAuthRepository
@@ -27,8 +26,6 @@ import com.laul.lauwell.core.healthconnect.HealthSyncWorkerFactory
 import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.WorkManagerSyncSchedule
 import com.laul.lauwell.core.data.RoomRecordRepository
-import com.laul.lauwell.core.record.FirestoreImport
-import com.laul.lauwell.core.record.FirestoreRecordRepository
 import com.laul.lauwell.core.record.RecordRepository
 import com.laul.lauwell.core.summary.DailySummarySource
 import com.laul.lauwell.core.summary.DayHistory
@@ -63,8 +60,6 @@ class AppContainer(context: Context) {
     private val appContext: Context = context.applicationContext
 
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
-
-    val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
     val credentialManager: CredentialManager by lazy { CredentialManager.create(appContext) }
 
@@ -113,11 +108,6 @@ class AppContainer(context: Context) {
         RoomRecordRepository(database.recordDao(), authRepository.session, appScope, entrySyncSchedule, Clock.systemUTC())
     }
 
-    /** The one-time copy of Mood entries from Firestore, run before each sync until done. Removed with Firestore. */
-    private val firestoreImport: FirestoreImport by lazy {
-        FirestoreImport(database.recordDao(), authRepository.session, FirestoreRecordRepository(firestore, authRepository.session)::fetchAll)
-    }
-
     /** Daily summaries for any metric: Health Connect's cache, or your entries for a manual one. */
     val dailySummaries: DailySummarySource by lazy { DailySummarySource(summaryStore, recordRepository) }
 
@@ -155,6 +145,6 @@ class AppContainer(context: Context) {
     /** Lets WorkManager build our workers; their dependencies are only built when a worker runs. */
     val workerFactory: WorkerFactory = DelegatingWorkerFactory().apply {
         addFactory(HealthSyncWorkerFactory { backgroundSync })
-        addFactory(EntrySyncWorkerFactory(sync = { entrySync }, prepare = { firestoreImport.run() }))
+        addFactory(EntrySyncWorkerFactory { entrySync })
     }
 }
