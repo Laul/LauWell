@@ -1,13 +1,20 @@
 {
   "name": "lauwell-backend",
   "private": true,
-  "description": "LauWell's Postgres schema (Neon), its migrations and their tests.",
+  "description": "LauWell server: the Postgres schema (Neon) with its migrations, and the sync API (a Firebase Cloud Function); their tests on PGlite.",
   "type": "module",
+  "main": "api/index.js",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "test": "node --test test/",
-    "migrate": "node db/migrate.js"
+    "migrate": "node db/migrate.js",
+    "deploy:api": "firebase deploy --only functions"
   },
   "dependencies": {
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0",
     "pg": "8.23.1"
   },
   "devDependencies": {

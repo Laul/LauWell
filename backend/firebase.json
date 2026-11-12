@@ -1,0 +1,9 @@
+{
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "api",
+      "ignore": ["node_modules", "test", ".git", "*.log", ".env*"]
+    }
+  ]
+}

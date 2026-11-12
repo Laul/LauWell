@@ -1,5 +1,5 @@
 %% C4 level 2 - Containers. Solid = built, dashed = planned, amber = built and being removed (M9).
-%% Updated 2026-11-06 for the decisions of 2026-11-04.
+%% Updated 2026-11-11: Neon provisioned with schema v1; the sync API written (backend/api), not deployed yet.
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
   classDef store fill:#dbe8f5,stroke:#4b78a8,color:#16191C
@@ -25,10 +25,10 @@ flowchart TB
     FS[("<b>Cloud Firestore</b><br/>users/{uid}/records<br/>Entries today, owner-only rules.<br/>Removed in M9")]:::retiring
   end
 
-  subgraph STORE["Postgres store, planned (M9)"]
+  subgraph STORE["Postgres store (M9)"]
     direction TB
-    API["<b>Sync API</b><br/>Small cloud function, host to be chosen<br/>Checks the Firebase ID token,<br/>maps it to users.id"]:::planned
-    PG[("<b>Neon Postgres</b><br/>AWS US East, plain Postgres<br/>Every entry and raw reading, links as<br/>foreign keys, file metadata.<br/>Row-level security. Source of truth")]:::planned
+    API["<b>Sync API</b><br/>Firebase Cloud Function, us-east4<br/>POST /push, POST /pull. Checks the<br/>Firebase ID token, maps it to users.id.<br/>Written, not deployed yet"]:::planned
+    PG[("<b>Neon Postgres</b><br/>AWS US East, plain Postgres<br/>Schema v1: users, entries (record,<br/>values, links), file metadata.<br/>Row-level security. Planned: raw readings.<br/>Source of truth")]:::store
   end
 
   GI["<b>Google Identity</b><br/>via Credential Manager"]:::ext

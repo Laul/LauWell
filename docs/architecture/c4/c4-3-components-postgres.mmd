@@ -1,53 +1,57 @@
-%% C4 level 3 - Components of the Postgres store (Neon) and its sync API. All planned (M9), nothing built yet.
-%% Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon) and the Identity section added 2026-11-06.
+%% C4 level 3 - Components of the Postgres store (Neon) and its sync API. Solid = built, dashed = planned.
+%% Updated 2026-11-11: schema v1 provisioned on Neon (backend/db/migrations); the sync API written (backend/api),
+%% not deployed yet. Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon), Identity (2026-11-06),
+%% Sync: our own (2026-11-09).
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
+  classDef store fill:#dbe8f5,stroke:#4b78a8,color:#16191C
   classDef cloud fill:#e3f1e6,stroke:#4f8a5c,color:#16191C
   classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
   classDef planned fill:#ffffff,stroke:#8a939b,color:#4a525a,stroke-dasharray:5 4
 
-  APP["<b>LauWell app</b><br/>Outbox + SyncWorker<br/>(WorkManager, offline queue)"]:::app
+  APP["<b>LauWell app</b><br/>Outbox + SyncWorker<br/>(WorkManager, offline queue). Planned"]:::planned
   AUTH["<b>Firebase Auth</b><br/>issues the ID token"]:::cloud
 
-  subgraph API["Sync API, small cloud function (host to be chosen)"]
+  subgraph API["Sync API: Firebase Cloud Function, us-east4 (backend/api, not deployed yet)"]
     direction TB
-    VERIFY["<b>Token check</b><br/>Firebase ID token against<br/>Google's public keys"]:::planned
-    MAP["<b>User mapping</b><br/>auth_identities: provider + subject<br/>to users.id"]:::planned
-    WRITE["<b>Writers</b><br/>idempotent upserts of entries and readings,<br/>Health Connect record_id removes duplicates"]:::planned
-    FEED["<b>Change feed</b><br/>rows changed since a token,<br/>for a second device"]:::planned
+    VERIFY["<b>Token check</b><br/>Firebase ID token,<br/>firebase-admin verifyIdToken"]:::cloud
+    MAP["<b>Request session</b><br/>one transaction per request as lauwell_api;<br/>app.begin_request maps the uid to users.id"]:::cloud
+    WRITE["<b>Push</b><br/>upserts records with values and links,<br/>latest edit wins, deletion final;<br/>each change accepted or refused with a reason"]:::cloud
+    FEED["<b>Pull</b><br/>records with change_seq above<br/>the last one the phone saw, paged"]:::cloud
+    RWRITE["<b>Readings writer</b><br/>upsert on the Health Connect record_id"]:::planned
   end
 
   subgraph PG["Neon Postgres, AWS US East, plain Postgres (no provider features)"]
     direction TB
-    USERS[("<b>users, auth_identities</b><br/>our own user key; every other table<br/>references users.id, never the Firebase uid")]:::planned
-    ENT[("<b>Entries</b><br/>catalogue + occurrence tables,<br/>real foreign keys, generic links")]:::planned
+    USERS[("<b>users, auth_identity</b><br/>our own user key; every other table<br/>references users.id, never the Firebase uid")]:::store
+    ENT[("<b>Entries</b><br/>record, record_value, record_link;<br/>change_seq for sync. Thing and detail<br/>tables come with their features")]:::store
     RD[("<b>readings</b><br/>metric, time, quantity, value, origin,<br/>record_id unique. Every raw reading kept")]:::planned
-    FILEM[("<b>File metadata</b><br/>path in Cloud Storage")]:::planned
+    FILEM[("<b>file</b><br/>metadata, path in Cloud Storage")]:::store
     DER[("<b>Derived values</b><br/>resting HR per night, HR variability,<br/>time above a threshold, recomputable")]:::planned
-    RLS["<b>Row-level security</b><br/>every row scoped to the signed-in user"]:::planned
+    RLS["<b>Row-level security</b><br/>every row scoped to the signed-in user"]:::store
   end
 
   ST[("<b>Cloud Storage</b><br/>file contents and nightly dumps")]:::planned
   BKP["<b>Nightly backup</b><br/>pg_dump to Cloud Storage,<br/>restore tested"]:::planned
-  TESTS["<b>Security tests</b><br/>replace the Firestore emulator tests"]:::planned
+  TESTS["<b>Security and sync tests</b><br/>PGlite, backend/test"]:::ext
   AI["<b>AI analysis</b><br/>reads derived values.<br/>Which service may see health data: open"]:::planned
 
-  APP -.->|"upload outbox, pull changes<br/>(ID token)"| VERIFY
+  APP -.->|"POST /push, /pull<br/>(ID token)"| VERIFY
   AUTH -.->|"token"| APP
-  VERIFY -.-> MAP
-  MAP -.-> WRITE
-  MAP -.-> FEED
-  WRITE -.-> ENT
-  WRITE -.-> RD
-  WRITE -.-> FILEM
-  FEED -.-> ENT
-  FEED -.-> RD
-  MAP -.-> USERS
-  RLS -.- ENT
+  VERIFY --> MAP
+  MAP --> WRITE
+  MAP --> FEED
+  MAP -.-> RWRITE
+  WRITE --> ENT
+  FEED --> ENT
+  RWRITE -.-> RD
+  MAP --> USERS
+  RLS --- ENT
+  RLS --- FILEM
   RLS -.- RD
   RD -.->|"computed from"| DER
   DER -.-> AI
   FILEM -.->|"points to"| ST
   PG -.-> BKP
   BKP -.-> ST
-  TESTS -.->|"verify"| RLS
+  TESTS -->|"verify"| RLS
