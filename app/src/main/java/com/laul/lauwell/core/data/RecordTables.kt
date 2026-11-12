@@ -193,6 +193,9 @@ abstract class RecordDao {
     @Query("SELECT * FROM sync_cursor WHERE name = :name")
     abstract suspend fun cursor(name: String = RecordCursor): SyncCursorEntity?
 
+    @Query("SELECT * FROM sync_cursor WHERE name = :name")
+    abstract fun cursorUpdates(name: String = RecordCursor): Flow<SyncCursorEntity?>
+
     @Upsert
     abstract suspend fun setCursor(cursor: SyncCursorEntity)
 

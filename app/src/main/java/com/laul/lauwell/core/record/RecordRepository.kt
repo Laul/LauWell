@@ -2,6 +2,7 @@ package com.laul.lauwell.core.record
 
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Source
 import com.laul.lauwell.core.auth.Session
 import com.laul.lauwell.core.catalog.MetricId
 import com.laul.lauwell.core.common.AppResult
@@ -12,11 +13,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.tasks.await
 
 /**
  * The records you enter yourself (mood now; fatigue, blood pressure, medication… later), kept in
  * your account. Health Connect data never goes through here (Notion → Decisions Tracker: *Data
- * placement*). Implementation: [FirestoreRecordRepository].
+ * placement*). Implementation: `RoomRecordRepository` (core.data), synced to Postgres.
  */
 interface RecordRepository {
 
@@ -29,7 +31,7 @@ interface RecordRepository {
      */
     fun measurements(metric: MetricId): Flow<AppResult<List<Measurement>>>
 
-    /** Creates or replaces [record]. Succeeds once written locally; Firestore syncs it when online. */
+    /** Creates or replaces [record]. Returns at once: the write lands on the phone, then syncs when online. */
     fun save(record: Measurement): AppResult<Unit>
 
     fun delete(id: RecordId): AppResult<Unit>
@@ -37,6 +39,8 @@ interface RecordRepository {
 
 /**
  * [RecordRepository] on Cloud Firestore: `users/{uid}/records/{id}`, laid out by `RecordDocument.kt`.
+ * No longer the app's repository (Room is): kept only as the source of [FirestoreImport], and removed
+ * with Firestore once every account has been copied.
  *
  * Writes don't wait for the server: Firestore's offline cache applies them at once (the live
  * [measurements] see them) and sends them when it can. Waiting would hang the UI while offline.
@@ -78,6 +82,10 @@ class FirestoreRecordRepository(
     override fun delete(id: RecordId): AppResult<Unit> = withUser { uid ->
         records(uid).document(id.value).delete()
     }
+
+    /** Every record of [uid], read from the server (not the cache, which may hold only part of them). */
+    suspend fun fetchAll(uid: String): List<Measurement> =
+        records(uid).get(Source.SERVER).await().documents.mapNotNull { measurementFrom(it.id, it.data.orEmpty()) }
 
     private fun records(uid: String): CollectionReference =
         firestore.collection(UsersCollection).document(uid).collection(RecordsCollection)

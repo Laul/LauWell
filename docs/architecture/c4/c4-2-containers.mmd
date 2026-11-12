@@ -13,7 +13,7 @@ flowchart TB
   subgraph PHONE["Android phone"]
     direction TB
     APP["<b>LauWell app</b><br/>Kotlin 2.4, Jetpack Compose<br/>One Gradle module (:app), a package per feature<br/>Screens, sync, domain, manual DI"]:::app
-    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state;<br/>entry tables (record, values, links)<br/>and the sync outbox, not written by<br/>screens yet. Planned: raw readings.<br/>Fast offline copy for the screens")]:::store
+    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state;<br/>entries (record, values, links)<br/>and the sync outbox. Planned: raw readings.<br/>Fast offline copy for the screens")]:::store
     DS[("<b>Preferences DataStore</b><br/>settings.preferences_pb<br/>Theme, Tracker view, pinned set,<br/>onboarding flag")]:::store
     HC["<b>Health Connect</b><br/>Android system service<br/>Keeps the sensor detail"]:::ext
   end
@@ -22,7 +22,7 @@ flowchart TB
     direction TB
     AUTH["<b>Firebase Auth</b><br/>Google provider<br/>Issues the session and uid. Stays"]:::cloud
     ST[("<b>Cloud Storage</b><br/>Photos, documents, nightly database dumps<br/>Stays. Not provisioned yet")]:::planned
-    FS[("<b>Cloud Firestore</b><br/>users/{uid}/records<br/>Entries today, owner-only rules.<br/>Removed in M9")]:::retiring
+    FS[("<b>Cloud Firestore</b><br/>users/{uid}/records<br/>Mood entries before 2026-11-11,<br/>read once to copy them. Removed in M9")]:::retiring
   end
 
   subgraph STORE["Postgres store (M9)"]
@@ -34,12 +34,12 @@ flowchart TB
   GI["<b>Google Identity</b><br/>via Credential Manager"]:::ext
 
   P -->|"uses"| APP
-  APP -->|"daily summaries,<br/>sync token and time"| ROOM
+  APP -->|"daily summaries, sync token and time;<br/>entries and outbox"| ROOM
   APP -->|"preferences"| DS
   APP -->|"reads aggregates and changes<br/>(Health Connect client)"| HC
   APP -->|"1. requests Google ID token"| GI
   APP -->|"2. signInWithCredential"| AUTH
-  APP -->|"saves, deletes, listens to records<br/>(until M9)"| FS
+  APP -->|"one-time copy of Mood entries<br/>(until removed)"| FS
   AUTH -.->|"uid checked by rules<br/>(until M9)"| FS
   APP -->|"sends the outbox, pulls changes<br/>(Firebase ID token)"| API
   AUTH -.->|"token verified"| API

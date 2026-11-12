@@ -26,6 +26,8 @@ import com.laul.lauwell.core.healthconnect.HealthSync
 import com.laul.lauwell.core.healthconnect.HealthSyncWorkerFactory
 import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.WorkManagerSyncSchedule
+import com.laul.lauwell.core.data.RoomRecordRepository
+import com.laul.lauwell.core.record.FirestoreImport
 import com.laul.lauwell.core.record.FirestoreRecordRepository
 import com.laul.lauwell.core.record.RecordRepository
 import com.laul.lauwell.core.summary.DailySummarySource
@@ -42,6 +44,9 @@ import com.laul.lauwell.core.sync.EntrySyncWorkerFactory
 import com.laul.lauwell.core.sync.HttpSyncApi
 import com.laul.lauwell.core.sync.WorkManagerEntrySyncSchedule
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.time.Clock
 
 /**
@@ -100,8 +105,18 @@ class AppContainer(context: Context) {
 
     val healthSync: HealthSync by lazy { HealthSync(healthDataSource, summaryStore, Clock.systemDefaultZone()) }
 
-    /** What you enter yourself (mood…), in your Firestore account. */
-    val recordRepository: RecordRepository by lazy { FirestoreRecordRepository(firestore, authRepository.session) }
+    /** Writes and work that outlive a screen (a save finishing after its sheet closed). */
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** What you enter yourself (mood…), on the phone first, then synced to Postgres ([entrySync]). */
+    val recordRepository: RecordRepository by lazy {
+        RoomRecordRepository(database.recordDao(), authRepository.session, appScope, entrySyncSchedule, Clock.systemUTC())
+    }
+
+    /** The one-time copy of Mood entries from Firestore, run before each sync until done. Removed with Firestore. */
+    private val firestoreImport: FirestoreImport by lazy {
+        FirestoreImport(database.recordDao(), authRepository.session, FirestoreRecordRepository(firestore, authRepository.session)::fetchAll)
+    }
 
     /** Daily summaries for any metric: Health Connect's cache, or your entries for a manual one. */
     val dailySummaries: DailySummarySource by lazy { DailySummarySource(summaryStore, recordRepository) }
@@ -140,6 +155,6 @@ class AppContainer(context: Context) {
     /** Lets WorkManager build our workers; their dependencies are only built when a worker runs. */
     val workerFactory: WorkerFactory = DelegatingWorkerFactory().apply {
         addFactory(HealthSyncWorkerFactory { backgroundSync })
-        addFactory(EntrySyncWorkerFactory { entrySync })
+        addFactory(EntrySyncWorkerFactory(sync = { entrySync }, prepare = { firestoreImport.run() }))
     }
 }
