@@ -36,7 +36,7 @@ import java.time.Clock
 
 /**
  * Settings (design 20b), pushed from the gear in every tab's header; no bottom bar, back returns to
- * the tab. Groups: Data sources · Appearance · App · Account. Rows whose screen doesn't exist yet are
+ * the tab. Groups: Appearance · App · Data sources · Account. Rows whose screen doesn't exist yet are
  * drawn disabled (Notion: *Settings sub-screens*), with what is true today as their detail line.
  */
 @Composable
@@ -50,18 +50,6 @@ fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         TopBar(title = "Settings", onBack = onBack, modifier = Modifier.padding(horizontal = LauWellTheme.spacing.xs))
         ScreenColumn {
-            Section("Data sources") {
-                Panel {
-                    LinkRow(
-                        icon = R.drawable.ic_sync,
-                        label = "Health Connect",
-                        detail = healthConnectDetail(state.healthConnect, state.lastSyncedAt, Clock.systemDefaultZone()),
-                        onClick = onOpenHealthConnect,
-                    )
-                    PanelDivider()
-                    LinkRow(R.drawable.ic_add, "Add a source", "More sources later", onClick = {}, enabled = false)
-                }
-            }
             Section("Appearance") {
                 state.themeMode?.let { mode ->
                     SegmentedControl(
@@ -88,19 +76,31 @@ fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
                     LinkRow(R.drawable.ic_download, "Export & delete data", "CSV / PDF, later", onClick = {}, enabled = false)
                 }
             }
-            Section("Account") {
+            Section("Data sources") {
                 Panel {
                     LinkRow(
-                        icon = R.drawable.ic_account_circle,
-                        label = "Google account",
-                        detail = state.email?.let { "Signed in as $it" } ?: "Signed in",
-                        onClick = null,
+                        icon = R.drawable.ic_sync,
+                        label = "Health Connect",
+                        detail = healthConnectDetail(state.healthConnect, state.lastSyncedAt, Clock.systemDefaultZone()),
+                        onClick = onOpenHealthConnect,
                     )
                     PanelDivider()
                     LinkRow(
                         icon = R.drawable.ic_sync,
                         label = "Your entries",
                         detail = entrySyncDetail(state.entries, Clock.systemDefaultZone()),
+                        onClick = null,
+                    )
+                    PanelDivider()
+                    LinkRow(R.drawable.ic_add, "Add a source", "More sources later", onClick = {}, enabled = false)
+                }
+            }
+            Section("Account") {
+                Panel {
+                    LinkRow(
+                        icon = R.drawable.ic_account_circle,
+                        label = "Google account",
+                        detail = state.email?.let { "Signed in as $it" } ?: "Signed in",
                         onClick = null,
                     )
                     PanelDivider()
