@@ -1,6 +1,6 @@
 %% C4 level 3 - Components of the Postgres store (Neon) and its sync API. Solid = built, dashed = planned.
-%% Updated 2026-11-11: schema v1 provisioned on Neon (backend/db/migrations); the sync API written (backend/api),
-%% not deployed yet. Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon), Identity (2026-11-06),
+%% Updated 2026-11-11: schema v1 provisioned on Neon (backend/db/migrations); the sync API deployed (backend/api);
+%% the app not connected yet. Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon), Identity (2026-11-06),
 %% Sync: our own (2026-11-09).
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
@@ -12,7 +12,7 @@ flowchart TB
   APP["<b>LauWell app</b><br/>Outbox + SyncWorker<br/>(WorkManager, offline queue). Planned"]:::planned
   AUTH["<b>Firebase Auth</b><br/>issues the ID token"]:::cloud
 
-  subgraph API["Sync API: Firebase Cloud Function, us-east5 (Ohio) (backend/api, not deployed yet)"]
+  subgraph API["Sync API: Firebase Cloud Function, us-east5 (Ohio) (backend/api, deployed)"]
     direction TB
     VERIFY["<b>Token check</b><br/>Firebase ID token,<br/>firebase-admin verifyIdToken"]:::cloud
     MAP["<b>Request session</b><br/>one transaction per request as lauwell_api;<br/>app.begin_request maps the uid to users.id"]:::cloud
