@@ -4,6 +4,8 @@
 %% Planned (M9, decisions of 2026-11-04): entries and raw readings are stored in Room, queued in an outbox,
 %% and synced to Postgres through a sync API. Firestore and its repository are removed.
 %% Built 2026-11-09 (Shared foundation): the entry tables in Room (RecordDao), not wired yet: Mood still writes to Firestore.
+%% Built 2026-11-11 (Sync entries, part 1): the outbox in Room and EntrySync (EntrySyncWorker, HttpSyncApi), run at each
+%% foreground against the deployed sync API; nothing is queued until RecordRepository writes to Room.
 %% Solid = built, dashed = planned, amber = built and being removed.
 flowchart LR
   classDef shell fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
@@ -15,10 +17,10 @@ flowchart LR
   classDef retiring fill:#fbf1e4,stroke:#a8641a,color:#16191C
 
   EHC["Health Connect"]:::ext
-  EROOM[("Room database<br/>daily_summary_value, sync_state;<br/>record, record_value, record_link<br/>(not wired yet). Planned:<br/>raw readings, outbox")]:::ext
+  EROOM[("Room database<br/>daily_summary_value, sync_state;<br/>record, record_value, record_link,<br/>outbox, sync_cursor (not written<br/>by screens yet). Planned: raw readings")]:::ext
   EFS[("Cloud Firestore<br/>users/{uid}/records<br/>removed in M9")]:::retiring
-  EAPI["Sync API<br/>planned cloud function,<br/>checks the Firebase ID token"]:::planned
-  EPG[("Neon Postgres<br/>planned, source of truth")]:::planned
+  EAPI["Sync API<br/>Firebase Cloud Function, us-east5,<br/>checks the Firebase ID token"]:::ext
+  EPG[("Neon Postgres<br/>source of truth")]:::ext
 
   subgraph TRIG["What starts a sync"]
     direction TB
@@ -43,9 +45,9 @@ flowchart LR
     AUTHR["<b>AuthRepository</b><br/>session uid"]:::data
   end
 
-  subgraph OUTSYNC["Sync to Postgres, planned (M9)"]
+  subgraph OUTSYNC["Sync to Postgres (M9)"]
     direction TB
-    OUTB["<b>Outbox + SyncWorker</b><br/>WorkManager; uploads entries<br/>and readings, pulls changes,<br/>safe to repeat"]:::planned
+    OUTB["<b>EntrySync + EntrySyncWorker</b><br/>WorkManager, when online: sends<br/>the outbox, pulls changes, safe<br/>to repeat. Readings: planned"]:::data
   end
 
   subgraph READ["One read path for screens"]
@@ -72,9 +74,11 @@ flowchart LR
   AUTHR -->|"uid"| RECR
   RECR -.->|"M9: local write,<br/>then queue"| OUTB
   RAW -.->|"queue"| OUTB
-  AUTHR -.->|"ID token"| OUTB
-  OUTB -.->|"upload, pull changes"| EAPI
-  EAPI -.-> EPG
+  APPL -->|"request a run"| OUTB
+  AUTHR -->|"ID token"| OUTB
+  OUTB <-->|"outbox, pulled rows"| EROOM
+  OUTB -->|"POST /push, /pull"| EAPI
+  EAPI --> EPG
 
   STOREC -->|"summaries"| DSRC
   RECR -->|"measurements"| DSRC

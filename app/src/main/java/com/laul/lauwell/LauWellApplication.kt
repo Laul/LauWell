@@ -30,6 +30,8 @@ class LauWellApplication : Application(), Configuration.Provider {
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) {
                 owner.lifecycleScope.launch { container.backgroundSync.onForeground() }
+                // What you logged: sent and fetched once online (EntrySync, which skips when signed out).
+                container.entrySyncSchedule.request()
             }
         })
     }

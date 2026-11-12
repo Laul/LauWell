@@ -13,7 +13,7 @@ them; they are rebuilt from the `.mmd` files, so change the `.mmd` first.
 | Level | File | Shows |
 |---|---|---|
 | 1 Context | `c4-1-context.mmd` | The patient, LauWell and what it touches, incl. the planned Postgres store |
-| 2 Containers | `c4-2-containers.mmd` | App, Room, DataStore, Health Connect, Firebase, Neon Postgres and the sync API (deployed, the app not connected yet) |
+| 2 Containers | `c4-2-containers.mmd` | App, Room, DataStore, Health Connect, Firebase, Neon Postgres and the sync API |
 | 3 Components, app | `c4-3-components-app-data.mmd` | How data reaches a screen (sync, read path, entries) and the planned sync to Postgres |
 | 3 Components, app | table below | Which screen calls which service |
 | 3 Components, Firebase | `c4-3-components-firebase.mmd` | What stays (Auth, Storage) and what is removed in M9 (Firestore, rules, tests) |
@@ -38,5 +38,6 @@ Catalog, Record model and the UI kit are used by every component and are left ou
 
 `BackgroundSync` itself calls `HealthSync`, `HealthDataSource`, `ToggleRepository` and the auth session.
 
-In M9 `RecordRepository` gets a Room-backed implementation plus an outbox and a sync job to Postgres. Its callers
-do not change, so this table does not either.
+In M9 `RecordRepository` gets a Room-backed implementation; the outbox and its sync job to Postgres (`EntrySync`,
+`EntrySyncWorker`, requested by `LauWellApplication` at each foreground) are built. Its callers do not change, so this
+table does not either.

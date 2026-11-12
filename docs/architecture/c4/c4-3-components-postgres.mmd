@@ -1,6 +1,6 @@
 %% C4 level 3 - Components of the Postgres store (Neon) and its sync API. Solid = built, dashed = planned.
 %% Updated 2026-11-11: schema v1 provisioned on Neon (backend/db/migrations); the sync API deployed (backend/api);
-%% the app not connected yet. Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon), Identity (2026-11-06),
+%% called by the app (EntrySync). Source: decisions of 2026-11-04 (Persistence, Raw readings, Provider: Neon), Identity (2026-11-06),
 %% Sync: our own (2026-11-09).
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
@@ -9,7 +9,7 @@ flowchart TB
   classDef ext fill:#e6e9ec,stroke:#8a939b,color:#16191C
   classDef planned fill:#ffffff,stroke:#8a939b,color:#4a525a,stroke-dasharray:5 4
 
-  APP["<b>LauWell app</b><br/>Outbox + SyncWorker<br/>(WorkManager, offline queue). Planned"]:::planned
+  APP["<b>LauWell app</b><br/>Outbox + EntrySyncWorker<br/>(WorkManager, offline queue)"]:::app
   AUTH["<b>Firebase Auth</b><br/>issues the ID token"]:::cloud
 
   subgraph API["Sync API: Firebase Cloud Function, us-east5 (Ohio) (backend/api, deployed)"]
@@ -36,8 +36,8 @@ flowchart TB
   TESTS["<b>Security and sync tests</b><br/>PGlite, backend/test"]:::ext
   AI["<b>AI analysis</b><br/>reads derived values.<br/>Which service may see health data: open"]:::planned
 
-  APP -.->|"POST /push, /pull<br/>(ID token)"| VERIFY
-  AUTH -.->|"token"| APP
+  APP -->|"POST /push, /pull<br/>(ID token)"| VERIFY
+  AUTH -->|"token"| APP
   VERIFY --> MAP
   MAP --> WRITE
   MAP --> FEED

@@ -127,23 +127,115 @@ abstract class RecordDao {
 
     /**
      * Writes [rows] whole, new or edited, in one transaction: the record, then its values and links in
-     * place of the old ones. An upsert, not a replace, so the links other records hold to it stay.
+     * place of the old ones, and queues it for the sync. An upsert, not a replace, so the links other
+     * records hold to it stay.
      */
     @Transaction
     open suspend fun save(rows: RecordRows) {
         require(rows.values.all { it.recordId == rows.record.id }) { "values of another record" }
         require(rows.links.all { it.fromId == rows.record.id }) { "links held by another record" }
         upsertRecord(rows.record)
+        replaceChildren(rows)
+        enqueue(rows.record.id)
+    }
+
+    /** Marks the record deleted at [at] (epoch ms), keeping the row so the deletion syncs. */
+    @Transaction
+    open suspend fun markDeleted(id: String, at: Long) {
+        setDeleted(id, at)
+        enqueue(id)
+    }
+
+    @Query("UPDATE record SET deleted_at = :at, edited_at = :at WHERE id = :id")
+    protected abstract suspend fun setDeleted(id: String, at: Long)
+
+    private suspend fun replaceChildren(rows: RecordRows) {
         deleteValues(rows.record.id)
         deleteLinks(rows.record.id)
         insertValues(rows.values)
         insertLinks(rows.links)
     }
 
-    /** Marks the record deleted at [at] (epoch ms), keeping the row so the deletion syncs. */
-    @Query("UPDATE record SET deleted_at = :at, edited_at = :at WHERE id = :id")
-    abstract suspend fun markDeleted(id: String, at: Long)
+    // Sync (EntrySync) ------------------------------------------------------------------------------------
+
+    @Query("INSERT OR IGNORE INTO outbox (record_id, version) VALUES (:id, 0)")
+    protected abstract suspend fun addToOutbox(id: String)
+
+    // Two statements, not an UPSERT: Android 8-10 ship SQLite older than 3.24.
+    @Query("UPDATE outbox SET version = version + 1, refused = NULL WHERE record_id = :id")
+    protected abstract suspend fun bumpOutbox(id: String)
+
+    /** Queues [id] to be sent, or marks it changed again if it already waits; an edit clears a refusal. */
+    private suspend fun enqueue(id: String) {
+        addToOutbox(id)
+        bumpOutbox(id)
+    }
+
+    /** What waits to be sent, in the order first queued; refused ones left out until edited again. */
+    @Query("SELECT * FROM outbox WHERE refused IS NULL ORDER BY rowid")
+    abstract suspend fun queued(): List<OutboxEntity>
+
+    @Transaction
+    @Query("SELECT * FROM record WHERE id IN (:ids)")
+    abstract suspend fun rows(ids: List<String>): List<RecordRows>
+
+    /** The server has [id] as of [version]; a later edit, queued meanwhile, stays. */
+    @Query("DELETE FROM outbox WHERE record_id = :id AND version = :version")
+    abstract suspend fun sent(id: String, version: Int)
+
+    /** The server refused [id] as of [version] for [reason]; kept, not resent until edited again. */
+    @Query("UPDATE outbox SET refused = :reason WHERE record_id = :id AND version = :version")
+    abstract suspend fun refused(id: String, version: Int, reason: String)
+
+    @Query("SELECT record_id FROM outbox")
+    protected abstract suspend fun outboxIds(): List<String>
+
+    @Query("SELECT * FROM sync_cursor WHERE name = :name")
+    abstract suspend fun cursor(name: String = RecordCursor): SyncCursorEntity?
+
+    @Upsert
+    abstract suspend fun setCursor(cursor: SyncCursorEntity)
+
+    /**
+     * Writes records pulled from the server, all in one transaction with the new [cursor]: every record
+     * first, then values and links, so a link to a record later in the pull finds it. A record that still
+     * waits in the outbox keeps the local edit; the server settles it when that edit is sent.
+     */
+    @Transaction
+    open suspend fun applyPulled(pulled: List<RecordRows>, cursor: SyncCursorEntity) {
+        val waiting = outboxIds().toSet()
+        val incoming = pulled.filter { it.record.id !in waiting }
+        incoming.forEach { upsertRecord(it.record) }
+        incoming.forEach { replaceChildren(it) }
+        setCursor(cursor)
+    }
 }
+
+/**
+ * A record waiting to be sent. [version] counts local changes, so a change made while a push is in
+ * flight is not lost when that push is confirmed. [refused] holds the server's reason (`invalid`,
+ * `not_yours`) for a change that will never pass as it is.
+ */
+@Entity(tableName = "outbox")
+data class OutboxEntity(
+    @PrimaryKey @ColumnInfo(name = "record_id") val recordId: String,
+    val version: Int,
+    val refused: String? = null,
+)
+
+/**
+ * How far the pull got ([changeSeq], the server's change number) and for whom ([uid], the Firebase
+ * uid): the local tables belong to that account, and are never sent to another one.
+ */
+@Entity(tableName = "sync_cursor")
+data class SyncCursorEntity(
+    @PrimaryKey val name: String,
+    val uid: String,
+    @ColumnInfo(name = "change_seq") val changeSeq: Long,
+)
+
+/** [SyncCursorEntity.name] of the records' pull. */
+const val RecordCursor = "record"
 
 /** Bumped on a breaking change to how a record is stored in these tables. */
 internal const val RecordRowsSchemaVersion = 1

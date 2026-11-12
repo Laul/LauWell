@@ -17,7 +17,7 @@ import androidx.room.RoomDatabase
  * table may still drop and recreate that table in its migration; never a user table.
  *
  * Versions: 1-2 the cache only (dropped on upgrade, nothing typed in it); 3 adds `record`,
- * `record_value`, `record_link`.
+ * `record_value`, `record_link`; 4 adds the sync's `outbox` and `sync_cursor`.
  */
 @Database(
     entities = [
@@ -26,10 +26,12 @@ import androidx.room.RoomDatabase
         RecordEntity::class,
         RecordValueEntity::class,
         RecordLinkEntity::class,
+        OutboxEntity::class,
+        SyncCursorEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 2, to = 3)],
+    autoMigrations = [AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 abstract class LauWellDatabase : RoomDatabase() {
     abstract fun healthCacheDao(): HealthCacheDao

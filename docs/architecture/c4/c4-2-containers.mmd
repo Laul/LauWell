@@ -1,5 +1,5 @@
 %% C4 level 2 - Containers. Solid = built, dashed = planned, amber = built and being removed (M9).
-%% Updated 2026-11-11: Neon provisioned with schema v1; the sync API deployed (backend/api), the app not connected yet.
+%% Updated 2026-11-11: Neon provisioned with schema v1; the sync API deployed (backend/api) and called by EntrySync.
 flowchart TB
   classDef app fill:#2f3d4a,stroke:#9fb2c4,color:#ffffff
   classDef store fill:#dbe8f5,stroke:#4b78a8,color:#16191C
@@ -13,7 +13,7 @@ flowchart TB
   subgraph PHONE["Android phone"]
     direction TB
     APP["<b>LauWell app</b><br/>Kotlin 2.4, Jetpack Compose<br/>One Gradle module (:app), a package per feature<br/>Screens, sync, domain, manual DI"]:::app
-    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state;<br/>entry tables (record, values, links),<br/>not wired yet. Planned: raw readings, outbox.<br/>Fast offline copy for the screens")]:::store
+    ROOM[("<b>Room database</b><br/>lauwell.db, SQLite<br/>Daily summaries + sync state;<br/>entry tables (record, values, links)<br/>and the sync outbox, not written by<br/>screens yet. Planned: raw readings.<br/>Fast offline copy for the screens")]:::store
     DS[("<b>Preferences DataStore</b><br/>settings.preferences_pb<br/>Theme, Tracker view, pinned set,<br/>onboarding flag")]:::store
     HC["<b>Health Connect</b><br/>Android system service<br/>Keeps the sensor detail"]:::ext
   end
@@ -27,7 +27,7 @@ flowchart TB
 
   subgraph STORE["Postgres store (M9)"]
     direction TB
-    API["<b>Sync API</b><br/>Firebase Cloud Function, us-east5 (Ohio)<br/>POST /push, POST /pull. Checks the<br/>Firebase ID token, maps it to users.id.<br/>Deployed; the app not connected yet"]:::cloud
+    API["<b>Sync API</b><br/>Firebase Cloud Function, us-east5 (Ohio)<br/>POST /push, POST /pull. Checks the<br/>Firebase ID token, maps it to users.id.<br/>Deployed"]:::cloud
     PG[("<b>Neon Postgres</b><br/>AWS US East 2 (Ohio), plain Postgres<br/>Schema v1: users, entries (record,<br/>values, links), file metadata.<br/>Row-level security. Planned: raw readings.<br/>Source of truth")]:::store
   end
 
@@ -41,7 +41,7 @@ flowchart TB
   APP -->|"2. signInWithCredential"| AUTH
   APP -->|"saves, deletes, listens to records<br/>(until M9)"| FS
   AUTH -.->|"uid checked by rules<br/>(until M9)"| FS
-  APP -.->|"M9: uploads the outbox, pulls changes<br/>(Firebase ID token)"| API
+  APP -->|"sends the outbox, pulls changes<br/>(Firebase ID token)"| API
   AUTH -.->|"token verified"| API
   API -.->|"upserts, reads"| PG
   APP -.->|"planned: photos, documents"| ST

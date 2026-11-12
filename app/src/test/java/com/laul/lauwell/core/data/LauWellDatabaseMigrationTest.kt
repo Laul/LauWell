@@ -33,6 +33,26 @@ class LauWellDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun `3 to 4 adds the sync tables and keeps the records`() {
+        helper.createDatabase(DB, 3).use { db ->
+            db.execSQL(
+                "INSERT INTO record (id, metric_id, shape, time_utc, source, recorded_at, schema_version) " +
+                    "VALUES ('r1', 'mood', 'Measurement', 1, 'manual', 1, 1)",
+            )
+        }
+        helper.runMigrationsAndValidate(DB, 4, true).use { db ->
+            db.query("SELECT count(*) FROM record").use {
+                it.moveToFirst()
+                assertEquals(1, it.getInt(0))
+            }
+            db.query("SELECT count(*) FROM outbox").use {
+                it.moveToFirst()
+                assertEquals(0, it.getInt(0))
+            }
+        }
+    }
+
     private companion object {
         const val DB = "migration-test.db"
     }

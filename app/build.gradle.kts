@@ -32,6 +32,8 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${localProps.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
         )
+        // The sync API (backend/api), a Firebase Cloud Function. Public address, not a secret.
+        buildConfigField("String", "SYNC_API_URL", "\"https://us-east5-lauwell-app.cloudfunctions.net/api\"")
     }
 
     buildTypes {

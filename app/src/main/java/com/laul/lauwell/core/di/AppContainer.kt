@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.room.Room
+import androidx.work.DelegatingWorkerFactory
 import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import com.google.firebase.auth.FirebaseAuth
@@ -35,6 +36,12 @@ import com.laul.lauwell.core.settings.DataStorePinnedMetrics
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.Onboarding
 import com.laul.lauwell.core.settings.PinnedMetrics
+import com.laul.lauwell.core.sync.EntrySync
+import com.laul.lauwell.core.sync.EntrySyncSchedule
+import com.laul.lauwell.core.sync.EntrySyncWorkerFactory
+import com.laul.lauwell.core.sync.HttpSyncApi
+import com.laul.lauwell.core.sync.WorkManagerEntrySyncSchedule
+import kotlinx.coroutines.tasks.await
 import java.time.Clock
 
 /**
@@ -117,6 +124,22 @@ class AppContainer(context: Context) {
         )
     }
 
-    /** Lets WorkManager build our workers; [backgroundSync] is only built when a worker runs. */
-    val workerFactory: WorkerFactory = HealthSyncWorkerFactory { backgroundSync }
+    /**
+     * What you log, kept in step with Postgres through the sync API. The ID token comes from Firebase,
+     * which caches and refreshes it; it never leaves this call.
+     */
+    val entrySync: EntrySync by lazy {
+        val api = HttpSyncApi(BuildConfig.SYNC_API_URL) { forceRefresh ->
+            firebaseAuth.currentUser?.getIdToken(forceRefresh)?.await()?.token
+        }
+        EntrySync(database.recordDao(), api, authRepository.session)
+    }
+
+    val entrySyncSchedule: EntrySyncSchedule by lazy { WorkManagerEntrySyncSchedule(workManager) }
+
+    /** Lets WorkManager build our workers; their dependencies are only built when a worker runs. */
+    val workerFactory: WorkerFactory = DelegatingWorkerFactory().apply {
+        addFactory(HealthSyncWorkerFactory { backgroundSync })
+        addFactory(EntrySyncWorkerFactory { entrySync })
+    }
 }
