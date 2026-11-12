@@ -7,6 +7,10 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Configuration
 import com.laul.lauwell.core.di.AppContainer
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -26,6 +30,12 @@ class LauWellApplication : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
+        // Signing in (or switching account) while the app is open: fetch that account's entries now.
+        // The first value is the session at launch, already covered by the foreground request below.
+        ProcessLifecycleOwner.get().lifecycleScope.launch {
+            container.authRepository.session.map { it?.uid }.distinctUntilChanged().drop(1).filterNotNull()
+                .collect { container.entrySyncSchedule.request() }
+        }
         // Each time the app comes to the foreground (not when only a worker started the process).
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) {

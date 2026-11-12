@@ -5,7 +5,11 @@ import com.laul.lauwell.core.data.RecordCursor
 import com.laul.lauwell.core.data.RecordDao
 import com.laul.lauwell.core.data.RecordRows
 import com.laul.lauwell.core.data.SyncCursorEntity
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import java.time.Clock
+import java.time.Instant
 
 /**
  * Keeps what you log in step with Postgres (decision "Sync: our own"): sends the outbox, then pulls what
@@ -18,6 +22,7 @@ class EntrySync(
     private val dao: RecordDao,
     private val api: SyncApi,
     private val session: StateFlow<Session?>,
+    private val clock: Clock,
 ) {
 
     /** What one run did, or why it didn't run. */
@@ -33,9 +38,21 @@ class EntrySync(
         val cursor = dao.cursor() ?: SyncCursorEntity(RecordCursor, uid, changeSeq = 0)
         if (cursor.uid != uid) return Outcome.OtherAccount
         val (sent, refused) = push()
-        val received = pull(cursor)
+        val received = pull(cursor) ?: return Outcome.SignedOut
         return Outcome.Synced(sent, refused, received)
     }
+
+    /** Where the local entries stand, for Settings: waiting, refused, and when the last run ended. */
+    fun status(): Flow<EntrySyncStatus> =
+        combine(dao.waitingCount(), dao.refusedCount(), dao.cursorUpdates()) { waiting, refused, cursor ->
+            EntrySyncStatus(waiting, refused, cursor?.syncedAt?.let(Instant::ofEpochMilli))
+        }
+
+    /** Changes not on the server yet: what clearing the local entries now would lose. */
+    suspend fun unsent(): Int = dao.unsentCount()
+
+    /** Empties the local entries and the sync's state (on sign-out); they stay on the server. */
+    suspend fun forgetLocalEntries() = dao.clearUserData()
 
     /** Sends the outbox in batches. Returns how many were taken and how many refused for good. */
     private suspend fun push(): Pair<Int, Int> {
@@ -65,8 +82,11 @@ class EntrySync(
         return sent to refused
     }
 
-    /** Fetches every page, then writes them in one transaction with the new cursor. Returns how many came. */
-    private suspend fun pull(cursor: SyncCursorEntity): Int {
+    /**
+     * Fetches every page, then writes them in one transaction with the new cursor and the time. Returns how
+     * many came, or null when the account changed meanwhile (signed out mid-run): nothing is written then.
+     */
+    private suspend fun pull(cursor: SyncCursorEntity): Int? {
         val pulled = mutableListOf<RecordRows>()
         var after = cursor.changeSeq
         do {
@@ -74,7 +94,8 @@ class EntrySync(
             pulled += page.records
             after = page.next
         } while (page.more)
-        if (pulled.isNotEmpty() || dao.cursor() == null) dao.applyPulled(pulled, cursor.copy(changeSeq = after))
+        if (session.value?.uid != cursor.uid) return null
+        dao.applyPulled(pulled, cursor.copy(changeSeq = after, syncedAt = clock.millis()))
         return pulled.size
     }
 
@@ -87,3 +108,6 @@ class EntrySync(
         fun isUuid(id: String) = Uuid.matches(id)
     }
 }
+
+/** Changes [waiting] to be sent, [refused] by the server, and the end of the last full run ([syncedAt]). */
+data class EntrySyncStatus(val waiting: Int, val refused: Int, val syncedAt: Instant?)

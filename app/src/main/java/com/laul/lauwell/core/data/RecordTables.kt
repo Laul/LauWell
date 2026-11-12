@@ -190,6 +190,46 @@ abstract class RecordDao {
     @Query("SELECT record_id FROM outbox")
     protected abstract suspend fun outboxIds(): List<String>
 
+    /** Changes waiting to be sent (refused ones left out). */
+    @Query("SELECT count(*) FROM outbox WHERE refused IS NULL")
+    abstract fun waitingCount(): Flow<Int>
+
+    /** Changes the server refused, kept until edited again. */
+    @Query("SELECT count(*) FROM outbox WHERE refused IS NOT NULL")
+    abstract fun refusedCount(): Flow<Int>
+
+    /** Changes not on the server, waiting or refused: lost if the local tables are cleared now. */
+    @Query("SELECT count(*) FROM outbox")
+    abstract suspend fun unsentCount(): Int
+
+    @Query("DELETE FROM record_link")
+    protected abstract suspend fun clearLinks()
+
+    @Query("DELETE FROM record_value")
+    protected abstract suspend fun clearValues()
+
+    @Query("DELETE FROM record")
+    protected abstract suspend fun clearRecords()
+
+    @Query("DELETE FROM outbox")
+    protected abstract suspend fun clearOutbox()
+
+    @Query("DELETE FROM sync_cursor")
+    protected abstract suspend fun clearCursors()
+
+    /**
+     * Empties every table of what you log, and the sync's state, in one transaction: on sign-out, so the
+     * next account starts clean and pulls its own entries from the server.
+     */
+    @Transaction
+    open suspend fun clearUserData() {
+        clearLinks()
+        clearValues()
+        clearRecords()
+        clearOutbox()
+        clearCursors()
+    }
+
     @Query("SELECT * FROM sync_cursor WHERE name = :name")
     abstract suspend fun cursor(name: String = RecordCursor): SyncCursorEntity?
 
@@ -228,13 +268,15 @@ data class OutboxEntity(
 
 /**
  * How far the pull got ([changeSeq], the server's change number) and for whom ([uid], the Firebase
- * uid): the local tables belong to that account, and are never sent to another one.
+ * uid): the local tables belong to that account, and are never sent to another one. [syncedAt] is the
+ * end of the last full run (epoch ms), null before the first.
  */
 @Entity(tableName = "sync_cursor")
 data class SyncCursorEntity(
     @PrimaryKey val name: String,
     val uid: String,
     @ColumnInfo(name = "change_seq") val changeSeq: Long,
+    @ColumnInfo(name = "synced_at") val syncedAt: Long? = null,
 )
 
 /** [SyncCursorEntity.name] of the records' pull. */

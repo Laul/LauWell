@@ -25,18 +25,19 @@ Rendered page: `lauwell-c4.html`.
 
 Catalog, Record model and the UI kit are used by every component and are left out.
 
-| Screen | Summaries | HealthSync | BackgroundSync | HealthDataSource | SummaryStore | RecordRepository | AuthRepository | Preferences | ToggleRepository | Chart layer |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Sign-in | | | | | | | x | | | |
-| Today | x | x | | | | | | x | x | |
-| Tracker list | x | x | | | | | | x | x | |
-| Metric detail | x (DayHistory) | x | | x | x | x | | | | x |
-| Log entry sheet | | | | | | x | | | | |
-| Settings | | | | x | x | | x | x | x | |
-| Health Connect grant | | | x | x | | | | x | x | |
-| Nav host | | | | | | | | x (onboarding) | | |
+| Screen | Summaries | HealthSync | BackgroundSync | HealthDataSource | SummaryStore | RecordRepository | AuthRepository | Preferences | ToggleRepository | Chart layer | EntrySync |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Sign-in | | | | | | | x | | | | |
+| Today | x | x | | | | | | x | x | | |
+| Tracker list | x | x | | | | | | x | x | | |
+| Metric detail | x (DayHistory) | x | | x | x | x | | | | x | |
+| Log entry sheet | | | | | | x | | | | | |
+| Settings | | | | x | x | | x | x | x | | x |
+| Health Connect grant | | | x | x | | | | x | x | | |
+| Nav host | | | | | | | | x (onboarding) | | | |
 
-`BackgroundSync` itself calls `HealthSync`, `HealthDataSource`, `ToggleRepository` and the auth session.
+`BackgroundSync` itself calls `HealthSync`, `HealthDataSource`, `ToggleRepository` and the auth session. Settings reads
+`EntrySync`'s status (waiting, refused, last sync) and clears the local entries on sign-out.
 
 In M9 `RecordRepository` gets a Room-backed implementation; the outbox and its sync job to Postgres (`EntrySync`,
 `EntrySyncWorker`, requested by `LauWellApplication` at each foreground) are built. Its callers do not change, so this

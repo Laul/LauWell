@@ -137,7 +137,7 @@ class AppContainer(context: Context) {
         val api = HttpSyncApi(BuildConfig.SYNC_API_URL) { forceRefresh ->
             firebaseAuth.currentUser?.getIdToken(forceRefresh)?.await()?.token
         }
-        EntrySync(database.recordDao(), api, authRepository.session)
+        EntrySync(database.recordDao(), api, authRepository.session, Clock.systemUTC())
     }
 
     val entrySyncSchedule: EntrySyncSchedule by lazy { WorkManagerEntrySyncSchedule(workManager) }

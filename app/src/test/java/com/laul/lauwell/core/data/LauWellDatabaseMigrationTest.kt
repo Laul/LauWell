@@ -53,6 +53,20 @@ class LauWellDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun `4 to 5 adds the last sync time and keeps the cursor`() {
+        helper.createDatabase(DB, 4).use { db ->
+            db.execSQL("INSERT INTO sync_cursor (name, uid, change_seq) VALUES ('record', 'alice', 14)")
+        }
+        helper.runMigrationsAndValidate(DB, 5, true).use { db ->
+            db.query("SELECT change_seq, synced_at FROM sync_cursor WHERE name = 'record'").use {
+                it.moveToFirst()
+                assertEquals(14, it.getInt(0))
+                assertEquals(true, it.isNull(1))
+            }
+        }
+    }
+
     private companion object {
         const val DB = "migration-test.db"
     }

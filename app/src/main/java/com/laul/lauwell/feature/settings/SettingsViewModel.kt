@@ -11,6 +11,8 @@ import com.laul.lauwell.core.healthconnect.SummaryStore
 import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.ThemeMode
+import com.laul.lauwell.core.sync.EntrySync
+import com.laul.lauwell.core.sync.EntrySyncStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,11 +46,15 @@ data class SettingsState(
     val themeMode: ThemeMode? = null,
     val visibleMetrics: Int = 0,
     val email: String? = null,
+    /** Where your logged entries stand with the server; null while reading. */
+    val entries: EntrySyncStatus? = null,
+    /** Set while signing out would lose this many changes not on the server yet: ask first. */
+    val unsentOnSignOut: Int? = null,
 )
 
 /**
  * Settings (design 20b): the Health Connect status, the appearance choice, how many metrics are
- * shown, and the signed-in account.
+ * shown, the signed-in account and where its entries stand with the server.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModel(
@@ -57,9 +63,12 @@ class SettingsViewModel(
     private val toggles: ToggleRepository,
     private val source: HealthDataSource,
     private val store: SummaryStore,
+    private val entrySync: EntrySync,
 ) : ViewModel() {
 
     private val healthConnect = MutableStateFlow<HealthConnectStatus?>(null)
+
+    private val unsentOnSignOut = MutableStateFlow<Int?>(null)
 
     private val visible = toggles.switchedOff.map { MetricRegistry.visible(it) }
 
@@ -70,13 +79,12 @@ class SettingsViewModel(
     }
 
     val state: StateFlow<SettingsState> = combine(
-        healthConnect,
-        lastSyncedAt,
-        displayPreferences.themeMode,
-        visible,
+        combine(healthConnect, lastSyncedAt, displayPreferences.themeMode, visible, ::Quad),
         authRepository.session,
-    ) { status, syncedAt, theme, metrics, session ->
-        SettingsState(status, syncedAt, theme, metrics.size, session?.email)
+        entrySync.status(),
+        unsentOnSignOut,
+    ) { (status, syncedAt, theme, metrics), session, entries, unsent ->
+        SettingsState(status, syncedAt, theme, metrics.size, session?.email, entries, unsent)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsState())
 
     /** Re-reads Health Connect's availability and grants: on start, and each time the screen resumes. */
@@ -98,10 +106,62 @@ class SettingsViewModel(
         viewModelScope.launch { displayPreferences.setThemeMode(mode) }
     }
 
-    /** The session ends and [com.laul.lauwell.core.auth.ui.AuthGate] shows sign-in on its own. */
+    /**
+     * Signs out, then clears this phone's entries: they are in your account, and the next sign-in pulls
+     * them back. When some changes haven't reached the server, asks first ([SettingsState.unsentOnSignOut]).
+     */
     fun signOut() {
-        viewModelScope.launch { authRepository.signOut() }
+        viewModelScope.launch {
+            val unsent = entrySync.unsent()
+            if (unsent > 0) unsentOnSignOut.value = unsent else finishSignOut()
+        }
     }
+
+    /** Signs out after the warning, losing the changes not on the server. */
+    fun signOutAnyway() {
+        unsentOnSignOut.value = null
+        viewModelScope.launch { finishSignOut() }
+    }
+
+    fun staySignedIn() {
+        unsentOnSignOut.value = null
+    }
+
+    /** The session ends first, so a sync in flight writes nothing; [com.laul.lauwell.core.auth.ui.AuthGate] then shows sign-in. */
+    private suspend fun finishSignOut() {
+        authRepository.signOut()
+        entrySync.forgetLocalEntries()
+    }
+}
+
+private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
+
+/**
+ * The "Your entries" row's detail line: "All synced · 09:12", "2 entries waiting to sync · last synced
+ * 09:12", "1 entry couldn't be synced", or "Not synced yet".
+ */
+internal fun entrySyncDetail(status: EntrySyncStatus?, clock: Clock): String {
+    if (status == null) return "Checking…"
+    val parts = buildList {
+        if (status.waiting > 0) add("${entries(status.waiting)} waiting to sync")
+        if (status.refused > 0) add("${entries(status.refused)} couldn't be synced")
+        if (isEmpty()) add(if (status.syncedAt != null) "All synced" else "Not synced yet")
+    }
+    val synced = status.syncedAt?.let { syncedLabel(it, clock) }
+    return when {
+        synced == null -> parts.joinToString(" · ")
+        status.waiting + status.refused == 0 -> "${parts.single()} · $synced"
+        else -> (parts + "last synced $synced").joinToString(" · ")
+    }
+}
+
+private fun entries(count: Int) = if (count == 1) "1 entry" else "$count entries"
+
+/** "09:12" today, "23 Oct" on an earlier day. */
+private fun syncedLabel(at: Instant, clock: Clock): String {
+    val synced = at.atZone(clock.zone)
+    val format = if (synced.toLocalDate() == ZonedDateTime.now(clock).toLocalDate()) TimeFormat else DayFormat
+    return synced.format(format)
 }
 
 /**
@@ -117,12 +177,7 @@ internal fun healthConnectDetail(status: HealthConnectStatus?, lastSyncedAt: Ins
             0 -> "Not connected"
             else -> buildString {
                 append("Connected · ${status.grantedMetrics} ${if (status.grantedMetrics == 1) "metric" else "metrics"}")
-                if (lastSyncedAt != null) {
-                    val now = ZonedDateTime.now(clock)
-                    val synced = lastSyncedAt.atZone(clock.zone)
-                    val format = if (synced.toLocalDate() == now.toLocalDate()) TimeFormat else DayFormat
-                    append(" · synced ${synced.format(format)}")
-                }
+                if (lastSyncedAt != null) append(" · synced ${syncedLabel(lastSyncedAt, clock)}")
             }
         }
     }

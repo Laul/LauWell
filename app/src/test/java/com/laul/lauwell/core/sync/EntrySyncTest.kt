@@ -17,6 +17,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 import java.util.UUID
 
 // EntrySync on Robolectric's SQLite (real Room tables) against a fake server that keeps what it is sent.
@@ -29,7 +32,8 @@ class EntrySyncTest {
     private val dao = db.recordDao()
     private val server = FakeServer()
     private val session = MutableStateFlow<Session?>(Session("alice"))
-    private val sync = EntrySync(dao, server, session)
+    private val now = 1_793_100_000_000L
+    private val sync = EntrySync(dao, server, session, Clock.fixed(Instant.ofEpochMilli(now), ZoneOffset.UTC))
 
     @After
     fun close() = db.close()
@@ -160,6 +164,47 @@ class EntrySyncTest {
         assertEquals(EntrySync.Outcome.SignedOut, sync.run())
         assertEquals(1, server.pushed.size)
         assertEquals(1, dao.queued().size)
+    }
+
+    @Test
+    fun `the status counts what waits or was refused, and when the last run ended`() = runBlocking {
+        assertEquals(EntrySyncStatus(0, 0, null), sync.status().first())
+        val bad = mood()
+        dao.save(bad)
+        dao.save(mood())
+        assertEquals(EntrySyncStatus(waiting = 2, refused = 0, syncedAt = null), sync.status().first())
+
+        server.refuse[bad.record.id] = "invalid"
+        sync.run()
+        assertEquals(EntrySyncStatus(waiting = 0, refused = 1, syncedAt = Instant.ofEpochMilli(now)), sync.status().first())
+        assertEquals(1, sync.unsent())
+    }
+
+    @Test
+    fun `signing out during a run writes nothing pulled`() = runBlocking {
+        server.receive(mood())
+        server.duringPush = { session.value = null }
+        dao.save(mood())
+
+        assertEquals(EntrySync.Outcome.SignedOut, sync.run())
+        assertEquals(null, dao.cursor())
+        assertEquals(1, localMoods().size)
+    }
+
+    @Test
+    fun `forgetting the local entries empties every table, and the next sign-in pulls them back`() = runBlocking {
+        val entry = mood()
+        dao.save(entry)
+        sync.run()
+
+        sync.forgetLocalEntries()
+        assertTrue(localMoods().isEmpty())
+        assertEquals(null, dao.cursor())
+        assertEquals(0, sync.unsent())
+
+        session.value = Session("alice")
+        sync.run()
+        assertEquals(listOf(entry.record.id), localMoods().map { it.record.id })
     }
 
     /** Keeps records like the API: numbers each change, refuses on demand, pages pulls. */
