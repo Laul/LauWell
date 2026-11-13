@@ -36,10 +36,13 @@ activity and sleep, ostomy appliances and changes, medications, and more.
     Covered by the *Architecture check* step.
 - `docs/research/` — prior-art reviews and competitive teardowns that fed the decisions.
 - `docs/design/` — visual design, made in Claude Desktop. **Gitignored, local only**: it may be absent;
-  the Notion Decisions Tracker entry *Visual design* (indexed in PLAN.md → Decisions) is the tracked record. **`Design • Full Experience - v02.html` is
-  the reference** (2026-10-20): the Galaxy Z Fold closed (cover screen = the phone design, for any
-  phone, nine screens) and open (inner screen: Today dashboard, Tracker week board, list + detail),
-  each in light and dark; the app switches layout when the phone is unfolded. Its written spec is
+  the Notion Decisions Tracker entry *Visual design* (indexed in PLAN.md → Decisions) is the tracked record. **`Design • Full Experience - v03.html` is
+  the reference** (2026-10-24): the Galaxy Z Fold closed (cover screen = the phone design, for any
+  phone) and open (inner screen: Today dashboard, Tracker week board, list + detail),
+  each in light and dark; the app switches layout when the phone is unfolded. v03 adds the Settings-placement
+  round (20b: header with search and gear, Records, Settings, Search) to the cover screens; `v01`/`v02` are superseded.
+  On the open Fold, search and the gear stay in each screen's header and Settings opens full screen (interim
+  choice, 2026-11-12, Notion *Header + gear on the Fold inner screen*). Its written spec is
   `UI-spec.md` from the v18 handoff (`Design • Global direction - v18.html`, a zip despite its name,
   also holding the icon list); `UI-spec.md` and `Icons/lauwell-icons.csv` are copied loose beside
   them. Older exports (`v15`, `v13b-02`, the loose `LauWell Final Design (for Figma import).html`)
