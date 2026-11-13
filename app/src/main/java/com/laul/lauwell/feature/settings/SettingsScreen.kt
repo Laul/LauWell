@@ -81,14 +81,14 @@ fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
             Section("Data sources") {
                 Panel {
                     LinkRow(
-                        icon = R.drawable.ic_sync,
+                        icon = R.drawable.ic_database,
                         label = "Health Connect",
                         detail = healthConnectDetail(state.healthConnect, state.lastSyncedAt, Clock.systemDefaultZone()),
                         onClick = onOpenHealthConnect,
                     )
                     PanelDivider()
                     LinkRow(
-                        icon = R.drawable.ic_sync,
+                        icon = R.drawable.ic_database,
                         label = "LauWell sync",
                         detail = entrySyncDetail(state.entries, Clock.systemDefaultZone(), state.syncActivity),
                         onClick = viewModel::syncNow,
