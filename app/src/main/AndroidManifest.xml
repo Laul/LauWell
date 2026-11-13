@@ -37,8 +37,13 @@
         android:supportsRtl="true"
         tools:ignore="DataExtractionRules">
 
+        <!--
+            Folding, unfolding or turning the phone resizes the window without rebuilding the activity:
+            Compose re-lays out (bottom bar <-> rail, LauWellNavHost) and every screen keeps its state.
+        -->
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"
             android:exported="true"
             android:theme="@style/Theme.LauWell">
             <intent-filter>

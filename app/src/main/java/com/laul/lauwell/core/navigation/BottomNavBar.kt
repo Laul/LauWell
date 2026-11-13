@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.laul.lauwell.core.ui.components.LauWellIcon
 import com.laul.lauwell.core.ui.theme.LauWellTheme
@@ -50,32 +51,50 @@ fun BottomNavBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TopLevelTab.entries.forEach { tab ->
-            val active = tab == selected
-            val color = if (active) colors.ink else colors.ink2
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .selectable(selected = active, role = Role.Tab, onClick = { onSelect(tab) }),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs, Alignment.CenterVertically),
-            ) {
-                Box(Modifier.size(width = 60.dp, height = 30.dp), contentAlignment = Alignment.Center) {
-                    LauWellIcon(
-                        icon = if (active) tab.selectedIcon else tab.icon,
-                        contentDescription = null,
-                        tint = color,
-                        size = 22.dp,
-                    )
-                }
-                BasicText(
-                    text = tab.label,
-                    style = LauWellTheme.typography.caption.copy(
-                        color = color,
-                        fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
-                    ),
-                )
-            }
+            TabItem(
+                tab = tab,
+                active = tab == selected,
+                onSelect = onSelect,
+                iconSize = 22.dp,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+            )
         }
+    }
+}
+
+/**
+ * One tab, shared by [BottomNavBar] and [NavRail]: the icon in a 60 × 30 box over its label; active =
+ * the selected icon and a bold ink label.
+ */
+@Composable
+internal fun TabItem(
+    tab: TopLevelTab,
+    active: Boolean,
+    onSelect: (TopLevelTab) -> Unit,
+    iconSize: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LauWellTheme.colors
+    val color = if (active) colors.ink else colors.ink2
+    Column(
+        modifier = modifier.selectable(selected = active, role = Role.Tab, onClick = { onSelect(tab) }),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.xxs, Alignment.CenterVertically),
+    ) {
+        Box(Modifier.size(width = 60.dp, height = 30.dp), contentAlignment = Alignment.Center) {
+            LauWellIcon(
+                icon = if (active) tab.selectedIcon else tab.icon,
+                contentDescription = null,
+                tint = color,
+                size = iconSize,
+            )
+        }
+        BasicText(
+            text = tab.label,
+            style = LauWellTheme.typography.caption.copy(
+                color = color,
+                fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+            ),
+        )
     }
 }
