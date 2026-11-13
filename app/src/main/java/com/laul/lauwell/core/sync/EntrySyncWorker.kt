@@ -8,16 +8,27 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /** Asks for an [EntrySync] run as soon as the phone is online. Implementation: [WorkManagerEntrySyncSchedule]. */
 fun interface EntrySyncSchedule {
     fun request()
+
+    /** Whether a run is going ([SyncActivity.Running]) or asked for and not started yet ([SyncActivity.Queued]). */
+    fun activity(): Flow<SyncActivity> = flowOf(SyncActivity.Idle)
 }
+
+/** What the sync worker is doing now, for the Settings row. */
+enum class SyncActivity { Idle, Queued, Running }
 
 /**
  * One unique [EntrySyncWorker] at a time, run when a network is available. A request made while a run is
@@ -32,6 +43,16 @@ class WorkManagerEntrySyncSchedule(private val workManager: WorkManager) : Entry
             .build()
         workManager.enqueueUniqueWork(WorkName, ExistingWorkPolicy.APPEND_OR_REPLACE, work)
     }
+
+    /** Queued covers waiting for a network and the backoff after a failed run. */
+    override fun activity(): Flow<SyncActivity> =
+        workManager.getWorkInfosForUniqueWorkFlow(WorkName).map { infos ->
+            when {
+                infos.any { it.state == WorkInfo.State.RUNNING } -> SyncActivity.Running
+                infos.any { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.BLOCKED } -> SyncActivity.Queued
+                else -> SyncActivity.Idle
+            }
+        }.distinctUntilChanged()
 
     private companion object {
         const val WorkName = "entry-sync"

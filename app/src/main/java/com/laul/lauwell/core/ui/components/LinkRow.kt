@@ -20,7 +20,8 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
  * A row in a [Panel] that leads somewhere (Settings, design 20b): an `ink2` icon, a label over a
- * one-line [detail], and a chevron. Without [onClick] it is information only (no chevron); when not
+ * one-line [detail], and a chevron (or [actionIcon], for a row that does something in place, e.g. sync, read
+ * out as [actionLabel]). Without [onClick] it is information only (no chevron); when not
  * [enabled] it is drawn at [DisabledAlpha], for rows whose screen doesn't exist yet. Separate rows
  * with [PanelDivider].
  */
@@ -32,6 +33,8 @@ fun LinkRow(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    @DrawableRes actionIcon: Int = R.drawable.ic_chevron_right,
+    actionLabel: String? = null,
 ) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
@@ -41,7 +44,7 @@ fun LinkRow(
             .heightIn(min = 52.dp)
             .alpha(if (enabled) 1f else DisabledAlpha)
             .then(
-                if (onClick != null) Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+                if (onClick != null) Modifier.clickable(enabled = enabled, onClickLabel = actionLabel, role = Role.Button, onClick = onClick)
                 else Modifier,
             ),
         verticalAlignment = Alignment.CenterVertically,
@@ -57,6 +60,6 @@ fun LinkRow(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (onClick != null) LauWellIcon(R.drawable.ic_chevron_right, contentDescription = null, tint = colors.ink2, size = 18.dp)
+        if (onClick != null) LauWellIcon(actionIcon, contentDescription = null, tint = colors.ink2, size = 18.dp)
     }
 }

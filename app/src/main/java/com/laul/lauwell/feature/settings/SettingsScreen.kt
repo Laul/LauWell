@@ -36,13 +36,15 @@ import java.time.Clock
 
 /**
  * Settings (design 20b), pushed from the gear in every tab's header; no bottom bar, back returns to
- * the tab. Groups: Appearance · App · Data sources · Account. Rows whose screen doesn't exist yet are
+ * the tab. Groups: Appearance · App Settings · Data sources · Account. Rows whose screen doesn't exist yet are
  * drawn disabled (Notion: *Settings sub-screens*), with what is true today as their detail line.
  */
 @Composable
 fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
     val viewModel = appViewModel {
-        SettingsViewModel(authRepository, displayPreferences, toggleRepository, healthDataSource, summaryStore, entrySync)
+        SettingsViewModel(
+            authRepository, displayPreferences, toggleRepository, healthDataSource, summaryStore, entrySync, entrySyncSchedule,
+        )
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
@@ -59,7 +61,7 @@ fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
                     )
                 }
             }
-            Section("App") {
+            Section("App Settings") {
                 Panel {
                     LinkRow(
                         icon = R.drawable.ic_visibility,
@@ -87,9 +89,11 @@ fun SettingsScreen(onBack: () -> Unit, onOpenHealthConnect: () -> Unit) {
                     PanelDivider()
                     LinkRow(
                         icon = R.drawable.ic_sync,
-                        label = "Your entries",
-                        detail = entrySyncDetail(state.entries, Clock.systemDefaultZone()),
-                        onClick = null,
+                        label = "LauWell sync",
+                        detail = entrySyncDetail(state.entries, Clock.systemDefaultZone(), state.syncActivity),
+                        onClick = viewModel::syncNow,
+                        actionIcon = R.drawable.ic_sync,
+                        actionLabel = "Sync now",
                     )
                     PanelDivider()
                     LinkRow(R.drawable.ic_add, "Add a source", "More sources later", onClick = {}, enabled = false)

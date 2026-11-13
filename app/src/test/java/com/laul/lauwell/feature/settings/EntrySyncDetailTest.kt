@@ -1,6 +1,7 @@
 package com.laul.lauwell.feature.settings
 
 import com.laul.lauwell.core.sync.EntrySyncStatus
+import com.laul.lauwell.core.sync.SyncActivity
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Clock
@@ -34,5 +35,15 @@ class EntrySyncDetailTest {
         assertEquals("Not synced yet", entrySyncDetail(EntrySyncStatus(0, 0, null), clock))
         assertEquals("3 entries waiting to sync", entrySyncDetail(EntrySyncStatus(3, 0, null), clock))
         assertEquals("Checking…", entrySyncDetail(null, clock))
+    }
+
+    @Test
+    fun `a run going reads syncing, one waiting comes first`() {
+        assertEquals("Syncing…", entrySyncDetail(EntrySyncStatus(2, 0, today), clock, SyncActivity.Running))
+        assertEquals("Syncing…", entrySyncDetail(null, clock, SyncActivity.Running))
+        assertEquals(
+            "Sync pending · 1 entry waiting to sync · last synced 09:12",
+            entrySyncDetail(EntrySyncStatus(1, 0, today), clock, SyncActivity.Queued),
+        )
     }
 }

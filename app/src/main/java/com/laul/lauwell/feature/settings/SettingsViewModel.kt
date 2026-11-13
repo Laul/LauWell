@@ -12,6 +12,8 @@ import com.laul.lauwell.core.healthconnect.readPermissions
 import com.laul.lauwell.core.settings.DisplayPreferences
 import com.laul.lauwell.core.settings.ThemeMode
 import com.laul.lauwell.core.sync.EntrySync
+import com.laul.lauwell.core.sync.EntrySyncSchedule
+import com.laul.lauwell.core.sync.SyncActivity
 import com.laul.lauwell.core.sync.EntrySyncStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +50,8 @@ data class SettingsState(
     val email: String? = null,
     /** Where your logged entries stand with the server; null while reading. */
     val entries: EntrySyncStatus? = null,
+    /** Whether a sync of your entries is running or waiting to run. */
+    val syncActivity: SyncActivity = SyncActivity.Idle,
     /** Set while signing out would lose this many changes not on the server yet: ask first. */
     val unsentOnSignOut: Int? = null,
 )
@@ -64,6 +68,7 @@ class SettingsViewModel(
     private val source: HealthDataSource,
     private val store: SummaryStore,
     private val entrySync: EntrySync,
+    private val entrySyncSchedule: EntrySyncSchedule,
 ) : ViewModel() {
 
     private val healthConnect = MutableStateFlow<HealthConnectStatus?>(null)
@@ -82,9 +87,10 @@ class SettingsViewModel(
         combine(healthConnect, lastSyncedAt, displayPreferences.themeMode, visible, ::Quad),
         authRepository.session,
         entrySync.status(),
+        entrySyncSchedule.activity(),
         unsentOnSignOut,
-    ) { (status, syncedAt, theme, metrics), session, entries, unsent ->
-        SettingsState(status, syncedAt, theme, metrics.size, session?.email, entries, unsent)
+    ) { (status, syncedAt, theme, metrics), session, entries, activity, unsent ->
+        SettingsState(status, syncedAt, theme, metrics.size, session?.email, entries, activity, unsent)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsState())
 
     /** Re-reads Health Connect's availability and grants: on start, and each time the screen resumes. */
@@ -101,6 +107,9 @@ class SettingsViewModel(
             }
         }
     }
+
+    /** The LauWell sync row: send and fetch your entries now (or as soon as the phone is online). */
+    fun syncNow() = entrySyncSchedule.request()
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { displayPreferences.setThemeMode(mode) }
@@ -137,11 +146,18 @@ class SettingsViewModel(
 private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
 
 /**
- * The "Your entries" row's detail line: "All synced · 09:12", "2 entries waiting to sync · last synced
- * 09:12", "1 entry couldn't be synced", or "Not synced yet".
+ * The "LauWell sync" row's detail line: "All synced · 09:12", "2 entries waiting to sync · last synced
+ * 09:12", "1 entry couldn't be synced", or "Not synced yet". While a run is going, "Syncing…"; while one
+ * waits (no network yet, or a retry after an error), "Sync pending" before the rest.
  */
-internal fun entrySyncDetail(status: EntrySyncStatus?, clock: Clock): String {
+internal fun entrySyncDetail(status: EntrySyncStatus?, clock: Clock, activity: SyncActivity = SyncActivity.Idle): String {
+    if (activity == SyncActivity.Running) return "Syncing…"
     if (status == null) return "Checking…"
+    val line = entryStatusLine(status, clock)
+    return if (activity == SyncActivity.Queued) "Sync pending · $line" else line
+}
+
+private fun entryStatusLine(status: EntrySyncStatus, clock: Clock): String {
     val parts = buildList {
         if (status.waiting > 0) add("${entries(status.waiting)} waiting to sync")
         if (status.refused > 0) add("${entries(status.refused)} couldn't be synced")
