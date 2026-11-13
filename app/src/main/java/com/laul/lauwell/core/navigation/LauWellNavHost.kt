@@ -1,9 +1,14 @@
 package com.laul.lauwell.core.navigation
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,8 +36,9 @@ import com.laul.lauwell.feature.tracker.TrackerScreen
 
 /**
  * Root navigation: the four tabs, each a nested graph, plus Settings. The one place that knows
- * every screen. Screens handle no window insets themselves: this host pads for the status bar,
- * and the bottom bar (or the host, when the bar is hidden) for the navigation bar.
+ * every screen. Screens handle no window insets themselves: this host pads for the status bar and,
+ * at the sides, for a navigation bar or camera cutout there (landscape, the Fold's inner screen); the
+ * bottom bar (or the host, when the bar is hidden) pads for the navigation bar below.
  */
 @Composable
 fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
@@ -56,6 +62,7 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
             modifier = Modifier
                 .weight(1f)
                 .statusBarsPadding()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .then(if (showBar) Modifier else Modifier.navigationBarsPadding()),
         ) {
             navigation(route = TopLevelTab.Today.graphRoute, startDestination = TopLevelTab.Today.route) {
