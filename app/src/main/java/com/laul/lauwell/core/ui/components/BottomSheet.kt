@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
+import com.laul.lauwell.core.ui.PhoneContentMaxWidth
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -110,7 +112,8 @@ fun LauWellBottomSheet(
                 visibleState = state,
                 enter = slideInVertically { it },
                 exit = slideOutVertically { it },
-                modifier = Modifier.align(Alignment.BottomCenter),
+                // Phone width on a wide window (the Fold open), centred.
+                modifier = Modifier.align(Alignment.BottomCenter).widthIn(max = PhoneContentMaxWidth),
             ) {
                 DraggableSheet(onDismissRequest, content)
             }

@@ -17,10 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.laul.lauwell.core.ui.isWideWindow
 import com.laul.lauwell.core.ui.theme.LauWellTheme
 
 /**
- * The bottom bar's place on a wide window (the Fold open, or a phone on its side): the four tabs down
+ * The bottom bar's place on a wide window ([isWideWindow]: the Fold open, or a phone on its side): the four tabs down
  * the left edge (design round 18: 80 dp wide, 72 × 62 items, 24 dp icons). Same tabs and behaviour as
  * [BottomNavBar]; search and the gear stay in each screen's header (Notion: *Header + gear on the Fold
  * inner screen*). Pads for the status bar, and for a navigation bar or cutout on its side.

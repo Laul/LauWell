@@ -2,6 +2,7 @@ package com.laul.lauwell.core.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -29,6 +31,7 @@ import com.laul.lauwell.core.ui.theme.LauWellTheme
  * @param value null when there is nothing yet (shows "—", never 0).
  * @param progress share of the goal reached, 0..1; null when the metric has no goal (the bar's
  *   space is kept so the tiles line up).
+ * @param onClick opens the metric; null for a tile that only shows.
  */
 @Composable
 fun PinnedTile(
@@ -40,12 +43,15 @@ fun PinnedTile(
     category: Category,
     progress: Float?,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
 ) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
     val fg = colors.forCategory(category).fg
     Column(
-        modifier = modifier.semantics(mergeDescendants = true) {},
+        modifier = modifier
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+            .semantics(mergeDescendants = true) {},
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {

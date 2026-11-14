@@ -38,6 +38,8 @@ data class LauWellTypography(
     val metric: TextStyle,
     /** The big value on a detail screen. 60 sp / 500, Mono. */
     val metricXl: TextStyle,
+    /** The value on a large (2 × 2) dashboard widget, Fold open. 36 sp / 500, Mono. */
+    val metricLarge: TextStyle,
     /**
      * Component sizes the design uses inside rows, tiles and sheets (not on its type sheet).
      * Row and chip names: 15 sp / 500, Plex Sans.
@@ -127,6 +129,13 @@ val DefaultLauWellTypography = LauWellTypography(
         fontWeight = FontWeight.Medium,
         fontSize = 60.sp,
         lineHeight = 60.sp,
+        letterSpacing = (-0.02).em,
+    ),
+    metricLarge = TextStyle(
+        fontFamily = PlexMono,
+        fontWeight = FontWeight.Medium,
+        fontSize = 36.sp,
+        lineHeight = 36.sp,
         letterSpacing = (-0.02).em,
     ),
     item = TextStyle(

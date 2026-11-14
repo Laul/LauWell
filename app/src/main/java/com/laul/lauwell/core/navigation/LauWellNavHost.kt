@@ -20,11 +20,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -33,7 +30,11 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.runtime.CompositionLocalProvider
 import com.laul.lauwell.core.di.appViewModel
+import com.laul.lauwell.core.ui.LocalWideWindow
+import com.laul.lauwell.core.ui.PhoneContentMaxWidth
+import com.laul.lauwell.core.ui.isWideWindow
 import com.laul.lauwell.feature.care.CareScreen
 import com.laul.lauwell.feature.onboarding.HealthConnectGrantScreen
 import com.laul.lauwell.feature.onboarding.OnboardingViewModel
@@ -46,8 +47,8 @@ import com.laul.lauwell.feature.tracker.TrackerScreen
 /**
  * Root navigation: the four tabs, each a nested graph, plus Settings. The one place that knows
  * every screen. The tabs sit in the [BottomNavBar], or in the [NavRail] on a wide window
- * ([isWideWindow]: the Fold open, or a phone on its side); there, screens keep their phone layout,
- * centred at [PhoneContentMaxWidth], until they have a wide one.
+ * ([isWideWindow]: the Fold open, or a phone on its side); there, Today shows its dashboard and the
+ * other screens keep their phone layout, centred at [PhoneContentMaxWidth], until they have a wide one.
  *
  * Screens handle no window insets themselves: this host pads for the status bar and, at the sides,
  * for a navigation bar or camera cutout there; the bottom bar or the rail (or the host, without them)
@@ -68,14 +69,7 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
         if (promptSeen == false) navController.navigate(Routes.HEALTH_CONNECT) { launchSingleTop = true }
     }
 
-    val onSelect: (TopLevelTab) -> Unit = { tab ->
-        navController.navigate(tab.graphRoute) {
-            // Standard tab behaviour: one copy of each tab, each keeping its own stack.
-            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    val onSelect: (TopLevelTab) -> Unit = { navController.selectTab(it) }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = isWideWindow(maxWidth)
@@ -83,71 +77,94 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
         val bottomBar = showBar && !wide
         // One tree for both layouts, so the NavHost (and each screen's state) stays put when the window
         // changes width: folding or unfolding only adds or removes the rail and the bottom bar.
-        Row(Modifier.fillMaxSize()) {
-            if (rail) NavRail(selected = selectedTab, onSelect = onSelect)
-            Column(Modifier.weight(1f).fillMaxHeight()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .windowInsetsPadding(
-                            WindowInsets.safeDrawing.only(if (rail) WindowInsetsSides.End else WindowInsetsSides.Horizontal),
-                        )
-                        .then(
-                            if (bottomBar) Modifier
-                            else Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
-                        ),
-                    contentAlignment = Alignment.TopCenter,
-                ) {
-                    NavHost(
-                        navController = navController,
-                        startDestination = TopLevelTab.Today.graphRoute,
-                        modifier = Modifier.fillMaxHeight().widthIn(max = PhoneContentMaxWidth).fillMaxWidth(),
-                    ) {
-                        navigation(route = TopLevelTab.Today.graphRoute, startDestination = TopLevelTab.Today.route) {
-                            composable(TopLevelTab.Today.route) {
-                                TodayScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) })
-                            }
-                        }
-                        navigation(route = TopLevelTab.Tracker.graphRoute, startDestination = TopLevelTab.Tracker.route) {
-                            composable(TopLevelTab.Tracker.route) {
-                                TrackerScreen(
-                                    onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
-                                    onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                                )
-                            }
-                            composable(
-                                Routes.METRIC_DETAIL,
-                                arguments = listOf(navArgument(Routes.METRIC_ID_ARG) { type = NavType.StringType }),
-                            ) { entry ->
-                                val id = entry.arguments?.getString(Routes.METRIC_ID_ARG).orEmpty()
-                                MetricDetailScreen(metricId = id, onBack = navController::popBackStack)
-                            }
-                        }
-                        navigation(route = TopLevelTab.Care.graphRoute, startDestination = TopLevelTab.Care.route) {
-                            composable(TopLevelTab.Care.route) { CareScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
-                        }
-                        navigation(route = TopLevelTab.Records.graphRoute, startDestination = TopLevelTab.Records.route) {
-                            composable(TopLevelTab.Records.route) { RecordsScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
-                        }
-                        composable(Routes.SETTINGS) {
-                            SettingsScreen(
-                                onBack = navController::popBackStack,
-                                onOpenHealthConnect = { navController.navigate(Routes.HEALTH_CONNECT) },
+        CompositionLocalProvider(LocalWideWindow provides wide) {
+            Row(Modifier.fillMaxSize()) {
+                if (rail) NavRail(selected = selectedTab, onSelect = onSelect)
+                Column(Modifier.weight(1f).fillMaxHeight()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .windowInsetsPadding(
+                                WindowInsets.safeDrawing.only(if (rail) WindowInsetsSides.End else WindowInsetsSides.Horizontal),
                             )
+                            .then(
+                                if (bottomBar) Modifier
+                                else Modifier.windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)),
+                            ),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = TopLevelTab.Today.graphRoute,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            navigation(route = TopLevelTab.Today.graphRoute, startDestination = TopLevelTab.Today.route) {
+                                composable(TopLevelTab.Today.route) {
+                                    TodayScreen(
+                                        // The detail belongs to Tracker (the metric's whole history): Tracker is
+                                        // highlighted while it is open, and Back returns to Today.
+                                        onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
+                                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                                    )
+                                }
+                            }
+                            navigation(route = TopLevelTab.Tracker.graphRoute, startDestination = TopLevelTab.Tracker.route) {
+                                composable(TopLevelTab.Tracker.route) {
+                                    PhoneWidth {
+                                        TrackerScreen(
+                                            onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
+                                            onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                                        )
+                                    }
+                                }
+                                composable(
+                                    Routes.METRIC_DETAIL,
+                                    arguments = listOf(navArgument(Routes.METRIC_ID_ARG) { type = NavType.StringType }),
+                                ) { entry ->
+                                    PhoneWidth { MetricDetail(entry.arguments, onBack = navController::popBackStack) }
+                                }
+                            }
+                            navigation(route = TopLevelTab.Care.graphRoute, startDestination = TopLevelTab.Care.route) {
+                                composable(TopLevelTab.Care.route) {
+                                    PhoneWidth { CareScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
+                                }
+                            }
+                            navigation(route = TopLevelTab.Records.graphRoute, startDestination = TopLevelTab.Records.route) {
+                                composable(TopLevelTab.Records.route) {
+                                    PhoneWidth { RecordsScreen(onOpenSettings = { navController.navigate(Routes.SETTINGS) }) }
+                                }
+                            }
+                            composable(Routes.SETTINGS) {
+                                PhoneWidth {
+                                    SettingsScreen(
+                                        onBack = navController::popBackStack,
+                                        onOpenHealthConnect = { navController.navigate(Routes.HEALTH_CONNECT) },
+                                    )
+                                }
+                            }
+                            composable(Routes.HEALTH_CONNECT) {
+                                PhoneWidth { HealthConnectGrantScreen(onDone = navController::popBackStack) }
+                            }
                         }
-                        composable(Routes.HEALTH_CONNECT) { HealthConnectGrantScreen(onDone = navController::popBackStack) }
                     }
+                    if (bottomBar) BottomNavBar(selected = selectedTab, onSelect = onSelect)
                 }
-                if (bottomBar) BottomNavBar(selected = selectedTab, onSelect = onSelect)
             }
         }
     }
 }
 
-/** Wide enough for the [NavRail] (Android's 600 dp breakpoint): the Fold open (about 884 dp), a phone on its side. */
-internal fun isWideWindow(width: Dp): Boolean = width >= 600.dp
+@Composable
+private fun MetricDetail(arguments: android.os.Bundle?, onBack: () -> Unit) {
+    MetricDetailScreen(metricId = arguments?.getString(Routes.METRIC_ID_ARG).orEmpty(), onBack = onBack)
+}
 
-/** How wide a screen with only a phone layout gets on a wide window, centred. */
-private val PhoneContentMaxWidth = 600.dp
+/** A screen without a wide layout: its phone layout, centred at [PhoneContentMaxWidth] on a wide window. */
+@Composable
+private fun PhoneWidth(content: @Composable () -> Unit) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        Box(Modifier.widthIn(max = PhoneContentMaxWidth).fillMaxSize()) { content() }
+    }
+}
