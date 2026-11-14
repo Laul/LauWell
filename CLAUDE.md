@@ -111,7 +111,8 @@ Give the top 3 with parent milestone, effort and one line of why, and ask before
 - Every new data point gets a category, a sub-category, a storage shape (the Notion `Storage Shape` column) and the screen(s) it shows on
   (`Nav. Screens`) before it gets a screen — see `docs/data-structure/` and PLAN.md → Decisions.
   Adding a tracker should be a registry entry, not a new navigation destination.
-- Navigation: four bottom tabs — **Today** (quick-log row, pinned metrics, medications due,
+- Navigation: four tabs, in a bottom bar, or a side rail on wide windows (≥ 600 dp: the Fold open, a phone
+  on its side; search and the gear stay in each screen's header) — **Today** (quick-log row, pinned metrics, medications due,
   symptom check, appointments in the next 14 days), **Tracker** (vitals,
   symptoms, activity, sleep, mood, cycle, ostomy output), **Care** (treatments, appliances, the ostomy module,
   appointments) and **Records** (labs, documents, encounters, the History timeline); "Care" is a working name. Details and rationale:

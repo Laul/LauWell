@@ -2,7 +2,7 @@
 
 *Drafted with Claude, 2026-09-30; rewritten 2026-10-08 after the data-categories work; updated
 2026-10-11 for the simplified data model and the four-tab navigation; 2026-10-15 for the Tracker
-list/widgets views; 2026-10-18 for the regenerated counts; 2026-11-11 for storage (Room and Postgres, no Firestore). Status: adopted (PLAN.md → M0).
+list/widgets views; 2026-10-18 for the regenerated counts; 2026-11-11 for storage (Room and Postgres, no Firestore); 2026-11-13 for the side rail on wide windows. Status: adopted (PLAN.md → M0).
 Replaces the earlier "feature descriptor + registry" proposal.*
 
 ## The question
@@ -100,8 +100,8 @@ Example: Lifestyle → Activity switched off.
   data sources are declared on the **metric definition**, so they follow any toggle level.
 - **Background work:** syncs and reminders are scheduled only for visible metrics. A change in the
   switched-off set starts or cancels the matching jobs.
-- **UI:** navigation is four bottom tabs — Today, Tracker, Care, Records (PLAN.md → Decisions → *App
-  navigation*) — plus Settings. Each data point carries the tab(s) it shows on (`Nav. Screens`), and
+- **UI:** navigation is four tabs — Today, Tracker, Care, Records (PLAN.md → Decisions → *App
+  navigation*), in a bottom bar or, on wide windows (≥ 600 dp), a side rail — plus Settings. Each data point carries the tab(s) it shows on (`Nav. Screens`), and
   every tab lists only visible metrics. Today's quick-log row and the Tracker hub read from the same
   registry. Adding a metric never touches the nav host.
 - **Tracker views:** the hub shows the same visible metrics as either a list with 7-day sparklines
