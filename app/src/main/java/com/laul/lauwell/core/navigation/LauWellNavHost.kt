@@ -47,8 +47,8 @@ import com.laul.lauwell.feature.tracker.TrackerScreen
 /**
  * Root navigation: the four tabs, each a nested graph, plus Settings. The one place that knows
  * every screen. The tabs sit in the [BottomNavBar], or in the [NavRail] on a wide window
- * ([isWideWindow]: the Fold open, or a phone on its side); there, Today shows its dashboard and the
- * other screens keep their phone layout, centred at [PhoneContentMaxWidth], until they have a wide one.
+ * ([isWideWindow]: the Fold open, or a phone on its side); there, Today shows its dashboard, Tracker its
+ * week board, and the other screens keep their phone layout, centred at [PhoneContentMaxWidth], until they have a wide one.
  *
  * Screens handle no window insets themselves: this host pads for the status bar and, at the sides,
  * for a navigation bar or camera cutout there; the bottom bar or the rail (or the host, without them)
@@ -112,12 +112,11 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
                             }
                             navigation(route = TopLevelTab.Tracker.graphRoute, startDestination = TopLevelTab.Tracker.route) {
                                 composable(TopLevelTab.Tracker.route) {
-                                    PhoneWidth {
-                                        TrackerScreen(
-                                            onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
-                                            onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                                        )
-                                    }
+                                    // Full width: on a wide window it is the week board.
+                                    TrackerScreen(
+                                        onOpenMetric = { navController.navigate(Routes.metricDetail(it)) },
+                                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                                    )
                                 }
                                 composable(
                                     Routes.METRIC_DETAIL,

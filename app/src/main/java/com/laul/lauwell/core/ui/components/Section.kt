@@ -136,7 +136,7 @@ fun CategoryLine(category: Category, text: String, modifier: Modifier = Modifier
 }
 
 @Composable
-private fun CategoryDot(color: Color) {
+internal fun CategoryDot(color: Color) {
     Box(
         Modifier
             .size(8.dp)

@@ -134,4 +134,28 @@ class MetricSummaryTest {
         assertTrue(summary.context.startsWith("of 8"))
         assertEquals(8000.0, (summary.chart as MiniChartData.Bars).goal!!, 0.0)
     }
+
+    @Test
+    fun `a week row has each day's value with its unit, the latest, and a chart of those days`() {
+        val row = weekRow(
+            RestingHeartRate,
+            listOf(
+                day(RestingHeartRate.id, 9, "value" to DayValue.Mean(70.0)), // before the week
+                day(RestingHeartRate.id, 4, "value" to DayValue.Mean(61.0)),
+                day(RestingHeartRate.id, 2, "value" to DayValue.Mean(58.0)),
+            ),
+            end = today,
+        )
+
+        assertEquals(listOf(null, null, "61 bpm", null, "58 bpm", null, null), row.days)
+        assertEquals("58 bpm", row.latest)
+        assertEquals(MiniChartDays, (row.chart as MiniChartData.Line).days.size)
+    }
+
+    @Test
+    fun `an empty week has no latest value`() {
+        val row = weekRow(BloodPressure, emptyList(), end = today)
+        assertTrue(row.days.all { it == null })
+        assertNull(row.latest)
+    }
 }

@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.laul.lauwell.R
 import com.laul.lauwell.core.catalog.MetricDefinition
 import com.laul.lauwell.core.catalog.MetricId
+import com.laul.lauwell.core.ui.LocalWideWindow
 import com.laul.lauwell.core.catalog.MetricRegistry
 import com.laul.lauwell.core.di.appViewModel
 import com.laul.lauwell.core.settings.TrackerView
@@ -53,13 +54,25 @@ import java.time.Clock
 @Composable
 fun TrackerScreen(onOpenMetric: (MetricId) -> Unit, onOpenSettings: () -> Unit) {
     val viewModel = appViewModel {
-        TrackerViewModel(toggleRepository, displayPreferences, dailySummaries, healthSync, Clock.systemDefaultZone())
+        TrackerViewModel(toggleRepository, displayPreferences, dailySummaries, healthSync, dayHistory, Clock.systemDefaultZone())
     }
     val groups by viewModel.groups.collectAsStateWithLifecycle()
     val view by viewModel.view.collectAsStateWithLifecycle()
     val summaries by viewModel.summaries.collectAsStateWithLifecycle()
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.sync() }
 
+    if (LocalWideWindow.current) {
+        // The Fold open: the week board (design v03 18b), read only while it shows.
+        val board by viewModel.board.collectAsStateWithLifecycle()
+        WeekBoardScreen(
+            groups = groups,
+            board = board,
+            onMoveWeek = viewModel::moveWeek,
+            onOpenMetric = onOpenMetric,
+            onOpenSettings = onOpenSettings,
+        )
+        return
+    }
     TrackerContent(
         groups = groups,
         view = view,

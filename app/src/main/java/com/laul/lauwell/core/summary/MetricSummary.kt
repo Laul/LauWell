@@ -67,6 +67,23 @@ fun metricSummary(metric: MetricDefinition, summaries: List<DailySummary>, today
     )
 }
 
+/**
+ * One metric on the week board (Fold open, design v03 18b): its value on each of the [MiniChartDays]
+ * days ending [end] (null: not logged), the latest of them, and the week's mini chart, drawn one day
+ * per board column.
+ */
+data class WeekRow(val days: List<String?>, val latest: String?, val chart: MiniChartData?)
+
+/** [metric]'s [WeekRow] for the week ending [end], from its daily [summaries] (any range). Values carry their unit: "64 bpm". */
+fun weekRow(metric: MetricDefinition, summaries: List<DailySummary>, end: LocalDate): WeekRow {
+    val series = daySeries(metric, summaries, end.minusDays(MiniChartDays - 1L)..end)
+    val unit = metric.quantities.map { it.unit }.distinct().singleOrNull().orEmpty()
+    val days = series.map { entry ->
+        entry.summary?.let { displayValue(metric, it) }?.let { if (unit.isEmpty()) it else "$it $unit" }
+    }
+    return WeekRow(days, days.lastOrNull { it != null }, metric.miniChart?.let { miniChart(it, metric, series) })
+}
+
 /** "118/76" when the quantities share a unit, else the first quantity alone. */
 private fun displayValue(metric: MetricDefinition, day: DailySummary): String? {
     val shared = metric.quantities.map { it.unit }.distinct().size == 1
