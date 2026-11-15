@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,13 +43,14 @@ import com.laul.lauwell.feature.records.RecordsScreen
 import com.laul.lauwell.feature.settings.SettingsScreen
 import com.laul.lauwell.feature.today.TodayScreen
 import com.laul.lauwell.feature.tracker.MetricDetailScreen
+import com.laul.lauwell.feature.tracker.TrackerListDetail
 import com.laul.lauwell.feature.tracker.TrackerScreen
 
 /**
  * Root navigation: the four tabs, each a nested graph, plus Settings. The one place that knows
  * every screen. The tabs sit in the [BottomNavBar], or in the [NavRail] on a wide window
  * ([isWideWindow]: the Fold open, or a phone on its side); there, Today shows its dashboard, Tracker its
- * week board, and the other screens keep their phone layout, centred at [PhoneContentMaxWidth], until they have a wide one.
+ * week board, a metric opens beside the Tracker list, and the other screens keep their phone layout, centred at [PhoneContentMaxWidth], until they have a wide one.
  *
  * Screens handle no window insets themselves: this host pads for the status bar and, at the sides,
  * for a navigation bar or camera cutout there; the bottom bar or the rail (or the host, without them)
@@ -122,7 +124,21 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
                                     Routes.METRIC_DETAIL,
                                     arguments = listOf(navArgument(Routes.METRIC_ID_ARG) { type = NavType.StringType }),
                                 ) { entry ->
-                                    PhoneWidth { MetricDetail(entry.arguments, onBack = navController::popBackStack) }
+                                    // The metric shown: the one opened, or the one picked since in the list (Fold open),
+                                    // kept on this screen so folding shows the same metric and Back leaves the screen.
+                                    val opened = entry.arguments?.getString(Routes.METRIC_ID_ARG).orEmpty()
+                                    val shown by entry.savedStateHandle.getStateFlow(ShownMetricKey, opened)
+                                        .collectAsStateWithLifecycle()
+                                    if (LocalWideWindow.current) {
+                                        TrackerListDetail(
+                                            metricId = shown,
+                                            onSelectMetric = { entry.savedStateHandle[ShownMetricKey] = it.value },
+                                            onBack = navController::popBackStack,
+                                            onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                                        )
+                                    } else {
+                                        PhoneWidth { key(shown) { MetricDetailScreen(metricId = shown, onBack = navController::popBackStack) } }
+                                    }
                                 }
                             }
                             navigation(route = TopLevelTab.Care.graphRoute, startDestination = TopLevelTab.Care.route) {
@@ -155,10 +171,8 @@ fun LauWellNavHost(navController: NavHostController = rememberNavController()) {
     }
 }
 
-@Composable
-private fun MetricDetail(arguments: android.os.Bundle?, onBack: () -> Unit) {
-    MetricDetailScreen(metricId = arguments?.getString(Routes.METRIC_ID_ARG).orEmpty(), onBack = onBack)
-}
+/** The metric a detail screen shows, once another is picked in its list (Fold open). */
+private const val ShownMetricKey = "shownMetric"
 
 /** A screen without a wide layout: its phone layout, centred at [PhoneContentMaxWidth] on a wide window. */
 @Composable

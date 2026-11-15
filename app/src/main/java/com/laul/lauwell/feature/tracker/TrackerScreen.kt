@@ -16,6 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.runtime.key
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -119,6 +126,7 @@ private fun TrackerList(
     onOpenMetric: (MetricId) -> Unit,
     summaryOf: (MetricDefinition) -> MetricSummary,
     modifier: Modifier = Modifier,
+    selected: MetricId? = null,
 ) {
     val spacing = LauWellTheme.spacing
     // Each category is one keyed item, so switching views keeps the same category in view.
@@ -139,13 +147,64 @@ private fun TrackerList(
         items(groups, key = { it.category.key }) { group ->
             Section(label = group.category.label, category = group.category) {
                 when (view) {
-                    TrackerView.List -> MetricList(group, summaryOf, onOpenMetric)
+                    TrackerView.List -> MetricList(group, summaryOf, onOpenMetric, selected)
                     TrackerView.Widgets -> MetricGrid(group, summaryOf, onOpenMetric)
                 }
             }
         }
     }
 }
+
+/**
+ * A metric open on a wide window (the Fold open; design v03 16b, without "Compare with"): the
+ * Tracker list on the left, the open metric shaded, and its detail on the right. Tapping another
+ * metric swaps the detail in place ([onSelectMetric]); Back ([onBack]) leaves for where the detail was
+ * opened from (the week board, or Today). "Compare with" is its own task (Notion).
+ */
+@Composable
+fun TrackerListDetail(
+    metricId: String,
+    onSelectMetric: (MetricId) -> Unit,
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
+    val viewModel = appViewModel {
+        TrackerViewModel(toggleRepository, displayPreferences, dailySummaries, healthSync, dayHistory, Clock.systemDefaultZone())
+    }
+    val groups by viewModel.groups.collectAsStateWithLifecycle()
+    val summaries by viewModel.summaries.collectAsStateWithLifecycle()
+    val colors = LauWellTheme.colors
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // The list keeps the design's 370 dp, more on a wider screen (40%).
+        val listWidth = maxOf(MinListWidth, maxWidth * 0.4f)
+        Row(Modifier.fillMaxSize()) {
+            Column(
+                Modifier
+                    .width(listWidth)
+                    .fillMaxHeight()
+                    .drawBehind {
+                        drawLine(colors.panelLine, Offset(size.width, 0f), Offset(size.width, size.height), 1.dp.toPx())
+                    },
+            ) {
+                AppHeader(title = "Tracker", onOpenSettings = onOpenSettings)
+                TrackerList(
+                    groups = groups,
+                    view = TrackerView.List,
+                    onOpenMetric = onSelectMetric,
+                    summaryOf = { summaries[it.id] ?: MetricSummary.empty(it) },
+                    modifier = Modifier.weight(1f),
+                    selected = runCatching { MetricId(metricId) }.getOrNull(),
+                )
+            }
+            // A fresh detail per metric: its period, scroll and view model start over.
+            Box(Modifier.weight(1f).fillMaxHeight()) {
+                key(metricId) { MetricDetailScreen(metricId = metricId, onBack = onBack) }
+            }
+        }
+    }
+}
+
+private val MinListWidth = 370.dp
 
 /** Same order as [TrackerView.entries]. */
 private val ViewOptions = listOf(
@@ -158,6 +217,7 @@ private fun MetricList(
     group: TrackerGroup,
     summaryOf: (MetricDefinition) -> MetricSummary,
     onOpenMetric: (MetricId) -> Unit,
+    selected: MetricId? = null,
 ) {
     Panel {
         group.metrics.forEachIndexed { index, metric ->
@@ -171,6 +231,7 @@ private fun MetricList(
                 category = metric.category,
                 chart = summary.chart,
                 onClick = { onOpenMetric(metric.id) },
+                selected = metric.id == selected,
             )
         }
     }

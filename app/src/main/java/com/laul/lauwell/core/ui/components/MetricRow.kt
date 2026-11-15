@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +61,7 @@ fun MetricIconTile(@DrawableRes icon: Int, category: Category, modifier: Modifie
  * @param takeaway one line that reads the chart ("60% of goal", "Up from 4 on Mon").
  * @param value null when there is nothing yet (shows "—", never 0).
  * @param chart null for a metric without a mini-chart; its slot stays empty so values line up.
+ * @param selected the metric open beside the list (Fold open): its row is shaded.
  */
 @Composable
 fun MetricRow(
@@ -68,14 +73,22 @@ fun MetricRow(
     chart: MiniChartData?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    selected: Boolean = false,
 ) {
     val colors = LauWellTheme.colors
     val type = LauWellTheme.typography
+    val panelPadding = LauWellTheme.spacing.panel
     Row(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 54.dp)
-            .clickable(role = Role.Button, onClick = onClick)
+            // The open metric in list + detail (Fold open): shaded across the panel's whole width.
+            .drawBehind {
+                if (selected) {
+                    drawRect(colors.surface2, Offset(-panelPadding.toPx(), 0f), Size(size.width + 2 * panelPadding.toPx(), size.height))
+                }
+            }
+            .selectable(selected = selected, role = Role.Button, onClick = onClick)
             .padding(vertical = LauWellTheme.spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(LauWellTheme.spacing.sm),

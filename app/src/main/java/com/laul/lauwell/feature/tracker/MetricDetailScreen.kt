@@ -88,7 +88,8 @@ fun MetricDetailScreen(metricId: String, onBack: () -> Unit) {
 
 @Composable
 private fun MetricDetail(metric: MetricDefinition) {
-    val viewModel = appViewModel {
+    // One per metric: list + detail (Fold open) shows several in turn on the same screen.
+    val viewModel = appViewModel(key = "metric-detail:${metric.id.value}") {
         MetricDetailViewModel(metric, healthDataSource, healthSync, summaryStore, dayHistory, recordRepository, Clock.systemDefaultZone())
     }
     val state by viewModel.state.collectAsStateWithLifecycle()

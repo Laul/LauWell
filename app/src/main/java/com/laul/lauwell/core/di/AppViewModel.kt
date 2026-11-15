@@ -16,12 +16,15 @@ import com.laul.lauwell.LauWellApplication
  * ```
  *
  * The lambda runs with the container as receiver, and only when the ViewModel doesn't exist yet;
- * on recomposition or rotation the existing instance is returned, as with `viewModel()`.
+ * on recomposition or rotation the existing instance is returned, as with `viewModel()`. A [key]
+ * keeps one per value on the same screen (each metric shown in Tracker's list + detail).
  */
 @Composable
 inline fun <reified VM : ViewModel> appViewModel(
+    key: String? = null,
     crossinline create: AppContainer.() -> VM,
 ): VM = viewModel(
+    key = key,
     factory = viewModelFactory {
         initializer {
             val app = this[APPLICATION_KEY] as LauWellApplication
