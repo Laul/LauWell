@@ -54,6 +54,7 @@ commit `b4ea515`.)
 - **Database provider:** Neon Postgres to start (free plan, US East), plain portable Postgres, own nightly backups. → [Notion](https://app.notion.com/p/40f9d84e94a181f7ac1dd70c1b55f74e)
 - **What the phone keeps:** every entry and every thing (all history); sensor readings for the last month, older ones fetched from Postgres. → [Notion](https://app.notion.com/p/4129d84e94a181f08b25efac39633aa2)
 - **Sync:** our own, not PowerSync: an outbox on the phone sent by WorkManager to the cloud function; changes come down by a Postgres change number; latest edit wins. → [Notion](https://app.notion.com/p/4149d84e94a181188d46f16b0ca8918a)
+- **Add records:** the generic "+" opens a full screen of metrics grouped by category (multi-select), then one entry screen with a card per metric and one shared time; a bottom sheet stays only for already-known metrics (quick-log chips, a metric's detail). → [Notion](https://app.notion.com/p/41a9d84e94a1818c8e1fc330ce35a437)
 
 ## Milestones — archive (frozen 2026-10-23, tracked in Notion)
 
